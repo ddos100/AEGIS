@@ -9,22 +9,138 @@ compliance to ISO 42001, EU AI Act, NIST AI RMF, DPDPA, RBI, IRDAI, and SEBI.
 
 > **Status:** Phase 0 — Foundation (scaffolded May 2026).
 
-## Quickstart
+## Prerequisites
+
+Before installing, ensure the following are available on your machine:
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Git** | 2.40+ | Clone the repository |
+| **Docker Desktop** | 4.x (Compose v2) | Runs the full local stack |
+| **Python** | 3.12 (via [pyenv](https://github.com/pyenv/pyenv) recommended) | Local API development & catalogue tooling |
+| **Node.js** | 20 LTS (via [nvm](https://github.com/nvm-sh/nvm)) | Web app & extension builds |
+| **make** | any | Convenience targets (`make up`, `make test`, etc.) |
+| **`uv`** (optional) | latest | Faster Python dependency installs |
+| **pnpm** (optional) | 9.x | Faster web dependency installs |
+
+On Windows use **Git Bash**, **WSL2**, or **PowerShell**. The `Makefile` requires a bash-compatible shell.
+
+## Install from git
+
+### 1. Clone the repository
 
 ```bash
-# 1. Copy environment template
+# HTTPS
+git clone https://github.com/ddos100/AEGIS.git aegis
+cd aegis
+
+# Or SSH (if your key is registered on GitHub)
+git clone git@github.com:ddos100/AEGIS.git aegis
+cd aegis
+```
+
+### 2. Configure environment
+
+```bash
 cp api/.env.example api/.env
+```
 
-# 2. Start the full stack
-docker compose up -d
+Edit `api/.env` and replace the placeholders for these two values **before exposing any service**:
 
-# 3. Run migrations
+```bash
+# Generate a real Fernet key for integration-credential encryption
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# → paste output into FERNET_KEY in api/.env
+
+# Rotate INGEST_API_KEY in api/.env to a strong random value
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+`.env` is gitignored — never commit a populated copy.
+
+### 3. Start the full stack
+
+```bash
+docker compose up -d            # postgres+TimescaleDB, redis, keycloak, api, worker, beat, web
+docker compose ps               # confirm every service is healthy
+docker compose logs -f api      # tail API logs (Ctrl+C to detach)
+```
+
+First boot takes 1–3 minutes while Docker pulls the Postgres+TimescaleDB and Keycloak images.
+
+### 4. Apply database migrations
+
+```bash
 docker compose exec api alembic upgrade head
+```
 
-# 4. Sanity check
-curl http://localhost:8000/v1/health      # API
-open http://localhost:5173                # Web UI
-open http://localhost:8080                # Keycloak admin (admin/admin)
+You should see `Running upgrade  -> 001_initial`. This creates `tenants`, `users`, `departments`, `ai_providers`, the append-only `audit_log`, all RLS policies, and the `updated_at` triggers.
+
+### 5. Verify the install
+
+| Check | Command / URL | Expected |
+|-------|---------------|----------|
+| API health | `curl http://localhost:8000/v1/health` | `{"status":"ok","version":"0.1.0","db":"ok",...}` |
+| OpenAPI docs | http://localhost:8000/docs | Swagger UI loads |
+| Web dashboard | http://localhost:5173 | AEGIS overview page with "API: ok" badge |
+| Keycloak admin | http://localhost:8080 (admin / admin) | Admin console loads; `aegis` realm visible |
+| Celery beat | `docker compose logs beat` | `heartbeat` task firing every minute |
+
+### 6. Run the tests
+
+```bash
+docker compose exec api pytest -q          # API tests
+docker compose exec api ruff check .       # Lint
+cd web && npm install && npm run typecheck # Web type-check (one-time install)
+```
+
+### 7. Validate the AI service catalogue
+
+```bash
+cd catalogue
+pip install pyyaml jsonschema
+python -m scripts.validate                  # all seed YAML files must validate
+```
+
+### Common operations (via Makefile)
+
+```bash
+make up                  # docker compose up -d
+make down                # docker compose down (volumes preserved)
+make destroy             # docker compose down -v (destroys volumes — careful)
+make logs                # tail every service
+make migrate             # apply migrations
+make makemigration MSG="add policies table"  # create a new revision
+make test                # run API tests inside the container
+make lint fmt typecheck  # quality gates
+make catalogue-validate  # JSON-Schema validate every catalogue YAML
+```
+
+### Updating after `git pull`
+
+```bash
+git pull                                                          # fetch latest changes
+docker compose build api worker beat                              # rebuild images if Dockerfile/deps changed
+docker compose up -d                                              # restart with new images
+docker compose exec api alembic upgrade head                      # apply any new migrations
+cd web && npm install                                             # if web/package.json changed
+```
+
+### Troubleshooting
+
+- **`docker compose up` fails with port conflict** — another service is bound to 5432 / 6379 / 8000 / 5173 / 8080. Stop the offending process or remap the host-side port in `docker-compose.yml`.
+- **API exits immediately on first boot** — wait ~10s after `docker compose up`; the API entrypoint runs `alembic upgrade head` and won't start serving until Postgres is healthy. Re-run `docker compose up -d` if it raced ahead of Postgres.
+- **Keycloak admin login fails** — the dev realm uses `admin` / `admin`. This is for local development only; rotate before any non-local deployment.
+- **`pytest` fails with tenant_id / RLS errors** — RLS is active; all integration tests must use the `fake_user` fixture which sets the tenant context. See [`api/tests/conftest.py`](api/tests/conftest.py).
+- **Catalogue YAML validation errors in CI** — run `python -m catalogue.scripts.validate` locally; the error output points to the file and JSON path that failed.
+
+## Quickstart (one-liner, for impatient evaluators)
+
+```bash
+git clone https://github.com/ddos100/AEGIS.git aegis && cd aegis && \
+  cp api/.env.example api/.env && docker compose up -d && \
+  sleep 30 && docker compose exec api alembic upgrade head && \
+  curl http://localhost:8000/v1/health
 ```
 
 ## Repository layout
