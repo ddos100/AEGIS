@@ -1,0 +1,65 @@
+# JSON Schema for AI service catalogue entries.
+# Validated by catalogue/scripts/validate.py on every PR.
+$schema: "http://json-schema.org/draft-07/schema#"
+title: AEGIS AI Service
+type: object
+required:
+  - id
+  - name
+  - provider_slug
+  - category
+  - catalogue_version
+additionalProperties: false
+properties:
+  id:                { type: string, pattern: "^[a-z0-9-]+$", maxLength: 120 }
+  name:              { type: string, minLength: 1, maxLength: 200 }
+  provider_slug:     { type: string, pattern: "^[a-z0-9-]+$", maxLength: 64 }
+  version:           { type: string, maxLength: 64 }
+  category:
+    type: string
+    enum: [llm, image_gen, video_gen, speech, code, search, recommendation, classifier, embedding, agent, browser_extension, security_ai, data_analytics, other]
+  subcategory:       { type: string, maxLength: 120 }
+  description:       { type: string, maxLength: 1000 }
+  website:           { type: string, format: uri }
+  api_endpoint_patterns:
+    type: array
+    items: { type: string, maxLength: 200 }
+  browser_domains:
+    type: array
+    items: { type: string, maxLength: 200 }
+  entra_app_ids:
+    type: array
+    items: { type: string, maxLength: 64 }
+  data_residency:
+    type: array
+    items: { type: string, pattern: "^[A-Z]{2}$" }
+  hq_country:        { type: string, pattern: "^[A-Z]{2}$" }
+  gdpr_applicable:   { type: boolean }
+  eu_ai_act_category:
+    type: string
+    enum: [unacceptable, high_risk, limited_risk, minimal_risk, general_purpose_ai, not_applicable]
+  capabilities:
+    type: array
+    items:
+      type: string
+      enum: [text_generation, code_generation, image_generation, video_generation, vision,
+             speech_to_text, text_to_speech, embedding, classification, recommendation,
+             function_calling, decision_making, autonomous_agent, browser_automation, summarization]
+  input_data_types:
+    type: array
+    items: { type: string, enum: [text, image, audio, video, file, structured_json, code] }
+  output_data_types:
+    type: array
+    items: { type: string, enum: [text, image, audio, video, structured_json, code, decision] }
+  default_risk_indicators:
+    type: object
+    additionalProperties: false
+    properties:
+      data_sensitivity_hint: { type: string, enum: [low, medium, high, critical] }
+      capability_level:      { type: string, enum: [low, medium, high] }
+      provider_trust_score:  { type: integer, minimum: 0, maximum: 100 }
+  tags:
+    type: array
+    items: { type: string, maxLength: 64 }
+  catalogue_version: { type: string, maxLength: 32 }
+  last_updated:      { type: string, format: date }

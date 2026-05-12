@@ -1,0 +1,27 @@
+id: microsoft-copilot
+name: Microsoft 365 Copilot
+provider_slug: microsoft
+category: llm
+subcategory: embedded_saas_ai
+description: AI assistant embedded across Microsoft 365 (Word, Excel, Teams, Outlook).
+website: https://www.microsoft.com/microsoft-365/copilot
+api_endpoint_patterns:
+  - graph.microsoft.com
+browser_domains:
+  - copilot.microsoft.com
+  - m365.cloud.microsoft
+entra_app_ids:
+  - "ce8e5e2f-c20d-4b6e-9d12-ff5ec55b3e0e"
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, summarization, function_calling]
+input_data_types: [text, file]
+output_data_types: [text, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 85
+tags: [llm, embedded_saas, microsoft, m365, copilot]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

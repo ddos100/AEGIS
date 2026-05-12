@@ -1,0 +1,144 @@
+# AEGIS local development stack.
+#   docker compose up -d        # start everything
+#   docker compose logs -f api  # tail api logs
+#   docker compose down -v      # destroy volumes
+#
+# Services:
+#   postgres   PostgreSQL 16 + TimescaleDB + pg_trgm (RLS-aware schema)
+#   redis      Cache + Celery broker
+#   keycloak   OIDC provider (dev mode)
+#   api        FastAPI backend
+#   worker     Celery worker
+#   beat       Celery beat scheduler
+#   web        React + Vite dev server
+#   n8n        Workflow automation (used in Phase 2+ for discovery scheduling)
+
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: aegis-postgres
+    environment:
+      POSTGRES_USER: aegis
+      POSTGRES_PASSWORD: aegis
+      POSTGRES_DB: aegis
+    ports: ["5432:5432"]
+    volumes:
+      - aegis_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis -d aegis"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: aegis-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes:
+      - aegis_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: aegis-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports: ["8080:8080"]
+    volumes:
+      - ./infra/docker/keycloak-realm:/opt/keycloak/data/import:ro
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: aegis-api
+    env_file: ./api/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://aegis:aegis@postgres:5432/aegis
+      DATABASE_URL_SYNC: postgresql+psycopg2://aegis:aegis@postgres:5432/aegis
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      KEYCLOAK_URL: http://keycloak:8080
+    ports: ["8000:8000"]
+    volumes:
+      - ./api:/app
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  worker:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: aegis-worker
+    env_file: ./api/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://aegis:aegis@postgres:5432/aegis
+      DATABASE_URL_SYNC: postgresql+psycopg2://aegis:aegis@postgres:5432/aegis
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes:
+      - ./api:/app
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "-l", "INFO"]
+
+  beat:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: aegis-beat
+    env_file: ./api/.env
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      redis: { condition: service_healthy }
+    volumes:
+      - ./api:/app
+    command: ["celery", "-A", "app.workers.celery_app", "beat", "-l", "INFO"]
+
+  web:
+    image: node:20-alpine
+    container_name: aegis-web
+    working_dir: /app
+    environment:
+      VITE_API_URL: http://localhost:8000/v1
+      VITE_KEYCLOAK_URL: http://localhost:8080
+      VITE_KEYCLOAK_REALM: aegis
+      VITE_KEYCLOAK_CLIENT_ID: aegis-web
+    ports: ["5173:5173"]
+    volumes:
+      - ./web:/app
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: aegis-n8n
+    environment:
+      N8N_HOST: localhost
+      N8N_PORT: 5678
+      WEBHOOK_URL: http://localhost:5678/
+    ports: ["5678:5678"]
+    volumes:
+      - aegis_n8n_data:/home/node/.n8n
+    profiles: ["full"]  # `docker compose --profile full up` to start n8n
+
+volumes:
+  aegis_pg_data:
+  aegis_redis_data:
+  aegis_n8n_data:

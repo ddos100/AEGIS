@@ -1,0 +1,27 @@
+id: openai-gpt-4o
+name: GPT-4o
+provider_slug: openai
+version: "2024-05-13"
+category: llm
+subcategory: multimodal_llm
+description: OpenAI's flagship multimodal model — text, image, audio input/output.
+website: https://openai.com/gpt-4o
+api_endpoint_patterns:
+  - api.openai.com/v1/chat/completions
+  - api.openai.com/v1/responses
+browser_domains:
+  - chat.openai.com
+  - chatgpt.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, vision, function_calling, summarization]
+input_data_types: [text, image, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 72
+tags: [llm, general_purpose, openai, multimodal]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

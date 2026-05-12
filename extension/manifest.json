@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "AEGIS Shadow AI Detector",
+  "short_name": "AEGIS",
+  "version": "0.1.0",
+  "description": "Detects AI web apps and AI browser extensions in use across the enterprise. Reports to the AEGIS platform for governance.",
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "storage",
+    "alarms",
+    "management"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "src/background/service_worker.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/detector.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "AEGIS",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

@@ -1,0 +1,42 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+
+# --- Node / Web ---
+node_modules/
+dist/
+.vite/
+*.log
+npm-debug.log*
+.yarn/
+.pnpm-store/
+
+# --- Env / secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- Project-local ---
+tmp_docx/
+*.docx.tmp
+docs/_build/
+infra/terraform/.terraform/
+infra/terraform/*.tfstate*

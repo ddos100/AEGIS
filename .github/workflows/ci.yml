@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (Python 3.12)
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: api } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install uv
+        run: pip install --quiet uv
+      - name: Install dependencies
+        run: uv pip install --system -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check .
+      - name: Format check (ruff)
+        run: ruff format --check .
+      - name: Type check (mypy)
+        run: mypy app
+        continue-on-error: true  # tighten once Phase 0 stabilises
+      - name: Tests (pytest)
+        run: pytest -q
+      - name: Build container
+        run: docker build -t aegis-api:ci .
+
+  web:
+    name: Web (Node 20)
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm run typecheck
+      - run: npm run build
+
+  catalogue:
+    name: Catalogue YAML validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pyyaml jsonschema
+      - run: python -m catalogue.scripts.validate
+
+  extension:
+    name: Extension (Chrome MV3 manifest check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate manifest.json
+        run: |
+          node -e "const m=require('./extension/manifest.json');
+          if (m.manifest_version!==3) { console.error('manifest_version must be 3'); process.exit(1); }
+          if (!m.background?.service_worker) { console.error('Missing service_worker'); process.exit(1); }
+          console.log('manifest.json OK — name=' + m.name + ' v' + m.version);"
+
+  security:
+    name: Security (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }

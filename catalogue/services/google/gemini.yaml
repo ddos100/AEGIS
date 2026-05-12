@@ -1,0 +1,27 @@
+id: google-gemini
+name: Gemini
+provider_slug: google
+version: "2.5"
+category: llm
+subcategory: multimodal_llm
+description: Google's multimodal LLM family, available via Gemini app and Vertex AI.
+website: https://gemini.google.com
+api_endpoint_patterns:
+  - generativelanguage.googleapis.com
+  - aiplatform.googleapis.com
+browser_domains:
+  - gemini.google.com
+  - aistudio.google.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, vision, function_calling, summarization]
+input_data_types: [text, image, audio, video, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 76
+tags: [llm, multimodal, google]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

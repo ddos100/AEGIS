@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AEGIS</title>
+    <style>
+      body { font-family: -apple-system, Segoe UI, sans-serif; width: 280px; margin: 0; padding: 14px;
+             background: #f8fafc; color: #1e293b; }
+      h1 { font-size: 14px; margin: 0 0 8px; color: #1F3864; }
+      .row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0;
+             border-bottom: 1px solid #e2e8f0; }
+      .row:last-child { border-bottom: none; }
+      .footer { margin-top: 10px; font-size: 11px; color: #64748b; text-align: center; }
+      .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+             background: #22c55e; margin-right: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1><span class="dot"></span> AEGIS Detector</h1>
+    <div class="row"><span>Queued events</span><b id="buffer">…</b></div>
+    <div class="row"><span>Catalogue domains</span><b id="domains">…</b></div>
+    <div class="row"><span>Catalogue extensions</span><b id="extensions">…</b></div>
+    <div class="footer">Securisti Consulting LLP</div>
+    <script src="popup.js"></script>
+  </body>
+</html>

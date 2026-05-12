@@ -1,0 +1,27 @@
+id: anthropic-claude-sonnet
+name: Claude Sonnet
+provider_slug: anthropic
+version: "claude-sonnet-4-6"
+category: llm
+subcategory: enterprise_llm
+description: Anthropic's flagship balanced model for enterprise tasks.
+website: https://www.anthropic.com/claude
+api_endpoint_patterns:
+  - api.anthropic.com/v1/messages
+  - api.anthropic.com/v1/complete
+browser_domains:
+  - claude.ai
+  - console.anthropic.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, vision, function_calling, summarization]
+input_data_types: [text, image, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 82
+tags: [llm, enterprise, anthropic, constitutional_ai]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

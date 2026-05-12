@@ -1,0 +1,52 @@
+{
+  "realm": "aegis",
+  "enabled": true,
+  "displayName": "AEGIS",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "roles": {
+    "realm": [
+      { "name": "aegis:admin",   "description": "Tenant administrator" },
+      { "name": "aegis:analyst", "description": "Tenant analyst (read+write)" },
+      { "name": "aegis:viewer",  "description": "Tenant viewer (read-only)" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "aegis-api",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "dev-aegis-api-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://localhost:8000/*", "http://localhost:5173/*"],
+      "webOrigins": ["+"]
+    },
+    {
+      "clientId": "aegis-web",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["+"]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@aegis.local",
+      "email": "admin@aegis.local",
+      "firstName": "AEGIS",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
+      "realmRoles": ["aegis:admin"],
+      "attributes": { "tenant_id": ["00000000-0000-0000-0000-000000000001"] }
+    }
+  ]
+}

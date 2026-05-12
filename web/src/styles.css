@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+}
+
+@layer components {
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .badge-critical { @apply badge bg-red-100 text-red-800; }
+  .badge-high     { @apply badge bg-orange-100 text-orange-800; }
+  .badge-medium   { @apply badge bg-yellow-100 text-yellow-800; }
+  .badge-low      { @apply badge bg-green-100 text-green-800; }
+  .badge-shadow   { @apply badge bg-indigo-100 text-indigo-800; }
+}
