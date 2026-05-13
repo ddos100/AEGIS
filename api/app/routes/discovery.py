@@ -13,13 +13,13 @@ import json
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy import desc, func, select, text
 
 from app.core.auth import decode_token
 from app.core.database import session_scope
-from app.core.deps import CurrentUser, DBSession
-from app.core.redis import discovery_channel, get_redis
+from app.core.deps import CurrentUser, DBSession, require_admin
+from app.core.redis import discovery_channel, get_redis, publish_discovery
 from app.models.ai_system import AISystem
 from app.models.ai_usage_event import AIUsageEvent
 from app.models.discovery_vector import DiscoveryVector
@@ -135,24 +135,64 @@ async def top_systems(
     ]
 
 
+@router.post("/discovery/test-broadcast")
+async def test_broadcast(
+    user: Annotated[CurrentUser, Depends(require_admin)],
+):
+    """Publish a synthetic 'new_system' event on this tenant's discovery channel.
+
+    Useful to verify the Shadow AI Radar wiring (WS proxy, JWT, Redis pub/sub)
+    without firing a real ingest. Admin-only.
+    """
+    from uuid import uuid4
+    payload = {
+        "type": "new_system",
+        "payload": {
+            "id": str(uuid4()),
+            "name": "Test Broadcast (no-op)",
+            "category": "llm",
+            "catalogue_slug": "test-broadcast",
+            "first_discovered_at": datetime.now(timezone.utc).isoformat(),
+            "vector": "manual",
+            "detected_by_user": user.email,
+            "department": "Test",
+        },
+    }
+    await publish_discovery(str(user.tenant_id), payload)
+    return {"published": True, "channel": discovery_channel(str(user.tenant_id))}
+
+
 # ---------- WebSocket ----------
 
 @router.websocket("/ws/discovery")
-async def ws_discovery(websocket: WebSocket, token: str):
+async def ws_discovery(websocket: WebSocket, token: str = ""):
     """Authenticated WebSocket — subscribe to the tenant's discovery channel.
 
-    Auth: pass the user's JWT as a `?token=` query param (browsers cannot set
+    Auth: pass the user's JWT as a `?token=` query param (browsers can't set
     Authorization headers on WebSocket handshakes).
     """
+    from app.core.logging import log
+    if not token:
+        log.warning("aegis.ws.connect_no_token", remote=websocket.client.host if websocket.client else None)
+        await websocket.close(code=4401, reason="missing token")
+        return
     try:
         user = await decode_token(token)
-    except Exception:  # noqa: BLE001
-        await websocket.close(code=4401)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("aegis.ws.connect_invalid_token", error=str(exc))
+        await websocket.close(code=4401, reason="invalid token")
         return
 
     await websocket.accept()
+    channel = discovery_channel(str(user.tenant_id))
+    log.info("aegis.ws.connected", tenant_id=str(user.tenant_id), channel=channel)
     pubsub = get_redis().pubsub()
-    await pubsub.subscribe(discovery_channel(str(user.tenant_id)))
+    await pubsub.subscribe(channel)
+    # Send a hello so the client knows the channel is live before any events flow.
+    await websocket.send_text(json.dumps({
+        "type": "connected",
+        "payload": {"tenant_id": str(user.tenant_id), "channel": channel},
+    }))
     try:
         async for message in pubsub.listen():
             if message.get("type") != "message":
@@ -165,5 +205,6 @@ async def ws_discovery(websocket: WebSocket, token: str):
             except WebSocketDisconnect:
                 break
     finally:
-        await pubsub.unsubscribe(discovery_channel(str(user.tenant_id)))
+        await pubsub.unsubscribe(channel)
         await pubsub.close()
+        log.info("aegis.ws.disconnected", tenant_id=str(user.tenant_id), channel=channel)

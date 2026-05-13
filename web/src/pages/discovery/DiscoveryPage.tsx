@@ -1,5 +1,11 @@
 import { Link } from 'react-router-dom';
-import { useDiscoveryFeed, useDiscoveryStream, useDiscoveryVectors, useTopSystems } from '@/hooks/useDiscovery';
+import {
+  useDiscoveryFeed,
+  useDiscoveryStream,
+  useDiscoveryVectors,
+  useTestBroadcast,
+  useTopSystems,
+} from '@/hooks/useDiscovery';
 
 function vectorIcon(vector: string) {
   // Compact ASCII glyphs (no emojis per house style).
@@ -29,6 +35,7 @@ export default function DiscoveryPage() {
   const { data: feed } = useDiscoveryFeed(24, 50);
   const { data: top } = useTopSystems(168, 10);
   const { data: vectors } = useDiscoveryVectors();
+  const testBroadcast = useTestBroadcast();
 
   return (
     <div className="space-y-6">
@@ -40,10 +47,28 @@ export default function DiscoveryPage() {
             network proxies, NGFW/DNS logs, XDR/EDR telemetry, and the AEGIS browser extension.
           </p>
         </div>
-        <span className={connected ? 'badge-low' : 'badge bg-slate-100 text-slate-600'}>
-          ● Live feed {connected ? 'connected' : 'reconnecting…'}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => testBroadcast.mutate()}
+            disabled={!connected || testBroadcast.isPending}
+            title={connected ? 'Publish a synthetic event on this tenant’s discovery channel' : 'Connect the live feed first'}
+            className="rounded-md border border-brand-500 px-3 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 disabled:opacity-50"
+          >
+            Test broadcast
+          </button>
+          <span className={connected ? 'badge-low' : 'badge bg-slate-100 text-slate-600'}>
+            ● Live feed {connected ? 'connected' : 'reconnecting…'}
+          </span>
+        </div>
       </div>
+
+      {!connected && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+          <b>Live feed not connected.</b> Common causes — no JWT in <code>sessionStorage.aegis.token</code>,
+          Vite proxy missing <code>ws:true</code>, or the API not reachable on
+          <code> /v1/ws/discovery</code>. Recent events are still shown below via REST polling.
+        </div>
+      )}
 
       {/* Shadow AI Radar — live WebSocket feed */}
       <section className="rounded-lg border bg-white">

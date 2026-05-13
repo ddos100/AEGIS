@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { DiscoveryFeedItem, DiscoveryVectorRow, TopSystem, WSMessage } from '@/types/discovery';
+
+export function useTestBroadcast() {
+  return useMutation({
+    mutationFn: async () =>
+      (await api.post<{ published: boolean; channel: string }>('/discovery/test-broadcast')).data,
+  });
+}
 
 export function useDiscoveryFeed(sinceHours = 24, limit = 50) {
   return useQuery({
@@ -32,6 +39,28 @@ export function useDiscoveryVectors() {
 }
 
 /**
+ * Build the WebSocket URL for the discovery feed.
+ *
+ * Three forms of VITE_API_URL must work:
+ *   1. unset / "/v1"            → connect to same-origin /v1/ws/... (Vite dev proxy)
+ *   2. "http://localhost:8000/v1" → ws://localhost:8000/v1/ws/...
+ *   3. "https://aegis.example.com/v1" → wss://aegis.example.com/v1/ws/...
+ */
+export function buildWsUrl(token: string): string {
+  const raw = (import.meta.env.VITE_API_URL || '/v1') as string;
+  let origin: string;
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    const u = new URL(raw);
+    const proto = u.protocol === 'https:' ? 'wss:' : 'ws:';
+    origin = `${proto}//${u.host}`;
+  } else {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    origin = `${proto}//${location.host}`;
+  }
+  return `${origin}/v1/ws/discovery?token=${encodeURIComponent(token)}`;
+}
+
+/**
  * Subscribe to the live discovery WebSocket feed.
  *
  * Returns the most recent N messages, newest first. Auto-reconnects with
@@ -50,28 +79,37 @@ export function useDiscoveryStream(maxMessages = 50) {
 
     const connect = () => {
       const token = sessionStorage.getItem('aegis.token');
-      if (!token) return;  // not authenticated yet — try again on next mount
-      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      const host = (import.meta.env.VITE_API_URL || '/v1').replace(/^https?:\/\//, '');
-      const url = `${proto}://${host.replace(/\/v1$/, '')}/v1/ws/discovery?token=${encodeURIComponent(token)}`;
-      const ws = new WebSocket(url);
-      ref.current = ws;
-
-      ws.onopen = () => { setConnected(true); backoff = 1000; };
-      ws.onclose = () => {
-        setConnected(false);
-        if (!cancelled) {
-          reconnectTimer = setTimeout(connect, backoff);
-          backoff = Math.min(backoff * 2, 30_000);
-        }
-      };
-      ws.onmessage = (e) => {
-        try {
-          const msg = JSON.parse(e.data) as WSMessage;
-          setMessages((prev) => [msg, ...prev].slice(0, maxMessages));
-        } catch { /* malformed — ignore */ }
-      };
+      if (!token) {
+        // No JWT yet — keep retrying in case login lands later.
+        reconnectTimer = setTimeout(connect, 5_000);
+        return;
+      }
+      const url = buildWsUrl(token);
+      try {
+        const ws = new WebSocket(url);
+        ref.current = ws;
+        ws.onopen    = () => { setConnected(true); backoff = 1000; };
+        ws.onclose   = () => {
+          setConnected(false);
+          if (!cancelled) {
+            reconnectTimer = setTimeout(connect, backoff);
+            backoff = Math.min(backoff * 2, 30_000);
+          }
+        };
+        ws.onerror   = (e) => console.warn('[AEGIS] WS error', e);
+        ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data) as WSMessage;
+            setMessages((prev) => [msg, ...prev].slice(0, maxMessages));
+          } catch { /* malformed — ignore */ }
+        };
+      } catch (err) {
+        console.warn('[AEGIS] WS connect failed', err);
+        reconnectTimer = setTimeout(connect, backoff);
+        backoff = Math.min(backoff * 2, 30_000);
+      }
     };
+
 
     connect();
     return () => {

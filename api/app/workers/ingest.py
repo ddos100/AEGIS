@@ -19,7 +19,6 @@ isolation.
 """
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime
 from typing import Any, Iterable
 from uuid import UUID
@@ -155,9 +154,13 @@ async def _create_shadow_system(
     await session.flush()
     await session.refresh(system)
 
-    # Fire-and-forget broadcast; failures here must NOT roll back the insert.
-    asyncio.create_task(
-        publish_discovery(str(tenant_id), {
+    # Await the broadcast — previously we used asyncio.create_task() which
+    # could be cancelled when the request handler returned before the publish
+    # completed. The cost of awaiting is ~1ms (redis publish over loopback),
+    # and we'd rather pay it than silently lose Shadow AI Radar updates.
+    # Failures here must NOT roll back the DB insert.
+    try:
+        await publish_discovery(str(tenant_id), {
             "type": "new_system",
             "payload": {
                 "id": str(system.id),
@@ -170,5 +173,7 @@ async def _create_shadow_system(
                 "department": sample_ev.department,
             },
         })
-    )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("aegis.discovery.publish_failed", error=str(exc),
+                    tenant_id=str(tenant_id), slug=slug)
     return system.id

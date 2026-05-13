@@ -169,7 +169,6 @@ async def _ingest_normalized(tenant_id, events: list[NormalizedEvent]) -> dict:
     from app.models.ai_usage_event import AIUsageEvent
     from app.core.logging import log
     from app.core.redis import publish_discovery
-    import asyncio
 
     matched = []
     for ev in events:
@@ -217,15 +216,19 @@ async def _ingest_normalized(tenant_id, events: list[NormalizedEvent]) -> dict:
             await session.flush()
             slug_to_system[slug] = system.id
             new_shadow += 1
-            asyncio.create_task(publish_discovery(str(tenant_uuid), {
-                "type": "new_system",
-                "payload": {
-                    "id": str(system.id), "name": system.name, "category": system.category,
-                    "catalogue_slug": slug,
-                    "first_discovered_at": sample_ev.occurred_at.isoformat(),
-                    "vector": "browser_ext",
-                },
-            }))
+            try:
+                await publish_discovery(str(tenant_uuid), {
+                    "type": "new_system",
+                    "payload": {
+                        "id": str(system.id), "name": system.name, "category": system.category,
+                        "catalogue_slug": slug,
+                        "first_discovered_at": sample_ev.occurred_at.isoformat(),
+                        "vector": "browser_ext",
+                    },
+                })
+            except Exception as exc:  # noqa: BLE001
+                log.warning("aegis.discovery.publish_failed", error=str(exc),
+                            tenant_id=str(tenant_uuid), slug=slug)
 
         rows = [{
             "tenant_id": tenant_uuid,
