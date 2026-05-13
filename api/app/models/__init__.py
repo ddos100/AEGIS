@@ -11,6 +11,9 @@ from app.models.department import Department
 from app.models.ai_provider import AIProvider
 from app.models.ai_service import AIService
 from app.models.ai_system import AISystem
+from app.models.ai_usage_event import AIUsageEvent
+from app.models.discovery_vector import DiscoveryVector
+from app.models.extension_device import ExtensionDevice
 from app.models.audit_log import AuditLog
 
 __all__ = [
@@ -21,5 +24,8 @@ __all__ = [
     "AIProvider",
     "AIService",
     "AISystem",
+    "AIUsageEvent",
+    "DiscoveryVector",
+    "ExtensionDevice",
     "AuditLog",
 ]

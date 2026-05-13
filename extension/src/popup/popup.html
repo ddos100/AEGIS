@@ -4,22 +4,34 @@
     <meta charset="UTF-8" />
     <title>AEGIS</title>
     <style>
-      body { font-family: -apple-system, Segoe UI, sans-serif; width: 280px; margin: 0; padding: 14px;
-             background: #f8fafc; color: #1e293b; }
-      h1 { font-size: 14px; margin: 0 0 8px; color: #1F3864; }
-      .row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0;
-             border-bottom: 1px solid #e2e8f0; }
+      body  { font-family: -apple-system, Segoe UI, sans-serif; width: 300px; margin: 0; padding: 14px;
+              background: #f8fafc; color: #1e293b; }
+      h1    { font-size: 14px; margin: 0 0 8px; color: #1F3864; display: flex; align-items: center; }
+      .row  { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0;
+              border-bottom: 1px solid #e2e8f0; }
       .row:last-child { border-bottom: none; }
-      .footer { margin-top: 10px; font-size: 11px; color: #64748b; text-align: center; }
-      .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-             background: #22c55e; margin-right: 6px; }
+      .footer  { margin-top: 10px; font-size: 11px; color: #64748b; text-align: center; }
+      .dot     { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                 background: #22c55e; margin-right: 6px; }
+      .dot.off { background: #f97316; }
+      .actions { margin-top: 8px; }
+      button   { width: 100%; padding: 5px 8px; font-size: 11px; border: 1px solid #cbd5e1;
+                 background: white; border-radius: 4px; cursor: pointer; }
+      button:hover { background: #f1f5f9; }
+      #apiUrl  { font-size: 10px; color: #64748b; max-width: 60%;
+                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
   </head>
   <body>
-    <h1><span class="dot"></span> AEGIS Detector</h1>
+    <h1><span id="dot" class="dot"></span> AEGIS Detector</h1>
+    <div class="row"><span>Enrolled</span><b id="enrolled">…</b></div>
     <div class="row"><span>Queued events</span><b id="buffer">…</b></div>
     <div class="row"><span>Catalogue domains</span><b id="domains">…</b></div>
-    <div class="row"><span>Catalogue extensions</span><b id="extensions">…</b></div>
+    <div class="row"><span>AI extensions tracked</span><b id="extensions">…</b></div>
+    <div class="row"><span>API</span><b id="apiUrl">…</b></div>
+    <div class="actions">
+      <button id="optionsBtn">Open Options</button>
+    </div>
     <div class="footer">Securisti Consulting LLP</div>
     <script src="popup.js"></script>
   </body>

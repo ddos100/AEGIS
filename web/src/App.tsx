@@ -6,6 +6,7 @@ import RegistryListPage from '@/pages/registry/RegistryListPage';
 import RegistryDetailPage from '@/pages/registry/RegistryDetailPage';
 import RegistryEditPage from '@/pages/registry/RegistryEditPage';
 import CatalogueBrowsePage from '@/pages/catalogue/CatalogueBrowsePage';
+import DiscoveryPage from '@/pages/discovery/DiscoveryPage';
 
 function Sidebar() {
   const link = (to: string, label: string, end = false) =>
@@ -35,7 +36,7 @@ function Sidebar() {
         {link('/compliance', 'Compliance')}
         {link('/settings', 'Settings')}
       </nav>
-      <div className="mt-auto text-xs text-slate-400">v0.1.0 · Phase 1</div>
+      <div className="mt-auto text-xs text-slate-400">v0.2.0 · Phase 2</div>
     </aside>
   );
 }
@@ -117,7 +118,7 @@ export default function App() {
             <Route path="/registry/:id" element={<RegistryDetailPage />} />
             <Route path="/registry/:id/edit" element={<RegistryEditPage />} />
             <Route path="/catalogue" element={<CatalogueBrowsePage />} />
-            <Route path="/discovery" element={<Placeholder title="Discovery" phase="Phase 2" />} />
+            <Route path="/discovery" element={<DiscoveryPage />} />
             <Route path="/risk" element={<Placeholder title="Risk Assessment" phase="Phase 4" />} />
             <Route path="/policy" element={<Placeholder title="Policy Engine" phase="Phase 4" />} />
             <Route path="/compliance" element={<Placeholder title="Compliance" phase="Phase 5" />} />

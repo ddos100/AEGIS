@@ -7,7 +7,7 @@ desktop agents, cloud AI services, embedded SaaS AI features, and code-level AI
 SDK usage — classifies them by risk, enforces acceptable-use policies, and maps
 compliance to ISO 42001, EU AI Act, NIST AI RMF, DPDPA, RBI, IRDAI, and SEBI.
 
-> **Status:** Phase 1 — AI Service Catalogue + Registry CRUD (May 2026).
+> **Status:** Phase 2 — Discovery Engine: network telemetry + browser extension live (May 2026).
 
 ## Prerequisites
 
@@ -107,7 +107,26 @@ docker compose exec api ruff check .       # Lint
 cd web && npm install && npm run typecheck # Web type-check (one-time install)
 ```
 
-### 8. Validate the AI service catalogue (schema-only, no DB writes)
+### 8. Send a sample log batch (Phase 2 sanity check)
+
+```bash
+# Replace TENANT_ID with the UUID from your tenants table and INGEST_KEY with api/.env
+curl -sX POST http://localhost:8000/v1/ingest/network \
+  -H "Content-Type: application/json" \
+  -H "X-Ingest-Key: ${INGEST_KEY:-dev-ingest-key-change-me}" \
+  -d '{
+    "source": "zscaler_nss",
+    "tenant_id": "'$TENANT_ID'",
+    "events": [
+      {"user":"alice@example.com","department":"Eng","url":"https://chat.openai.com/v1/chat/completions","cip":"10.0.1.5","time":1715600000,"reqsize":1234,"respsize":4567}
+    ]
+  }'
+# → {"accepted":1,"queued":false,"matched":1,"shadow_new":1}
+```
+
+The new shadow AI system is now visible at `/registry` and `/discovery` in the web app.
+
+### 9. Validate the AI service catalogue (schema-only, no DB writes)
 
 ```bash
 cd catalogue
