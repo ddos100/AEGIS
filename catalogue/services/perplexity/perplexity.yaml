@@ -1,0 +1,25 @@
+id: perplexity
+name: Perplexity AI
+provider_slug: perplexity
+category: search
+subcategory: ai_search
+description: AI-powered answer engine combining LLMs with real-time web search.
+website: https://www.perplexity.ai
+api_endpoint_patterns:
+  - api.perplexity.ai
+browser_domains:
+  - www.perplexity.ai
+  - perplexity.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization]
+input_data_types: [text]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 58
+tags: [search, ai_assistant, web_aware]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

@@ -1,0 +1,23 @@
+id: codeium
+name: Codeium
+provider_slug: codeium
+category: code
+subcategory: code_completion
+description: Free AI code completion + chat for major IDEs.
+website: https://codeium.com
+api_endpoint_patterns:
+  - server.codeium.com
+  - inference.codeium.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [code_generation, text_generation]
+input_data_types: [text, code]
+output_data_types: [code, text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 60
+tags: [code_ai, ide_extension, freemium]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

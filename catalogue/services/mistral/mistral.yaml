@@ -1,0 +1,23 @@
+id: mistral
+name: Mistral
+provider_slug: mistral
+category: llm
+description: Mistral AI's frontier and open-weight LLMs (EU-based provider).
+website: https://mistral.ai
+api_endpoint_patterns:
+  - api.mistral.ai
+browser_domains:
+  - chat.mistral.ai
+hq_country: FR
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, function_calling, embedding]
+input_data_types: [text, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: high
+  provider_trust_score: 65
+tags: [llm, mistral, eu_provider, open_weights]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

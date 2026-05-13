@@ -1,7 +1,7 @@
 # AEGIS — developer convenience targets.
 # Cross-platform (Make + bash). On Windows use Git Bash, WSL, or Cygwin.
 
-.PHONY: help up down logs api-shell migrate makemigration test lint fmt typecheck catalogue-validate clean
+.PHONY: help up down logs api-shell migrate makemigration test lint fmt typecheck catalogue-validate catalogue-import clean
 
 help:        ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -44,6 +44,9 @@ typecheck:   ## Type-check API and Web
 
 catalogue-validate: ## Validate every catalogue YAML against schema
 	cd catalogue && python -m scripts.validate
+
+catalogue-import: ## Validate + upsert every catalogue YAML into ai_services / ai_providers
+	docker compose exec api python /workspace/catalogue/scripts/importer.py -v
 
 clean:       ## Remove caches and build artefacts
 	find . -type d -name __pycache__ -exec rm -rf {} +

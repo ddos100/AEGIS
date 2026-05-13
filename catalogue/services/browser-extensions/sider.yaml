@@ -1,0 +1,22 @@
+id: sider
+name: Sider AI
+provider_slug: sider
+category: browser_extension
+subcategory: writing_assistant
+description: ChatGPT-style sidebar extension across browser tabs — reads visible page content.
+website: https://sider.ai
+browser_domains:
+  - sider.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization]
+input_data_types: [text]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 45
+tags: [browser_extension, sidebar, dlp_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

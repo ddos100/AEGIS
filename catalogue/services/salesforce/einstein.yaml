@@ -1,0 +1,23 @@
+id: salesforce-einstein
+name: Salesforce Einstein
+provider_slug: salesforce
+category: llm
+subcategory: embedded_saas_ai
+description: AI layer across Salesforce clouds — predictions, recommendations, generative content for CRM.
+website: https://www.salesforce.com/einstein
+api_endpoint_patterns:
+  - api.salesforce.com
+  - my.salesforce.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: high_risk
+capabilities: [text_generation, classification, recommendation, decision_making]
+input_data_types: [text, structured_json]
+output_data_types: [text, structured_json, decision]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 85
+tags: [embedded_saas, crm, salesforce]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

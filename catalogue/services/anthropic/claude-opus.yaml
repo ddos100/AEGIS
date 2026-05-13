@@ -1,0 +1,25 @@
+id: anthropic-claude-opus
+name: Claude Opus
+provider_slug: anthropic
+version: "claude-opus-4-7"
+category: llm
+subcategory: frontier_llm
+description: Anthropic's most capable frontier model — complex reasoning and long-context analysis.
+website: https://www.anthropic.com/claude/opus
+api_endpoint_patterns:
+  - api.anthropic.com/v1/messages
+browser_domains:
+  - claude.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, vision, function_calling, decision_making, summarization]
+input_data_types: [text, image, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: critical
+  capability_level: high
+  provider_trust_score: 82
+tags: [llm, frontier, anthropic, constitutional_ai]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

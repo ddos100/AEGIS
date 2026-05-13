@@ -1,0 +1,23 @@
+id: atlassian-rovo
+name: Atlassian Rovo
+provider_slug: atlassian
+category: llm
+subcategory: embedded_saas_ai
+description: Atlassian's AI assistant for Jira, Confluence — generative answers and agent workflows.
+website: https://www.atlassian.com/software/rovo
+api_endpoint_patterns:
+  - api.atlassian.com
+  - .atlassian.net/gateway/api
+hq_country: AU
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization, function_calling]
+input_data_types: [text, file]
+output_data_types: [text, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 75
+tags: [embedded_saas, collaboration, atlassian]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

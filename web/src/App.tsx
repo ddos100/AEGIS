@@ -1,11 +1,17 @@
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useRegistryStats } from '@/hooks/useRegistry';
+import RegistryListPage from '@/pages/registry/RegistryListPage';
+import RegistryDetailPage from '@/pages/registry/RegistryDetailPage';
+import RegistryEditPage from '@/pages/registry/RegistryEditPage';
+import CatalogueBrowsePage from '@/pages/catalogue/CatalogueBrowsePage';
 
 function Sidebar() {
-  const link = (to: string, label: string) =>
+  const link = (to: string, label: string, end = false) =>
     <NavLink
       to={to}
+      end={end}
       className={({ isActive }) =>
         `block rounded-md px-3 py-2 text-sm font-medium ${
           isActive ? 'bg-brand-600 text-white' : 'text-slate-700 hover:bg-slate-200'
@@ -20,15 +26,16 @@ function Sidebar() {
         <div className="font-bold tracking-tight text-brand-700">AEGIS</div>
       </div>
       <nav className="flex flex-col gap-1">
-        {link('/', 'Overview')}
+        {link('/', 'Overview', true)}
         {link('/registry', 'AI Registry')}
+        {link('/catalogue', 'Catalogue')}
         {link('/discovery', 'Discovery')}
         {link('/risk', 'Risk')}
         {link('/policy', 'Policies')}
         {link('/compliance', 'Compliance')}
         {link('/settings', 'Settings')}
       </nav>
-      <div className="mt-auto text-xs text-slate-400">v0.1.0 · Phase 0</div>
+      <div className="mt-auto text-xs text-slate-400">v0.1.0 · Phase 1</div>
     </aside>
   );
 }
@@ -45,28 +52,41 @@ function HealthBadge() {
   return <span className={ok ? 'badge-low' : 'badge-medium'}>API: {data?.status}</span>;
 }
 
+function StatCard({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
+  return (
+    <div className="rounded-lg border bg-white p-4">
+      <div className="text-sm text-slate-500">{label}</div>
+      <div className="mt-1 text-3xl font-bold">{value}</div>
+      {hint && <div className="mt-1 text-xs text-slate-400">{hint}</div>}
+    </div>
+  );
+}
+
 function Overview() {
+  const { data: stats } = useRegistryStats();
+  const critical = stats?.by_risk_level?.critical ?? 0;
+  const high = stats?.by_risk_level?.high ?? 0;
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-brand-700">Overview</h1>
-      <p className="text-slate-600 max-w-2xl">
-        Welcome to AEGIS — your AI Security Posture Management platform.
-        This is the Phase 0 scaffold; the Discovery Engine, Registry, Risk and Policy modules
-        will light up in subsequent phases.
+      <p className="max-w-2xl text-slate-600">
+        AEGIS — your AI Security Posture Management platform. Phase 1 ships the AI System
+        Registry and Service Catalogue. Discovery, risk scoring, and policy enforcement
+        light up in subsequent phases.
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: 'AI systems', value: '—', hint: 'Phase 1' },
-          { label: 'Shadow AI detected', value: '—', hint: 'Phase 2' },
-          { label: 'Critical-risk systems', value: '—', hint: 'Phase 4' },
-        ].map((c) => (
-          <div key={c.label} className="rounded-lg border bg-white p-4">
-            <div className="text-sm text-slate-500">{c.label}</div>
-            <div className="mt-1 text-3xl font-bold">{c.value}</div>
-            <div className="mt-1 text-xs text-slate-400">{c.hint}</div>
-          </div>
-        ))}
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <StatCard label="AI systems"          value={stats?.total ?? '—'}            hint="Registry total" />
+        <StatCard label="Shadow AI detected"  value={stats?.shadow_count ?? '—'}     hint="Auto-flagged, awaiting review" />
+        <StatCard label="Critical + High"     value={`${critical + high}`}           hint={`${critical} critical · ${high} high`} />
+        <StatCard label="Avg completeness"    value={stats ? `${stats.completeness_avg.toFixed(0)}%` : '—'} hint="ISO 42001 metadata coverage" />
       </div>
+
+      {stats && stats.aisia_pending_count > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <span className="font-semibold">{stats.aisia_pending_count}</span> system(s) need an AISIA — Phase 4 will trigger these automatically.
+        </div>
+      )}
     </div>
   );
 }
@@ -92,7 +112,11 @@ export default function App() {
         <div className="p-8">
           <Routes>
             <Route path="/" element={<Overview />} />
-            <Route path="/registry" element={<Placeholder title="AI System Registry" phase="Phase 1" />} />
+            <Route path="/registry" element={<RegistryListPage />} />
+            <Route path="/registry/new" element={<RegistryEditPage />} />
+            <Route path="/registry/:id" element={<RegistryDetailPage />} />
+            <Route path="/registry/:id/edit" element={<RegistryEditPage />} />
+            <Route path="/catalogue" element={<CatalogueBrowsePage />} />
             <Route path="/discovery" element={<Placeholder title="Discovery" phase="Phase 2" />} />
             <Route path="/risk" element={<Placeholder title="Risk Assessment" phase="Phase 4" />} />
             <Route path="/policy" element={<Placeholder title="Policy Engine" phase="Phase 4" />} />

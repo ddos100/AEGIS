@@ -1,0 +1,27 @@
+id: github-copilot
+name: GitHub Copilot
+provider_slug: github
+category: code
+subcategory: code_completion
+description: AI pair programmer integrated in IDEs — sends source code context to OpenAI Codex / GPT-4o.
+website: https://github.com/features/copilot
+api_endpoint_patterns:
+  - api.githubcopilot.com
+  - copilot-proxy.githubusercontent.com
+  - github.com/login/oauth
+browser_domains:
+  - github.com
+entra_app_ids: []
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [code_generation, text_generation]
+input_data_types: [text, code]
+output_data_types: [code, text]
+default_risk_indicators:
+  data_sensitivity_hint: critical
+  capability_level: high
+  provider_trust_score: 85
+tags: [code_ai, ide_extension, microsoft, ip_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

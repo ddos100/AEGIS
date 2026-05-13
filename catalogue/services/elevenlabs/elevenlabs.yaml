@@ -1,0 +1,23 @@
+id: elevenlabs
+name: ElevenLabs
+provider_slug: elevenlabs
+category: speech
+description: AI text-to-speech and voice cloning.
+website: https://elevenlabs.io
+api_endpoint_patterns:
+  - api.elevenlabs.io
+browser_domains:
+  - elevenlabs.io
+hq_country: GB
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_to_speech]
+input_data_types: [text, audio]
+output_data_types: [audio]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 55
+tags: [speech, voice_cloning, generative]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

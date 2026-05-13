@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.logging import configure_logging, log
-from app.routes import health, me
+from app.routes import catalogue, health, me, registry
 
 
 @asynccontextmanager
@@ -42,6 +42,8 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router, prefix=settings.api_v1_prefix)
     app.include_router(me.router, prefix=settings.api_v1_prefix)
+    app.include_router(catalogue.router, prefix=settings.api_v1_prefix)
+    app.include_router(registry.router, prefix=settings.api_v1_prefix)
     return app
 
 

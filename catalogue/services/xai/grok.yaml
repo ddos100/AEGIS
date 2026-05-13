@@ -1,0 +1,24 @@
+id: xai-grok
+name: Grok (xAI)
+provider_slug: xai
+category: llm
+description: xAI's flagship conversational LLM, accessible via X and direct API.
+website: https://x.ai
+api_endpoint_patterns:
+  - api.x.ai
+browser_domains:
+  - grok.com
+  - x.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, vision, function_calling, summarization]
+input_data_types: [text, image]
+output_data_types: [text, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 50
+tags: [llm, xai, social_data_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

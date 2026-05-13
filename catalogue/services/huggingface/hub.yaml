@@ -1,0 +1,25 @@
+id: huggingface-hub
+name: Hugging Face Hub
+provider_slug: huggingface
+category: other
+subcategory: model_marketplace
+description: Model + dataset hub and hosted inference endpoints.
+website: https://huggingface.co
+api_endpoint_patterns:
+  - api-inference.huggingface.co
+  - huggingface.co/api
+browser_domains:
+  - huggingface.co
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, embedding, image_generation, classification, code_generation]
+input_data_types: [text, image, audio, file]
+output_data_types: [text, image, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: high
+  provider_trust_score: 65
+tags: [model_hub, inference, open_source]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

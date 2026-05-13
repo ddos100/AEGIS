@@ -9,6 +9,17 @@ from app.models.tenant import Tenant
 from app.models.user import User
 from app.models.department import Department
 from app.models.ai_provider import AIProvider
+from app.models.ai_service import AIService
+from app.models.ai_system import AISystem
 from app.models.audit_log import AuditLog
 
-__all__ = ["Base", "Tenant", "User", "Department", "AIProvider", "AuditLog"]
+__all__ = [
+    "Base",
+    "Tenant",
+    "User",
+    "Department",
+    "AIProvider",
+    "AIService",
+    "AISystem",
+    "AuditLog",
+]

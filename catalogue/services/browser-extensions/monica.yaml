@@ -1,0 +1,22 @@
+id: monica
+name: Monica AI
+provider_slug: monica
+category: browser_extension
+subcategory: writing_assistant
+description: All-in-one AI browser sidebar — captures page content and selections for inline AI tasks.
+website: https://monica.im
+browser_domains:
+  - monica.im
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization, browser_automation]
+input_data_types: [text, image]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 45
+tags: [browser_extension, sidebar, dlp_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

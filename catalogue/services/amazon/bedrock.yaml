@@ -1,0 +1,25 @@
+id: amazon-bedrock
+name: Amazon Bedrock
+provider_slug: amazon
+category: llm
+subcategory: cloud_inference
+description: AWS-managed inference for foundation models from Anthropic, Meta, Mistral, Amazon, and others.
+website: https://aws.amazon.com/bedrock
+api_endpoint_patterns:
+  - bedrock-runtime.us-east-1.amazonaws.com
+  - bedrock-runtime.us-west-2.amazonaws.com
+  - bedrock-runtime.ap-south-1.amazonaws.com
+  - bedrock-runtime.eu-west-1.amazonaws.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, embedding, code_generation, vision]
+input_data_types: [text, image, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 85
+tags: [llm, cloud, aws, hyperscaler]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

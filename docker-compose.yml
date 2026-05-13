@@ -71,6 +71,8 @@ services:
     ports: ["8000:8000"]
     volumes:
       - ./api:/app
+      # Mount catalogue so the importer (python -m catalogue.scripts.importer) can run from /workspace.
+      - ./catalogue:/workspace/catalogue
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }

@@ -7,7 +7,7 @@ desktop agents, cloud AI services, embedded SaaS AI features, and code-level AI
 SDK usage — classifies them by risk, enforces acceptable-use policies, and maps
 compliance to ISO 42001, EU AI Act, NIST AI RMF, DPDPA, RBI, IRDAI, and SEBI.
 
-> **Status:** Phase 0 — Foundation (scaffolded May 2026).
+> **Status:** Phase 1 — AI Service Catalogue + Registry CRUD (May 2026).
 
 ## Prerequisites
 
@@ -76,7 +76,20 @@ docker compose exec api alembic upgrade head
 
 You should see `Running upgrade  -> 001_initial`. This creates `tenants`, `users`, `departments`, `ai_providers`, the append-only `audit_log`, all RLS policies, and the `updated_at` triggers.
 
-### 5. Verify the install
+### 5. Seed the AI Service Catalogue
+
+The 29 reference YAML services in `catalogue/services/` are imported into the
+`ai_services` and `ai_providers` tables on demand:
+
+```bash
+make catalogue-import
+# or:
+docker compose exec api python /workspace/catalogue/scripts/importer.py -v
+```
+
+The importer is idempotent — re-running upserts rows by `catalogue_id`.
+
+### 6. Verify the install
 
 | Check | Command / URL | Expected |
 |-------|---------------|----------|
@@ -86,7 +99,7 @@ You should see `Running upgrade  -> 001_initial`. This creates `tenants`, `users
 | Keycloak admin | http://localhost:8080 (admin / admin) | Admin console loads; `aegis` realm visible |
 | Celery beat | `docker compose logs beat` | `heartbeat` task firing every minute |
 
-### 6. Run the tests
+### 7. Run the tests
 
 ```bash
 docker compose exec api pytest -q          # API tests
@@ -94,7 +107,7 @@ docker compose exec api ruff check .       # Lint
 cd web && npm install && npm run typecheck # Web type-check (one-time install)
 ```
 
-### 7. Validate the AI service catalogue
+### 8. Validate the AI service catalogue (schema-only, no DB writes)
 
 ```bash
 cd catalogue

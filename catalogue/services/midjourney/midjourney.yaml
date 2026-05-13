@@ -1,0 +1,24 @@
+id: midjourney
+name: Midjourney
+provider_slug: midjourney
+category: image_gen
+description: Discord-and-web text-to-image generation service.
+website: https://www.midjourney.com
+api_endpoint_patterns:
+  - www.midjourney.com/api
+browser_domains:
+  - www.midjourney.com
+  - midjourney.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [image_generation]
+input_data_types: [text, image]
+output_data_types: [image]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: high
+  provider_trust_score: 50
+tags: [image_gen, generative, midjourney]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

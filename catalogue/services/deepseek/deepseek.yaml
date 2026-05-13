@@ -1,0 +1,23 @@
+id: deepseek
+name: DeepSeek
+provider_slug: deepseek
+category: llm
+description: Chinese-origin LLM provider — open-weight reasoning models. Subject to cross-border DPDPA scrutiny.
+website: https://www.deepseek.com
+api_endpoint_patterns:
+  - api.deepseek.com
+browser_domains:
+  - chat.deepseek.com
+hq_country: CN
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, function_calling]
+input_data_types: [text, file]
+output_data_types: [text, code]
+default_risk_indicators:
+  data_sensitivity_hint: critical
+  capability_level: high
+  provider_trust_score: 40
+tags: [llm, deepseek, china_provider, jurisdiction_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

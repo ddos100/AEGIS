@@ -1,0 +1,23 @@
+id: cohere-command
+name: Cohere Command
+provider_slug: cohere
+category: llm
+subcategory: enterprise_llm
+description: Cohere's enterprise-focused LLM family — text generation, RAG, and embeddings.
+website: https://cohere.com
+api_endpoint_patterns:
+  - api.cohere.ai
+  - api.cohere.com
+hq_country: CA
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, embedding, summarization, function_calling]
+input_data_types: [text, file]
+output_data_types: [text, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 65
+tags: [llm, enterprise, cohere, rag]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

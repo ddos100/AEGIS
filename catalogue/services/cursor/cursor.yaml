@@ -1,0 +1,24 @@
+id: cursor
+name: Cursor
+provider_slug: cursor
+category: code
+subcategory: ai_ide
+description: AI-first IDE — forks VS Code and routes file context to OpenAI / Anthropic models.
+website: https://cursor.com
+api_endpoint_patterns:
+  - api2.cursor.sh
+  - api.cursor.sh
+  - api.cursor.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [code_generation, text_generation, summarization]
+input_data_types: [text, code, file]
+output_data_types: [code, text]
+default_risk_indicators:
+  data_sensitivity_hint: critical
+  capability_level: high
+  provider_trust_score: 60
+tags: [code_ai, ide, ip_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"

@@ -1,0 +1,21 @@
+id: stability-stable-diffusion
+name: Stable Diffusion (Stability AI)
+provider_slug: stability
+category: image_gen
+description: Open-weight diffusion models for text-to-image generation, hosted by Stability AI.
+website: https://stability.ai
+api_endpoint_patterns:
+  - api.stability.ai
+hq_country: GB
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [image_generation]
+input_data_types: [text, image]
+output_data_types: [image]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 55
+tags: [image_gen, generative, open_weights]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-13"
