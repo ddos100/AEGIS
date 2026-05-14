@@ -46,11 +46,21 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
     container_name: aegis-keycloak
+    # --import-realm reimports any JSON under /opt/keycloak/data/import on
+    # cold start. Force a re-import with: docker compose up -d --force-recreate keycloak
     command: ["start-dev", "--import-realm"]
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: "true"
+      # Pin the public hostname so the `iss` claim in issued tokens is stable
+      # regardless of whether the caller reaches Keycloak via localhost:8080
+      # (browser) or keycloak:8080 (api container). Both Bash and the API
+      # then validate against the same issuer URL.
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
     ports: ["8080:8080"]
     volumes:
       - ./infra/docker/keycloak-realm:/opt/keycloak/data/import:ro
@@ -68,6 +78,7 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/2
       KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_PUBLIC_URL: http://localhost:8080
     ports: ["8000:8000"]
     volumes:
       - ./api:/app

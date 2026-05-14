@@ -33,12 +33,19 @@ class Settings(BaseSettings):
     celery_result_backend: RedisDsn = Field(default="redis://redis:6379/2")
 
     # --- Auth (Keycloak) ---
-    keycloak_url: str = "http://keycloak:8080"
-    keycloak_realm: str = "aegis"
+    # Keycloak has two URLs that look identical but mean different things:
+    #   internal — what the API uses to fetch JWKS over the docker network.
+    #   public   — what appears in `iss` of tokens issued to browsers.
+    # In dev, set KC_HOSTNAME=localhost on the Keycloak service so the public
+    # URL stays stable whether the caller is the browser, curl on the host,
+    # or another container.
+    keycloak_url:        str = "http://keycloak:8080"   # internal — for JWKS
+    keycloak_public_url: str = "http://localhost:8080"  # public — for issuer
+    keycloak_realm:     str = "aegis"
     keycloak_client_id: str = "aegis-api"
-    keycloak_audience: str = "aegis-api"
-    keycloak_jwks_url: str | None = None  # auto-computed if None
-    jwt_algorithm: str = "RS256"
+    keycloak_audience:  str = "aegis-api"
+    keycloak_jwks_url:  str | None = None
+    jwt_algorithm:      str = "RS256"
     jwt_leeway_seconds: int = 30
 
     # --- Ingest API key (shared key for log ingestion endpoints) ---
@@ -68,7 +75,8 @@ class Settings(BaseSettings):
 
     @property
     def jwt_issuer(self) -> str:
-        return f"{self.keycloak_url}/realms/{self.keycloak_realm}"
+        """Public issuer URL — must match what Keycloak embeds in tokens."""
+        return f"{self.keycloak_public_url}/realms/{self.keycloak_realm}"
 
 
 @lru_cache(maxsize=1)
