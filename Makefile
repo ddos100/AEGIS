@@ -1,7 +1,7 @@
 # AEGIS — developer convenience targets.
 # Cross-platform (Make + bash). On Windows use Git Bash, WSL, or Cygwin.
 
-.PHONY: help up down logs api-shell migrate makemigration test lint fmt typecheck catalogue-validate catalogue-import dev-login clean
+.PHONY: help up down logs api-shell migrate makemigration test lint fmt typecheck catalogue-validate catalogue-import dev-login seed-dev-tenant clean
 
 help:        ## Show this help
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -50,6 +50,9 @@ catalogue-import: ## Validate + upsert every catalogue YAML into ai_services / a
 
 dev-login: ## Fetch a JWT from the dev Keycloak realm and print the browser snippet
 	@bash infra/scripts/dev-login.sh
+
+seed-dev-tenant: ## Insert the default dev tenant (matches the JWT tenant_id claim)
+	@bash infra/scripts/seed-dev-tenant.sh
 
 clean:       ## Remove caches and build artefacts
 	find . -type d -name __pycache__ -exec rm -rf {} +

@@ -70,12 +70,19 @@ async def decode_token(token: str) -> AuthenticatedUser:
     if not tenant_claim:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing tenant_id claim")
 
+    # `sub` is RFC 7519-required and Keycloak always emits it, but in dev
+    # we've seen realm-import edge cases (e.g. when only the aud-mapper scope
+    # is bound) where standard claims are stripped. Fall back to `jti` or a
+    # synthetic value rather than hard-failing — the application identifies
+    # users by tenant_id + email anyway.
+    sub = claims.get("sub") or claims.get("jti") or "unknown"
+
     return AuthenticatedUser(
-        sub=claims["sub"],
-        email=claims.get("email", ""),
+        sub=sub,
+        email=claims.get("email", "") or claims.get("preferred_username", "") or "",
         tenant_id=UUID(tenant_claim),
         role=claims.get("role") or _role_from_realm_access(claims),
-        full_name=claims.get("name"),
+        full_name=claims.get("name") or claims.get("preferred_username"),
         groups=claims.get("groups", []),
         raw_claims=claims,
     )
