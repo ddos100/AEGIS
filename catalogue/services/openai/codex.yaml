@@ -1,0 +1,22 @@
+id: openai-codex-cli
+name: OpenAI Codex CLI
+provider_slug: openai
+category: code
+subcategory: agent_cli
+description: OpenAI's command-line coding agent that reads + edits source files locally.
+website: https://github.com/openai/codex
+api_endpoint_patterns:
+  - api.openai.com/v1/responses
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [code_generation, autonomous_agent, function_calling]
+input_data_types: [text, code, file]
+output_data_types: [code, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: critical
+  capability_level: high
+  provider_trust_score: 72
+tags: [code_ai, cli, autonomous, ip_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

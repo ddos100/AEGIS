@@ -1,0 +1,25 @@
+AEGIS {{ .Chart.AppVersion }} installed in namespace {{ .Release.Namespace }}.
+
+Get the URL:
+{{- if .Values.ingress.enabled }}
+  https://{{ (index .Values.ingress.hosts 0).host }}
+{{- else }}
+  kubectl port-forward svc/{{ include "aegis.fullname" . }}-api 8000:{{ .Values.api.service.port }} -n {{ .Release.Namespace }}
+{{- end }}
+
+Run migrations (also runs as a pre-install hook):
+  kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "aegis.fullname" . }}-api -- alembic upgrade head
+
+Seed the catalogue + frameworks (one-time per cluster):
+  kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "aegis.fullname" . }}-api -- \
+    python /workspace/catalogue/scripts/importer.py -v
+  kubectl exec -n {{ .Release.Namespace }} deploy/{{ include "aegis.fullname" . }}-api -- \
+    python /workspace/catalogue/scripts/import_frameworks.py -v
+
+Required secrets in this namespace BEFORE install:
+  - {{ .Values.secrets.database }}     (DATABASE_URL, DATABASE_URL_SYNC, REDIS_URL, CELERY_*)
+  - {{ .Values.secrets.ingest }}       (INGEST_API_KEY)
+  - {{ .Values.secrets.fernet }}       (FERNET_KEY)
+{{- if .Values.secrets.anthropic }}
+  - {{ .Values.secrets.anthropic }}    (ANTHROPIC_API_KEY — optional, enables Claude narratives)
+{{- end }}

@@ -1,0 +1,18 @@
+apiVersion: v2
+name: aegis
+description: AEGIS — AI Enterprise Governance & Inventory System (Securisti Consulting LLP)
+type: application
+version: 0.5.0          # chart version
+appVersion: "0.5.0"     # app version (matches sidebar badge)
+home: https://github.com/ddos100/AEGIS
+maintainers:
+  - name: Securisti Consulting LLP
+    email: aegis@securisti.com
+sources:
+  - https://github.com/ddos100/AEGIS
+keywords:
+  - aegis
+  - ai-spm
+  - ai-governance
+  - shadow-ai
+  - iso-42001

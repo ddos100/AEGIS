@@ -1,0 +1,21 @@
+id: meta-llama-api
+name: Meta Llama API
+provider_slug: meta
+category: llm
+description: Meta's hosted Llama model family (Llama 3+, Llama 4).
+website: https://llama.meta.com
+api_endpoint_patterns:
+  - api.llama-api.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, vision]
+input_data_types: [text, image]
+output_data_types: [text, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 65
+tags: [llm, meta, open_weights]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

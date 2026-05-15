@@ -1,0 +1,35 @@
+{{- /*
+Helm hook: run `alembic upgrade head` on chart install + upgrade.
+Runs to completion before any deployment goes live so the API never starts
+against an out-of-date schema.
+*/ -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aegis.fullname" . }}-migrate-{{ .Release.Revision }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: alembic
+          image: {{ include "aegis.apiImage" . }}
+          command: ["alembic", "upgrade", "head"]
+          envFrom:
+            {{- include "aegis.envFromSecrets" . | nindent 12 }}

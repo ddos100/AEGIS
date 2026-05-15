@@ -1,0 +1,35 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                {{- if eq .backend "api" }}
+                name: {{ include "aegis.fullname" $ }}-api
+                port: { number: {{ $.Values.api.service.port }} }
+                {{- else if eq .backend "web" }}
+                name: {{ include "aegis.fullname" $ }}-web
+                port: { number: {{ $.Values.web.service.port }} }
+                {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}

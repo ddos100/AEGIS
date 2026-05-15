@@ -1,0 +1,22 @@
+id: luma-dream-machine
+name: Luma Dream Machine
+provider_slug: luma
+category: video_gen
+description: Luma AI's text-to-video generation product.
+website: https://lumalabs.ai
+browser_domains:
+  - lumalabs.ai
+  - dream.lumalabs.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [video_generation]
+input_data_types: [text, image]
+output_data_types: [video]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: high
+  provider_trust_score: 50
+tags: [video_gen, generative]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

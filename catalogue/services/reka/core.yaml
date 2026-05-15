@@ -1,0 +1,21 @@
+id: reka-core
+name: Reka Core
+provider_slug: reka
+category: llm
+description: Multimodal LLM family from Reka AI (Singapore-based).
+website: https://www.reka.ai
+api_endpoint_patterns:
+  - api.reka.ai
+hq_country: SG
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, vision, code_generation, function_calling]
+input_data_types: [text, image, video, file]
+output_data_types: [text, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 55
+tags: [llm, multimodal, asia_provider]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

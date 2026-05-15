@@ -1,0 +1,28 @@
+id: openai-platform
+name: OpenAI Platform (API)
+provider_slug: openai
+category: llm
+subcategory: api_platform
+description: OpenAI Platform — direct API access for code generation, fine-tuning, batch, files.
+website: https://platform.openai.com
+api_endpoint_patterns:
+  - api.openai.com/v1/completions
+  - api.openai.com/v1/embeddings
+  - api.openai.com/v1/fine_tuning
+  - api.openai.com/v1/batches
+  - api.openai.com/v1/files
+  - api.openai.com/v1/threads
+  - api.openai.com/v1/responses
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, embedding, function_calling]
+input_data_types: [text, image, file, code]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: critical
+  capability_level: high
+  provider_trust_score: 72
+tags: [api_platform, openai, code_ai]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

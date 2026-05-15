@@ -1,0 +1,21 @@
+id: ai21-jamba
+name: AI21 Jamba
+provider_slug: ai21
+category: llm
+description: AI21 Labs' Jamba family — hybrid SSM/transformer LLMs.
+website: https://www.ai21.com
+api_endpoint_patterns:
+  - api.ai21.com
+hq_country: IL
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, summarization]
+input_data_types: [text, file]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 60
+tags: [llm, ai21]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

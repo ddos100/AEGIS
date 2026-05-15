@@ -1,0 +1,23 @@
+id: google-vertex-ai
+name: Google Vertex AI
+provider_slug: google
+category: llm
+subcategory: cloud_inference
+description: Google Cloud managed inference + training for Gemini, PaLM, third-party + custom models.
+website: https://cloud.google.com/vertex-ai
+api_endpoint_patterns:
+  - aiplatform.googleapis.com
+  - generativelanguage.googleapis.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, vision, embedding, function_calling]
+input_data_types: [text, image, file]
+output_data_types: [text, code, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 82
+tags: [llm, gcp, cloud, hyperscaler]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

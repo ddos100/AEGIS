@@ -1,0 +1,24 @@
+id: groq
+name: Groq
+provider_slug: groq
+category: llm
+subcategory: inference
+description: Ultra-low-latency LLM inference on LPU hardware (Llama, Mixtral, Gemma).
+website: https://groq.com
+api_endpoint_patterns:
+  - api.groq.com
+browser_domains:
+  - groq.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, function_calling]
+input_data_types: [text]
+output_data_types: [text, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 58
+tags: [llm, inference, low_latency]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

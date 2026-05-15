@@ -1,0 +1,23 @@
+id: character-ai
+name: Character AI
+provider_slug: character
+category: llm
+subcategory: consumer_chatbot
+description: User-created persona chatbots — frequently used by employees for off-task conversations.
+website: https://character.ai
+browser_domains:
+  - character.ai
+  - beta.character.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation]
+input_data_types: [text]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 35
+tags: [llm, consumer, dlp_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

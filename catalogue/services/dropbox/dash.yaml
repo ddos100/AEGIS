@@ -1,0 +1,24 @@
+id: dropbox-dash
+name: Dropbox Dash
+provider_slug: dropbox
+category: search
+subcategory: embedded_saas_ai
+description: AI-powered universal search across SaaS apps + Dropbox content.
+website: https://www.dropbox.com/dash
+api_endpoint_patterns:
+  - api.dropbox.com
+browser_domains:
+  - dash.dropbox.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization, classification]
+input_data_types: [text, file]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 70
+tags: [embedded_saas, search, productivity]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

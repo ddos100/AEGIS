@@ -35,6 +35,10 @@ dependencies = [
     "tenacity>=9.0.0",
     # Phase 3 cloud connectors
     "boto3>=1.35.0",
+    "azure-identity>=1.17.0",
+    "azure-mgmt-resourcegraph>=8.0.0",
+    "google-cloud-asset>=3.27.0",
+    "google-auth>=2.34.0",
 
     # Discovery — matching
     "pyahocorasick>=2.1.0",

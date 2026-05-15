@@ -1,0 +1,22 @@
+id: inflection-pi
+name: Pi by Inflection AI
+provider_slug: inflection
+category: llm
+subcategory: consumer_chatbot
+description: Conversational AI focused on emotional support / coaching.
+website: https://pi.ai
+browser_domains:
+  - pi.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization]
+input_data_types: [text]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 45
+tags: [llm, consumer, emotional_support_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

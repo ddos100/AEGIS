@@ -1,0 +1,23 @@
+id: replicate
+name: Replicate
+provider_slug: replicate
+category: other
+subcategory: model_hosting
+description: Open-source model hosting + inference platform.
+website: https://replicate.com
+api_endpoint_patterns:
+  - api.replicate.com
+  - replicate.delivery
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, image_generation, video_generation, classification, embedding]
+input_data_types: [text, image, audio, file]
+output_data_types: [text, image, video, structured_json]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 55
+tags: [model_hosting, open_source, inference]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

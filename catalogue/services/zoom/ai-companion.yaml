@@ -1,0 +1,22 @@
+id: zoom-ai-companion
+name: Zoom AI Companion
+provider_slug: zoom
+category: llm
+subcategory: embedded_saas_ai
+description: AI features in Zoom — meeting summaries, smart compose, transcription.
+website: https://www.zoom.com/en/ai-assistant
+api_endpoint_patterns:
+  - api.zoom.us
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization, speech_to_text]
+input_data_types: [text, audio]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 70
+tags: [embedded_saas, meetings, transcription]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

@@ -1,0 +1,51 @@
+# Production overrides. Commit this file (no secrets here — those live in
+# pre-provisioned Kubernetes Secrets referenced by name).
+
+image:
+  registry: ghcr.io
+  repository: ddos100/aegis-api
+  webRepository: ddos100/aegis-web
+  tag: "0.5.0"
+
+api:
+  replicas: 3
+  resources:
+    requests: { cpu: "500m",  memory: "1Gi" }
+    limits:   { cpu: "2000m", memory: "2Gi" }
+  env:
+    LOG_LEVEL: INFO
+    LOG_JSON:  "true"
+
+workerIngest:
+  replicas: 5
+  resources:
+    requests: { cpu: "1000m", memory: "2Gi" }
+    limits:   { cpu: "4000m", memory: "4Gi" }
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 30
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: aegis.scllp.com
+      paths:
+        - { path: /v1, pathType: Prefix, backend: api }
+        - { path: /,   pathType: Prefix, backend: web }
+  tls:
+    - secretName: aegis-prod-tls
+      hosts: [aegis.scllp.com]
+
+postgres:
+  bundle: false
+  host: postgres-prod.scllp-internal
+  database: aegis_prod
+  existingSecret: aegis-database
+
+keycloak:
+  url:       http://keycloak.scllp-internal:8080
+  publicUrl: https://auth.scllp.com
+  realm:     scllp
+  audience:  aegis-api

@@ -1,0 +1,107 @@
+{{- $components := list
+  (dict "name" "worker-default" "queue" "default" "spec" .Values.workerDefault)
+  (dict "name" "worker-ingest"  "queue" "ingest"  "spec" .Values.workerIngest)
+}}
+
+{{- range $c := $components }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aegis.fullname" $ }}-{{ $c.name }}
+  labels:
+    {{- include "aegis.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $c.name }}
+spec:
+  replicas: {{ $c.spec.replicas }}
+  selector:
+    matchLabels:
+      {{- include "aegis.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $c.name }}
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $c.name }}
+    spec:
+      {{- with $.Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: worker
+          image: {{ include "aegis.apiImage" $ }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command:
+            - celery
+            - "-A"
+            - app.workers.celery_app
+            - worker
+            - "-l"
+            - INFO
+            - "-Q"
+            - {{ $c.queue | quote }}
+          envFrom:
+            {{- include "aegis.envFromSecrets" $ | nindent 12 }}
+          env:
+            - { name: KEYCLOAK_URL,        value: {{ $.Values.keycloak.url       | quote }} }
+            - { name: KEYCLOAK_PUBLIC_URL, value: {{ $.Values.keycloak.publicUrl | quote }} }
+          resources:
+            {{- toYaml $c.spec.resources | nindent 12 }}
+{{- if $c.spec.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "aegis.fullname" $ }}-{{ $c.name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "aegis.fullname" $ }}-{{ $c.name }}
+  minReplicas: {{ $c.spec.autoscaling.minReplicas }}
+  maxReplicas: {{ $c.spec.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+{{- end }}
+---
+{{- end }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aegis.fullname" . }}-beat
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+    app.kubernetes.io/component: beat
+spec:
+  # MUST be 1 — Celery beat is a singleton scheduler.
+  replicas: {{ .Values.beat.replicas }}
+  strategy: { type: Recreate }
+  selector:
+    matchLabels:
+      {{- include "aegis.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: beat
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: beat
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: beat
+          image: {{ include "aegis.apiImage" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["celery", "-A", "app.workers.celery_app", "beat", "-l", "INFO"]
+          envFrom:
+            {{- include "aegis.envFromSecrets" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.beat.resources | nindent 12 }}

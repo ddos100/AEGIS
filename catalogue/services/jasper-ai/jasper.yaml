@@ -1,0 +1,25 @@
+id: jasper-ai
+name: Jasper AI
+provider_slug: jasper
+category: llm
+subcategory: marketing_writing
+description: Marketing-focused AI writing platform with browser extension.
+website: https://www.jasper.ai
+api_endpoint_patterns:
+  - api.jasper.ai
+browser_domains:
+  - app.jasper.ai
+  - jasper.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization]
+input_data_types: [text]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 55
+tags: [writing_ai, marketing, dlp_risk]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

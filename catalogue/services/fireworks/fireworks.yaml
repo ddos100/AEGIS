@@ -1,0 +1,22 @@
+id: fireworks-ai
+name: Fireworks AI
+provider_slug: fireworks
+category: llm
+subcategory: inference
+description: Fast LLM inference platform — proprietary + open-source models.
+website: https://fireworks.ai
+api_endpoint_patterns:
+  - api.fireworks.ai
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, function_calling]
+input_data_types: [text, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 60
+tags: [llm, inference, fast]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

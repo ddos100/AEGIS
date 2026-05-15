@@ -1,0 +1,24 @@
+id: hubspot-breeze
+name: HubSpot Breeze AI
+provider_slug: hubspot
+category: llm
+subcategory: embedded_saas_ai
+description: HubSpot's AI features for CRM, marketing, sales (Breeze Copilot + Agents).
+website: https://www.hubspot.com/products/artificial-intelligence
+api_endpoint_patterns:
+  - api.hubapi.com
+browser_domains:
+  - app.hubspot.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization, classification, recommendation]
+input_data_types: [text]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 75
+tags: [embedded_saas, crm, marketing]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

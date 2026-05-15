@@ -1,0 +1,24 @@
+id: runway-ml
+name: Runway ML
+provider_slug: runway
+category: video_gen
+description: AI video generation and editing platform.
+website: https://runwayml.com
+api_endpoint_patterns:
+  - api.runwayml.com
+browser_domains:
+  - runwayml.com
+  - app.runwayml.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [video_generation, image_generation]
+input_data_types: [text, image, video]
+output_data_types: [video, image]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: high
+  provider_trust_score: 55
+tags: [video_gen, generative]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

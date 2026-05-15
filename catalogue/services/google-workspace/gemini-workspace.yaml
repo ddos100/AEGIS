@@ -1,0 +1,26 @@
+id: google-workspace-gemini
+name: Gemini for Google Workspace
+provider_slug: google
+category: llm
+subcategory: embedded_saas_ai
+description: Gemini embedded across Google Workspace (Docs, Gmail, Sheets, Meet).
+website: https://workspace.google.com/solutions/ai/
+api_endpoint_patterns:
+  - workspace.google.com
+  - admin.googleapis.com/admin/reports/v1
+browser_domains:
+  - docs.google.com
+  - mail.google.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, summarization, function_calling]
+input_data_types: [text, file]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 80
+tags: [embedded_saas, productivity, google]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

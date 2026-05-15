@@ -1,0 +1,24 @@
+id: writer-com
+name: Writer
+provider_slug: writer
+category: llm
+subcategory: enterprise_llm
+description: Enterprise generative AI platform with proprietary Palmyra model family.
+website: https://writer.com
+api_endpoint_patterns:
+  - api.writer.com
+browser_domains:
+  - app.writer.com
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, summarization, classification]
+input_data_types: [text, file]
+output_data_types: [text]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 65
+tags: [llm, enterprise, writing]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

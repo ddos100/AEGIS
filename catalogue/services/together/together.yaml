@@ -1,0 +1,22 @@
+id: together-ai
+name: Together AI
+provider_slug: together
+category: llm
+subcategory: inference
+description: Inference + fine-tuning platform for open-source LLMs (Llama, Mixtral, etc.).
+website: https://together.ai
+api_endpoint_patterns:
+  - api.together.xyz
+hq_country: US
+gdpr_applicable: true
+eu_ai_act_category: general_purpose_ai
+capabilities: [text_generation, code_generation, embedding, function_calling]
+input_data_types: [text, image, file]
+output_data_types: [text, structured_json, code]
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 60
+tags: [llm, inference, open_source_hosting]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"
