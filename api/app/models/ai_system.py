@@ -11,7 +11,7 @@ import uuid
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import ARRAY, Boolean, Date, DateTime, ForeignKey, SmallInteger, String, Text
+from sqlalchemy import ARRAY, Boolean, Computed, Date, DateTime, ForeignKey, SmallInteger, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -80,8 +80,24 @@ class AISystem(Base, CreatedUpdatedMixin):
 
     # --- Risk ---
     current_risk_score: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
-    # risk_level is a stored generated column (set by Postgres from current_risk_score).
-    risk_level: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # risk_level is a STORED GENERATED column in the DB (migration 002). The
+    # Computed(...) declaration mirrors that so SQLAlchemy omits the column
+    # from INSERT/UPDATE statements — without this, asyncpg raises
+    #   GeneratedAlwaysError: cannot insert a non-DEFAULT value into column "risk_level"
+    # The CASE body here is documentation only; Postgres uses what's in the
+    # migration. We never re-declare the schema from the model side.
+    risk_level: Mapped[str | None] = mapped_column(
+        String(16),
+        Computed(
+            "CASE "
+            "WHEN current_risk_score >= 75 THEN 'critical' "
+            "WHEN current_risk_score >= 50 THEN 'high' "
+            "WHEN current_risk_score >= 25 THEN 'medium' "
+            "WHEN current_risk_score IS NOT NULL THEN 'low' END",
+            persisted=True,
+        ),
+        nullable=True,
+    )
     last_risk_assessed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # --- Compliance ---
