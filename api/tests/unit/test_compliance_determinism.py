@@ -69,3 +69,27 @@ def test_control_ids_are_unique_within_each_framework() -> None:
     for d in docs:
         ids = [c["control_id"] for c in d["controls"]]
         assert len(ids) == len(set(ids)), f"Duplicate control_id in {d['slug']}: {ids}"
+
+
+def test_every_control_is_testable() -> None:
+    """Each control MUST declare a non-empty auto_check.
+
+    The platform's contract is that the compliance module only lists
+    controls that AEGIS can actually verify. Paper-only artefacts
+    (board minutes, training records, etc.) do not belong here — and
+    the engine relies on auto_check being non-empty to give a definitive
+    pass/fail verdict on every consequential run.
+    """
+    import import_frameworks as imp
+
+    docs = imp.load_docs(strict=True)
+    untestable: list[str] = []
+    for d in docs:
+        for c in d["controls"]:
+            if not (c.get("auto_check") or {}):
+                untestable.append(f"{d['slug']}/{c['control_id']}")
+    assert not untestable, (
+        "Untestable controls found — every control must declare a non-empty "
+        "auto_check or be removed from the catalogue:\n  "
+        + "\n  ".join(untestable)
+    )

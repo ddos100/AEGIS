@@ -4,92 +4,20 @@ version: "2023"
 authority: Ministry of Electronics & Information Technology, Government of India
 jurisdiction: IN
 description: |
-  Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023). AI
-  systems that process digital personal data of Data Principals in India
-  fall within scope as either a Data Fiduciary or Data Processor. The
-  `requirement_text` below quotes the operative section of the Act as
-  notified; the `description` is AEGIS's operational interpretation. AI
-  systems often act as automated decision-making by a Data Fiduciary,
-  triggering the obligations on notice, consent, purpose limitation,
-  accuracy, security safeguards, and breach reporting.
+  Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023). This
+  catalogue retains ONLY the DPDPA obligations whose application to an AI
+  system can be tested by AEGIS against the Registry, AISIA, integration
+  metadata, and provider catalogue. Procedural / notice obligations
+  (notice, consent UX, DSAR workflows, grievance officer, etc.) are
+  intentionally omitted — they cannot be machine-verified.
+
+  Every `requirement_text` is a verbatim citation. Every control has a
+  non-empty `auto_check`; auto-assessment never produces `not_assessed`.
 is_active: true
 controls:
 
-  - control_id: DPDPA-S-4
-    title: Lawful grounds for processing personal data
-    source_ref: DPDP Act 2023 Section 4
-    requirement_text: |
-      A person may process the personal data of a Data Principal only
-      in accordance with the provisions of this Act and for a lawful
-      purpose: (a) for which the Data Principal has given her consent;
-      or (b) for certain legitimate uses.
-    description: AI systems must process personal data only on a lawful ground (consent or legitimate use).
-    category: data
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Lawful-basis register per AI system
-    auto_check: {}
-
-  - control_id: DPDPA-S-5
-    title: Notice to Data Principal
-    source_ref: DPDP Act 2023 Section 5
-    requirement_text: |
-      Every request made to a Data Principal for consent shall be
-      accompanied or preceded by a notice given by the Data Fiduciary
-      to the Data Principal, informing her of the personal data and
-      the purpose for which it is proposed to be processed, the manner
-      in which she may exercise her rights, and the manner in which she
-      may make a complaint to the Board.
-    description: Provide an itemised notice prior to consent for any AI processing of personal data.
-    category: transparency
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Consent notice template
-    auto_check: {}
-
-  - control_id: DPDPA-S-6
-    title: Consent
-    source_ref: DPDP Act 2023 Section 6
-    requirement_text: |
-      The consent given by the Data Principal shall be free, specific,
-      informed, unconditional and unambiguous with a clear affirmative
-      action, and shall signify an agreement to the processing of her
-      personal data for the specified purpose and be limited to such
-      personal data as is necessary for such specified purpose.
-    description: Free, specific, informed, unambiguous consent for AI processing of personal data.
-    category: data
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Consent record per processing activity
-    auto_check: {}
-
-  - control_id: DPDPA-S-7
-    title: Certain legitimate uses
-    source_ref: DPDP Act 2023 Section 7
-    requirement_text: |
-      A Data Fiduciary may process personal data of a Data Principal
-      for any of the following uses: (a) for the specified purpose for
-      which the Data Principal has voluntarily provided her personal
-      data and not indicated objection; (b) for the State and its
-      instrumentalities to provide subsidies, benefits, services,
-      certificates, licences or permits; (c) for fulfilling any
-      obligation under any law; (d) for compliance with judicial or
-      quasi-judicial orders; (e) for responding to a medical emergency;
-      (f) for taking measures during a disaster; (g) for employment
-      purposes.
-    description: Legitimate-use grounds the AI processing may rely on, if applicable.
-    category: data
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Mapping of AI processing to specific legitimate use
-    auto_check: {}
-
   - control_id: DPDPA-S-8(3)
-    title: Accuracy and completeness
+    title: Accuracy and completeness of personal data
     source_ref: DPDP Act 2023 Section 8(3)
     requirement_text: |
       A Data Fiduciary shall ensure the completeness, accuracy and
@@ -97,203 +25,43 @@ controls:
       to be used by the Data Fiduciary to make a decision that affects
       the Data Principal, or is likely to be disclosed to another Data
       Fiduciary.
-    description: Ensure accuracy + completeness of personal data used by AI decisions.
+    description: data_types_processed is documented per system so accuracy controls can be applied.
     category: data
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Data quality SLA for AI inputs
+      - Per-system data_types_processed
     auto_check:
       data_types_documented: true
 
-  - control_id: DPDPA-S-8(4)
-    title: Reasonable security safeguards
-    source_ref: DPDP Act 2023 Section 8(4)
-    requirement_text: |
-      A Data Fiduciary shall protect personal data in its possession or
-      under its control, including in respect of any processing
-      undertaken by it or on its behalf by a Data Processor, by taking
-      reasonable security safeguards to prevent personal data breach.
-    description: Reasonable security safeguards covering AI processing on-prem and via cloud AI services.
-    category: security
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - ISO 27001 / SOC 2 certificate of AI provider
-      - Internal AI security baseline
-    auto_check: {}
-
-  - control_id: DPDPA-S-8(5)
-    title: Intimation of personal data breach
-    source_ref: DPDP Act 2023 Section 8(5)
-    requirement_text: |
-      In the event of a personal data breach, the Data Fiduciary shall
-      give the Board and each affected Data Principal intimation of
-      such breach in such form and manner as may be prescribed.
-    description: Notify the Data Protection Board + affected Data Principals on breach involving AI processing.
-    category: monitoring
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Breach notification SOP
-    auto_check: {}
-
-  - control_id: DPDPA-S-8(6)
-    title: Erasure on withdrawal / purpose completion
-    source_ref: DPDP Act 2023 Section 8(6)
-    requirement_text: |
-      A Data Fiduciary shall, unless retention is necessary for
-      compliance with any law for the time being in force, erase
-      personal data, upon the Data Principal withdrawing her consent
-      or as soon as it is reasonable to assume that the specified
-      purpose is no longer being served.
-    description: Erase AI-processed personal data on withdrawal of consent / purpose completion.
-    category: data
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Retention + erasure schedule
-    auto_check: {}
-
   - control_id: DPDPA-S-8(7)
-    title: Processor obligations
+    title: Processor contract
     source_ref: DPDP Act 2023 Section 8(7)
     requirement_text: |
       A Data Fiduciary shall engage, appoint, use or otherwise involve
       a Data Processor only under a valid contract.
-    description: Valid contract with every AI Data Processor (incl. cloud AI vendors).
+    description: AI provider is assessed (catalogue-matched OR free-text provider documented) as a prerequisite for DPA.
     category: supply_chain
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - DPA with AI provider
-      - Processor inventory
+      - Catalogue match OR provider_name_freetext populated
+      - DPA on file with the AI provider
     auto_check:
       provider_assessed: true
 
-  - control_id: DPDPA-S-9
-    title: Processing of personal data of children
-    source_ref: DPDP Act 2023 Section 9
-    requirement_text: |
-      A Data Fiduciary shall, before processing any personal data of a
-      child or a person with disability who has a lawful guardian,
-      obtain verifiable consent of the parent of such child or the
-      lawful guardian; a Data Fiduciary shall not undertake such
-      processing of personal data that is likely to cause any
-      detrimental effect on the well-being of a child; and a Data
-      Fiduciary shall not undertake tracking or behavioural monitoring
-      of children or targeted advertising directed at children.
-    description: Verifiable parental consent + restrictions on AI processing affecting children.
-    category: data
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Children's-data risk assessment
-    auto_check: {}
-
-  - control_id: DPDPA-S-10
-    title: Significant Data Fiduciary
-    source_ref: DPDP Act 2023 Section 10
-    requirement_text: |
-      The Central Government may notify any Data Fiduciary or class of
-      Data Fiduciaries as Significant Data Fiduciary on the basis of
-      assessment of relevant factors, including (i) the volume and
-      sensitivity of personal data processed, (ii) risk to the rights
-      of Data Principals, (iii) potential impact on the sovereignty
-      and integrity of India, (iv) risk to electoral democracy, (v)
-      security of the State, and (vi) public order. A Significant Data
-      Fiduciary shall appoint a Data Protection Officer based in
-      India, an independent data auditor, and undertake periodic Data
-      Protection Impact Assessment and audit.
-    description: SDF obligations — DPO, independent audit, periodic DPIA — when notified.
-    category: governance
-    is_mandatory: false
-    applies_to: [ai_user]
-    evidence_hints:
-      - DPO appointment letter
-      - Independent audit report
-      - DPIA for AI processing
-    auto_check: {}
-
-  - control_id: DPDPA-S-11
-    title: Right to access information about personal data
-    source_ref: DPDP Act 2023 Section 11
-    requirement_text: |
-      A Data Principal shall have the right to obtain from the Data
-      Fiduciary to whom she has previously given consent, on request
-      made in such manner as may be prescribed, (a) a summary of
-      personal data being processed and the processing activities
-      undertaken; (b) the identities of all other Data Fiduciaries and
-      Data Processors with whom the personal data has been shared.
-    description: Support data-subject access requests covering AI processing activities.
-    category: transparency
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - DSAR workflow
-    auto_check: {}
-
-  - control_id: DPDPA-S-12
-    title: Right to correction and erasure
-    source_ref: DPDP Act 2023 Section 12
-    requirement_text: |
-      A Data Principal shall have the right to correction, completion,
-      updating and erasure of her personal data for the processing of
-      which she has previously given consent.
-    description: Honour correction + erasure requests; propagate to AI systems + model retraining pipelines.
-    category: data
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Correction + erasure workflow
-    auto_check: {}
-
-  - control_id: DPDPA-S-13
-    title: Right of grievance redressal
-    source_ref: DPDP Act 2023 Section 13
-    requirement_text: |
-      A Data Principal shall have the right to readily available means
-      of grievance redressal provided by a Data Fiduciary or Consent
-      Manager in respect of any act or omission of such Data Fiduciary
-      or Consent Manager regarding the performance of its obligations
-      in relation to the personal data of such Data Principal or the
-      exercise of her rights under the provisions of this Act.
-    description: Provide a grievance-redressal channel for AI-related personal data complaints.
-    category: transparency
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Grievance officer details
-    auto_check: {}
-
-  - control_id: DPDPA-S-14
-    title: Right to nominate
-    source_ref: DPDP Act 2023 Section 14
-    requirement_text: |
-      A Data Principal shall have the right to nominate, in such
-      manner as may be prescribed, any other individual, who shall, in
-      the event of death or incapacity of the Data Principal, exercise
-      the rights of the Data Principal in accordance with the
-      provisions of this Act.
-    description: Allow Data Principals to nominate a successor for their AI-stored personal data.
-    category: data
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Nomination workflow
-    auto_check: {}
-
   - control_id: DPDPA-S-16
-    title: Cross-border transfer
+    title: Cross-border transfer of personal data
     source_ref: DPDP Act 2023 Section 16
     requirement_text: |
-      The Central Government may, by notification, restrict the
-      transfer of personal data by a Data Fiduciary for processing to
-      such country or territory outside India as may be so notified.
-    description: Honour cross-border restrictions when transferring personal data to overseas AI services.
+      The Central Government may, by notification, restrict the transfer
+      of personal data by a Data Fiduciary for processing to such
+      country or territory outside India as may be so notified.
+    description: AI provider HQ country is in the permitted-jurisdiction allow-list.
     category: data
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Data-residency configuration of AI provider
-    auto_check: {}
+      - Provider hq_country matches permitted list
+    auto_check:
+      provider_jurisdiction_permitted: true

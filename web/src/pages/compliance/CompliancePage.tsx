@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import {
   useAutoAssess,
   useFrameworkControls,
+  useFrameworkMappings,
   useFrameworkScore,
   useFrameworks,
 } from '@/hooks/useCompliance';
-import type { ControlBrief } from '@/hooks/useCompliance';
+import type { ControlBrief, MappingDetail } from '@/hooks/useCompliance';
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   implemented:     { label: 'Implemented',     cls: 'badge-low' },
@@ -167,9 +168,41 @@ export default function CompliancePage() {
 // output is stable across consequential runs.
 function RequirementsCatalogue({ slug }: { slug: string }) {
   const { data: controls, isLoading } = useFrameworkControls(slug);
+  const { data: mappings } = useFrameworkMappings(slug);
   const [q, setQ] = useState('');
   const [category, setCategory] = useState<string>('');
   const [openId, setOpenId] = useState<string | null>(null);
+
+  // Group mappings by control_id so the panel can render each control's
+  // pass/fail verdict per system with the explanation + evidence pinned
+  // from the engine's last consequential run.
+  const mappingsByControl = useMemo(() => {
+    const map = new Map<string, MappingDetail[]>();
+    (mappings ?? []).forEach((m) => {
+      const arr = map.get(m.control_id) ?? [];
+      arr.push(m);
+      map.set(m.control_id, arr);
+    });
+    return map;
+  }, [mappings]);
+
+  // Worst-status-per-control rollup for the header badge. Order:
+  //   not_implemented > partial > implemented > not_applicable.
+  const rollupStatus = (controlId: string): MappingDetail['status'] | null => {
+    const list = mappingsByControl.get(controlId);
+    if (!list || list.length === 0) return null;
+    const order: Record<MappingDetail['status'], number> = {
+      not_implemented: 0,
+      not_assessed: 1,
+      partial: 2,
+      implemented: 3,
+      not_applicable: 4,
+    };
+    return list.reduce<MappingDetail['status']>(
+      (worst, m) => (order[m.status] < order[worst] ? m.status : worst),
+      'not_applicable',
+    );
+  };
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -254,6 +287,11 @@ function RequirementsCatalogue({ slug }: { slug: string }) {
                 {!c.is_mandatory && (
                   <span className="badge bg-amber-100 text-amber-800">Optional</span>
                 )}
+                {(() => {
+                  const s = rollupStatus(c.control_id);
+                  if (!s) return null;
+                  return <span className={STATUS_LABEL[s].cls}>{STATUS_LABEL[s].label}</span>;
+                })()}
               </div>
 
               {isOpen && (
@@ -282,13 +320,15 @@ function RequirementsCatalogue({ slug }: { slug: string }) {
                   {c.evidence_hints.length > 0 && (
                     <div className="text-xs text-slate-600">
                       <span className="font-medium uppercase tracking-wide text-slate-500">
-                        Evidence:
+                        Expected evidence:
                       </span>
                       <ul className="ml-4 list-disc">
                         {c.evidence_hints.map((h) => <li key={h}>{h}</li>)}
                       </ul>
                     </div>
                   )}
+
+                  <MappingsForControl mappings={mappingsByControl.get(c.control_id) ?? []} />
                 </div>
               )}
             </li>
@@ -296,6 +336,82 @@ function RequirementsCatalogue({ slug }: { slug: string }) {
         })}
       </ul>
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Per-control assessment results (verdict + reasons + evidence refs)
+// ---------------------------------------------------------------------------
+//
+// One row per AI system the engine evaluated this control against. Each row
+// shows the verdict badge, the pipe-separated PREDICATE: VERDICT lines the
+// engine produced, and the machine-readable evidence_refs that backed each
+// line. When the tenant has no AI systems registered, the engine writes one
+// tenant-scoped (ai_system_id=null) mapping with reason "No AI systems
+// registered..." — that is what shows here, never an empty placeholder.
+function MappingsForControl({ mappings }: { mappings: MappingDetail[] }) {
+  if (mappings.length === 0) {
+    return (
+      <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+        Not yet auto-assessed. Click <b>Run auto-assessment</b> above to evaluate this control.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+        Assessment results
+      </div>
+      {mappings.map((m) => {
+        const reasons = (m.implementation_notes ?? '')
+          .split(' | ')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        return (
+          <div key={m.id} className="rounded-md border bg-slate-50 p-3">
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <span className={STATUS_LABEL[m.status]?.cls ?? 'badge'}>
+                {STATUS_LABEL[m.status]?.label ?? m.status}
+              </span>
+              <span className="text-[11px] text-slate-500">
+                {m.ai_system_id
+                  ? <>system <code className="text-[10px]">{m.ai_system_id.slice(0, 8)}…</code></>
+                  : <>tenant-scoped</>
+                }
+                {m.last_assessed_at && <> · {new Date(m.last_assessed_at).toLocaleString()}</>}
+              </span>
+            </div>
+            {reasons.length > 0 && (
+              <ul className="space-y-0.5 text-xs">
+                {reasons.map((line, idx) => {
+                  const verdict = line.includes(': PASSED')
+                    ? 'text-emerald-700'
+                    : line.includes(': FAILED')
+                    ? 'text-red-700'
+                    : 'text-slate-600';
+                  return (
+                    <li key={idx} className={`font-mono leading-snug ${verdict}`}>
+                      {line}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {m.evidence_refs.length > 0 && (
+              <div className="mt-2 text-[11px] text-slate-500">
+                <span className="font-medium uppercase tracking-wide">Evidence refs:</span>{' '}
+                {m.evidence_refs.map((r) => (
+                  <code key={r} className="ml-1 inline-block rounded bg-white px-1 py-0.5 text-slate-700">
+                    {r}
+                  </code>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

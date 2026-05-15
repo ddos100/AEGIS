@@ -40,6 +40,30 @@ export function useFrameworkControls(slug: string | undefined) {
   });
 }
 
+export interface MappingDetail {
+  id: string;
+  tenant_id: string;
+  control_id: string;
+  ai_system_id: string | null;
+  status: 'implemented' | 'partial' | 'not_implemented' | 'not_applicable' | 'not_assessed';
+  implementation_notes: string | null;
+  evidence_refs: string[];
+  last_assessed_at: string | null;
+  next_review_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** All mappings for a framework, deterministically ordered (control_id, ai_system_id). */
+export function useFrameworkMappings(slug: string | undefined) {
+  return useQuery({
+    queryKey: ['compliance', 'frameworks', slug, 'mappings'],
+    enabled: !!slug,
+    queryFn: async () =>
+      (await api.get<MappingDetail[]>(`/compliance/frameworks/${slug}/mappings`)).data,
+  });
+}
+
 export function useFrameworkScore(slug: string | undefined) {
   return useQuery({
     queryKey: ['compliance', 'frameworks', slug, 'score'],

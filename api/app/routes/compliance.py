@@ -85,6 +85,31 @@ async def trigger_auto_assess(
 
 # ---------- mappings ----------
 
+@router.get("/frameworks/{slug}/mappings", response_model=list[MappingDetail])
+async def list_framework_mappings(
+    slug: str,
+    db: DBSession,
+    user: CurrentUser,  # noqa: ARG001
+) -> list[MappingDetail]:
+    """Every mapping for one framework, in deterministic order.
+
+    Sorted by `(control_id, ai_system_id)` so the UI's reason / evidence
+    output for the same compliance state is byte-stable across reloads.
+    """
+    fid = (await db.execute(
+        select(ComplianceFramework.id).where(ComplianceFramework.slug == slug)
+    )).scalar_one_or_none()
+    if fid is None:
+        raise HTTPException(status_code=404, detail="Framework not found")
+    rows = (await db.execute(
+        select(ComplianceMapping)
+        .join(ComplianceControl, ComplianceMapping.control_id == ComplianceControl.id)
+        .where(ComplianceControl.framework_id == fid)
+        .order_by(ComplianceControl.control_id, ComplianceMapping.ai_system_id)
+    )).scalars().all()
+    return [MappingDetail.model_validate(r) for r in rows]
+
+
 @router.get("/mappings", response_model=list[MappingDetail])
 async def list_mappings(
     db: DBSession,

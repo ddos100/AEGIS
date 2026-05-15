@@ -4,48 +4,32 @@ version: "2024 (20-Aug-2024)"
 authority: Securities and Exchange Board of India
 jurisdiction: IN
 description: |
-  SEBI Cybersecurity and Cyber Resilience Framework (CSCRF), Circular
-  SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2024/113 dated 20-Aug-2024, applicable
-  to all SEBI regulated entities (Stock Exchanges, Clearing Corporations,
-  Depositories, Mutual Funds, Stock Brokers, Portfolio Managers, Investment
-  Advisers, KYC Registration Agencies, and others). The CSCRF is
-  structured around five cyber-resilience goals (Anticipate, Withstand,
-  Contain, Recover, Evolve) and prescribes ISO 27001-aligned controls
-  with SEBI-specific assurance and reporting requirements.
+  SEBI CSCRF (Circular SEBI/HO/ITD-1/ITD_CSC_EXT/P/CIR/2024/113,
+  20-Aug-2024). This catalogue retains ONLY the CSCRF paragraphs whose
+  application to an AI system can be tested by AEGIS against Registry,
+  AISIA, integration metadata, and provider catalogue. Paper-only
+  paragraphs (Board policy, MFA/PAM, crypto, threat intel feeds, IRP,
+  DR test plan, M-Measure dashboards, VAPT report) are intentionally
+  omitted.
 
-  AI workloads of regulated entities inherit the CSCRF obligations and
-  the prescribed Continuous Assurance Pipeline measurements (M1–M9).
+  Every `requirement_text` is a verbatim citation. Every control has a
+  non-empty `auto_check`; auto-assessment never produces `not_assessed`.
 is_active: true
 controls:
 
-  - control_id: SEBI-CSCRF-GV.1
-    title: Cybersecurity policy and governance
-    source_ref: SEBI CSCRF 2024 Para GV.1
-    requirement_text: |
-      The regulated entity shall have a Board-approved cybersecurity
-      policy that defines the cybersecurity strategy, roles and
-      responsibilities, and governance structure of the entity.
-    description: Board-approved cybersecurity policy that covers AI workloads.
-    category: governance
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Board-approved cybersecurity policy
-    auto_check: {}
-
   - control_id: SEBI-CSCRF-GV.2
-    title: Risk-based authorisation
+    title: Risk-based authorisation of new AI deployments
     source_ref: SEBI CSCRF 2024 Para GV.2
     requirement_text: |
       Authorisation of new technology deployments shall be based on a
       risk assessment that considers the criticality of the function,
       data sensitivity, and threat landscape.
-    description: Risk-based authorisation for new AI deployments.
+    description: AISIA exists and is at least in-progress per system.
     category: risk
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - AI authorisation memo / approval ticket
+      - AISIA record per AI system
     auto_check:
       aisia_status_in: [in_progress, completed, approved]
 
@@ -56,7 +40,7 @@ controls:
       The regulated entity shall maintain an up-to-date asset register
       with classification of assets based on criticality and
       sensitivity, covering owned and outsourced assets.
-    description: Asset register covering AI systems (owned + outsourced) with criticality + sensitivity.
+    description: AI System Registry completeness ≥ 60% per system.
     category: governance
     is_mandatory: true
     applies_to: [ai_user]
@@ -72,58 +56,28 @@ controls:
       Data shall be classified based on its sensitivity (e.g., Public,
       Internal, Confidential, Restricted) with appropriate controls
       applied at each classification level.
-    description: Apply data classification to AI inputs / outputs.
+    description: data_types_processed is populated per system.
     category: data
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Data classification scheme
+      - Per-system data_types_processed
     auto_check:
       data_types_documented: true
 
-  - control_id: SEBI-CSCRF-PR.1
-    title: Access management
-    source_ref: SEBI CSCRF 2024 Para PR.1
-    requirement_text: |
-      The regulated entity shall implement strong access management
-      controls including identity management, multi-factor
-      authentication, role-based access, and privileged-access
-      management.
-    description: MFA + RBAC + PAM applied to AI systems and AI consoles.
-    category: security
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - MFA enrollment report
-      - PAM session logs
-    auto_check: {}
-
-  - control_id: SEBI-CSCRF-PR.4
-    title: Data protection
-    source_ref: SEBI CSCRF 2024 Para PR.4
-    requirement_text: |
-      Data shall be protected in transit and at rest using strong
-      cryptographic controls and key management practices.
-    description: Cryptography for AI data in transit + at rest.
-    category: security
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Encryption configuration of AI provider
-    auto_check: {}
-
   - control_id: SEBI-CSCRF-PR.5
-    title: Third-party security
+    title: Third-party security — AI vendor due diligence
     source_ref: SEBI CSCRF 2024 Para PR.5
     requirement_text: |
       Information security obligations shall be flowed down to
       third-party service providers including cloud providers, with
       right-to-audit and incident reporting clauses.
-    description: Flow-down security obligations to AI vendors; right-to-audit + incident reporting in contract.
+    description: AI provider is assessed (catalogue-matched OR free-text provider documented).
     category: supply_chain
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
+      - Catalogue match OR provider_name_freetext populated
       - DPA with right-to-audit clause
     auto_check:
       provider_assessed: true
@@ -135,87 +89,11 @@ controls:
       The regulated entity shall implement continuous security
       monitoring covering all critical systems, including outsourced
       systems, with appropriate SIEM/SOC arrangements.
-    description: Continuous monitoring of AI systems via SIEM/SOC.
+    description: AEGIS has observed usage events per AI system.
     category: monitoring
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - SIEM ingestion of AEGIS ai_usage_events
-    auto_check: {}
-
-  - control_id: SEBI-CSCRF-DE.3
-    title: Threat intelligence
-    source_ref: SEBI CSCRF 2024 Para DE.3
-    requirement_text: |
-      Threat intelligence shall be acquired, evaluated and integrated
-      into security operations on an ongoing basis.
-    description: Subscribe to AI-related threat intelligence (prompt injection, model abuse, supply-chain attacks).
-    category: monitoring
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Threat intel feeds
-    auto_check: {}
-
-  - control_id: SEBI-CSCRF-RS.1
-    title: Incident response
-    source_ref: SEBI CSCRF 2024 Para RS.1
-    requirement_text: |
-      The regulated entity shall have a documented incident response
-      plan that is tested at planned intervals and shall report cyber
-      incidents to SEBI within the prescribed timelines.
-    description: Incident response plan; report AI-related incidents to SEBI.
-    category: monitoring
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - IRP document
-      - SEBI incident report sample
-    auto_check: {}
-
-  - control_id: SEBI-CSCRF-RC.1
-    title: Cyber resilience and recovery
-    source_ref: SEBI CSCRF 2024 Para RC.1
-    requirement_text: |
-      The regulated entity shall maintain documented cyber recovery
-      arrangements with defined RTO and RPO for critical systems,
-      tested at planned intervals.
-    description: Recovery arrangements with RTO / RPO covering AI systems.
-    category: operations
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - DR test report for AI systems
-    auto_check: {}
-
-  - control_id: SEBI-CSCRF-CA.1
-    title: Continuous Assurance Pipeline (M-Measures)
-    source_ref: SEBI CSCRF 2024 Annexure-K
-    requirement_text: |
-      Regulated entities shall measure and report Continuous Assurance
-      Pipeline metrics (M1 – Cyber Capability Index, M2 – Asset
-      Coverage, M3 – Vulnerability Management, M4 – Threat Detection,
-      M5 – Incident Response, M6 – Recovery, M7 – Vendor Assurance,
-      M8 – Awareness, M9 – Compliance) at the prescribed frequency.
-    description: Track CSCRF M-Measures including for AI assets and AI vendors.
-    category: governance
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - CSCRF M-Measure dashboard
-    auto_check: {}
-
-  - control_id: SEBI-CSCRF-VAPT
-    title: Annual VAPT
-    source_ref: SEBI CSCRF 2024 Para PR.6
-    requirement_text: |
-      The regulated entity shall undergo Vulnerability Assessment and
-      Penetration Testing of all critical IT systems at least once a
-      year, conducted by a CERT-In empanelled auditor.
-    description: Annual VAPT by CERT-In empanelled auditor covering AI systems.
-    category: security
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - VAPT report
-    auto_check: {}
+      - ai_usage_events present per system
+    auto_check:
+      usage_monitored: true

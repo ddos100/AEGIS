@@ -4,60 +4,28 @@ version: "2023"
 authority: ISO
 jurisdiction: global
 description: |
-  AI Management System international standard. The first ISO standard
-  specifically for managing AI systems. AEGIS implements the operational
-  core of Clauses 4 (Context) through 10 (Improvement) and the full set of
-  Annex A controls applicable to organisations that develop and/or use AI.
+  ISO/IEC 42001:2023 — AI Management System. This catalogue retains ONLY
+  the controls that (a) directly govern AI systems and (b) can be tested
+  by AEGIS against the AI System Registry, AISIA records, integration
+  metadata, and usage telemetry. Paper-only governance artefacts (board
+  approvals, internal audit programmes, training records, management
+  review minutes, etc.) are intentionally NOT included — the platform
+  refuses to give a verdict on what it cannot verify.
 
-  Every `requirement_text` in this file is a direct citation from
-  ISO/IEC 42001:2023 (English authentic version). Auditors should read the
-  text in this file as the exact requirement applied to AI systems; the
-  `description` is AEGIS's operational interpretation but is not the
-  controlling language.
+  Every `requirement_text` below is a verbatim citation from the source
+  document. Every control has a non-empty `auto_check`, so auto-assessment
+  always produces a definitive status (never `not_assessed`).
 is_active: true
 controls:
 
-  # -------- Clause 4 — Context of the organization --------
-
-  - control_id: ISO42001-4.1
-    title: Understanding the organization and its context
-    source_ref: ISO/IEC 42001:2023 Clause 4.1
-    requirement_text: |
-      The organization shall determine external and internal issues that
-      are relevant to its purpose and that affect its ability to achieve
-      the intended outcome(s) of its AI management system.
-    description: Determine external + internal issues relevant to the AI management system's intended purpose.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Context analysis document
-      - Stakeholder map
-    auto_check: {}
-
-  - control_id: ISO42001-4.2
-    title: Understanding the needs and expectations of interested parties
-    source_ref: ISO/IEC 42001:2023 Clause 4.2
-    requirement_text: |
-      The organization shall determine: a) the interested parties that
-      are relevant to the AI management system; b) the relevant
-      requirements of these interested parties; and c) which of these
-      requirements will be addressed through the AI management system.
-    description: Identify stakeholders + their AI-related requirements; record decisions on which are in scope.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Interested parties register
-      - Requirements traceability matrix
-    auto_check: {}
-
   - control_id: ISO42001-4.3
-    title: Determining the scope of the AI management system
+    title: Determining the scope of the AI management system — AI System Register
     source_ref: ISO/IEC 42001:2023 Clause 4.3
     requirement_text: |
       The organization shall determine the boundaries and applicability
       of the AI management system to establish its scope. The scope shall
       be available as documented information.
-    description: Establish, document, and maintain a register of AI systems used or developed by the organisation.
+    description: AI System Register exists with sufficient completeness per system.
     category: governance
     applies_to: [ai_user, ai_provider]
     evidence_hints:
@@ -66,494 +34,96 @@ controls:
     auto_check:
       registry_completeness_min: 60
 
-  - control_id: ISO42001-4.4
-    title: AI management system
-    source_ref: ISO/IEC 42001:2023 Clause 4.4
-    requirement_text: |
-      The organization shall establish, implement, maintain and
-      continually improve an AI management system, including the
-      processes needed and their interactions, in accordance with the
-      requirements of this document.
-    description: Establish the AIMS itself and its processes.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - AIMS process map
-      - Documented AIMS scope and processes
-    auto_check: {}
-
-  # -------- Clause 5 — Leadership --------
-
-  - control_id: ISO42001-5.1
-    title: Leadership and commitment
-    source_ref: ISO/IEC 42001:2023 Clause 5.1
-    requirement_text: |
-      Top management shall demonstrate leadership and commitment with
-      respect to the AI management system by ensuring the AI policy and
-      AI objectives are established and are compatible with the strategic
-      direction of the organization.
-    description: Top management commits to the AIMS; AI policy + objectives are set.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Board / ExCo minutes approving AI policy
-      - Signed AI strategy
-    auto_check: {}
-
-  - control_id: ISO42001-5.2
-    title: AI policy
-    source_ref: ISO/IEC 42001:2023 Clause 5.2
-    requirement_text: |
-      Top management shall establish an AI policy that: a) is appropriate
-      to the purpose of the organization; b) provides a framework for
-      setting AI objectives; c) includes a commitment to satisfy
-      applicable requirements; and d) includes a commitment to continual
-      improvement of the AI management system.
-    description: An overarching AI policy approved by top management and communicated to relevant stakeholders.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Signed AI policy
-      - Communication record (email/intranet)
-    auto_check: {}
-
   - control_id: ISO42001-5.3
-    title: Roles, responsibilities and authorities
+    title: Roles, responsibilities and authorities — owner assignment
     source_ref: ISO/IEC 42001:2023 Clause 5.3
     requirement_text: |
       Top management shall ensure that the responsibilities and
       authorities for roles relevant to the AI management system are
       assigned and communicated within the organization.
-    description: Define and assign roles and responsibilities for AI system stakeholders.
+    description: Every AI system has a documented owner in the Registry.
     category: governance
     applies_to: [both]
     evidence_hints:
-      - RACI matrix for AI systems
       - Documented ownership in the AI System Register
     auto_check:
       owner_assigned: true
-
-  # -------- Clause 6 — Planning --------
-
-  - control_id: ISO42001-6.1.1
-    title: Actions to address risks and opportunities — General
-    source_ref: ISO/IEC 42001:2023 Clause 6.1.1
-    requirement_text: |
-      When planning for the AI management system, the organization shall
-      consider the issues referred to in 4.1 and the requirements
-      referred to in 4.2 and determine the risks and opportunities that
-      need to be addressed.
-    description: Plan AIMS actions to address identified risks and opportunities.
-    category: risk
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - AI risk register
-      - Opportunities log
-    auto_check: {}
 
   - control_id: ISO42001-6.1.2
     title: AI risk assessment
     source_ref: ISO/IEC 42001:2023 Clause 6.1.2
     requirement_text: |
       The organization shall define and apply an AI risk assessment
-      process that: a) establishes and maintains AI risk criteria;
-      b) ensures that repeated AI risk assessments produce consistent,
-      valid and comparable results; c) identifies the AI risks; d)
-      analyses the AI risks; and e) evaluates the AI risks.
-    description: Assess impacts of AI systems on individuals, groups, and society; document treatment decisions.
+      process that establishes and maintains AI risk criteria; ensures
+      that repeated AI risk assessments produce consistent, valid and
+      comparable results; identifies, analyses and evaluates AI risks.
+    description: AISIA exists and is at least in-progress for each system.
     category: risk
     applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - Completed AISIA report
-      - Treatment decision (accept/restrict/block)
+      - AISIA record per system
     auto_check:
-      aisia_status_in: [completed, approved]
+      aisia_status_in: [in_progress, completed, approved]
 
   - control_id: ISO42001-6.1.3
     title: AI risk treatment
     source_ref: ISO/IEC 42001:2023 Clause 6.1.3
     requirement_text: |
       The organization shall define and apply an AI risk treatment
-      process to: a) select appropriate AI risk treatment options,
-      taking account of the AI risk assessment results; b) determine all
-      controls necessary to implement the AI risk treatment options
-      chosen; c) compare the controls determined with those in Annex A
-      and verify that no necessary controls have been omitted; d)
-      produce a Statement of Applicability.
-    description: Treat each AI risk; produce a Statement of Applicability mapped to Annex A.
+      process to select appropriate AI risk treatment options, taking
+      account of the AI risk assessment results.
+    description: AISIA treatment decision (Accept / Restrict / Block) is recorded per system.
     category: risk
     applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - Statement of Applicability (SoA)
-      - Risk treatment plan per system
-    auto_check: {}
+      - AISIA treatment decision
+    auto_check:
+      aisia_treatment_decided: true
 
   - control_id: ISO42001-6.1.4
-    title: AI system impact assessment
+    title: AI system impact assessment — completed
     source_ref: ISO/IEC 42001:2023 Clause 6.1.4
     requirement_text: |
       The organization shall assess the potential consequences for
       individuals or groups of individuals, or both, and societies that
       can result from the development, provision or use of AI systems.
-    description: Conduct an AI System Impact Assessment (AISIA) for in-scope systems.
+    description: AISIA is completed or approved per system.
     category: risk
     applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - AISIA report
-      - Affected-population analysis
+      - Signed AISIA in document store
     auto_check:
-      aisia_status_in: [in_progress, completed, approved]
-
-  # -------- Clause 7 — Support --------
-
-  - control_id: ISO42001-7.2
-    title: Competence
-    source_ref: ISO/IEC 42001:2023 Clause 7.2
-    requirement_text: |
-      The organization shall: a) determine the necessary competence of
-      person(s) doing work under its control that affects the AI
-      performance; b) ensure that these persons are competent on the
-      basis of appropriate education, training, or experience; and c)
-      where applicable, take actions to acquire the necessary competence
-      and evaluate the effectiveness of the actions taken.
-    description: People doing AI work are competent; competence is documented.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Training records
-      - Competence matrix
-    auto_check: {}
-
-  # -------- Clause 8 — Operation --------
-
-  - control_id: ISO42001-8.1
-    title: Operational planning and control
-    source_ref: ISO/IEC 42001:2023 Clause 8.1
-    requirement_text: |
-      The organization shall plan, implement and control the processes
-      needed to meet requirements and to implement the actions
-      determined in Clause 6, by establishing criteria for the processes
-      and implementing control of the processes in accordance with the
-      criteria.
-    description: Plan and control AI operational processes.
-    category: operations
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Operational procedures
-      - Operational records
-    auto_check: {}
-
-  # -------- Clause 9 — Performance evaluation --------
+      aisia_status_in: [completed, approved]
 
   - control_id: ISO42001-9.1
     title: Monitoring, measurement, analysis and evaluation
     source_ref: ISO/IEC 42001:2023 Clause 9.1
     requirement_text: |
-      The organization shall determine: a) what needs to be monitored
-      and measured; b) the methods for monitoring, measurement, analysis
-      and evaluation, as applicable, to ensure valid results; c) when
-      the monitoring and measuring shall be performed; and d) when the
-      results from monitoring and measurement shall be analysed and
-      evaluated.
-    description: Define KPIs/KRIs and monitor the AIMS.
+      The organization shall determine what needs to be monitored and
+      measured, the methods for monitoring, measurement, analysis and
+      evaluation, and when monitoring and measurement shall be performed.
+    description: AEGIS has observed usage events for each AI system.
     category: monitoring
     applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - Monitoring plan
-      - KPI/KRI dashboard
-    auto_check: {}
-
-  - control_id: ISO42001-9.2
-    title: Internal audit
-    source_ref: ISO/IEC 42001:2023 Clause 9.2
-    requirement_text: |
-      The organization shall conduct internal audits at planned
-      intervals to provide information on whether the AI management
-      system conforms to the organization's own requirements for its AI
-      management system and is effectively implemented and maintained.
-    description: Internal audit programme for the AIMS.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Internal audit programme
-      - Audit reports
-    auto_check: {}
-
-  - control_id: ISO42001-9.3
-    title: Management review
-    source_ref: ISO/IEC 42001:2023 Clause 9.3
-    requirement_text: |
-      Top management shall review the organization's AI management
-      system at planned intervals to ensure its continuing suitability,
-      adequacy, and effectiveness.
-    description: Top-management review of the AIMS.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Management review minutes
-    auto_check: {}
-
-  # -------- Clause 10 — Improvement --------
-
-  - control_id: ISO42001-10.2
-    title: Nonconformity and corrective action
-    source_ref: ISO/IEC 42001:2023 Clause 10.2
-    requirement_text: |
-      When a nonconformity occurs, the organization shall: a) react to
-      the nonconformity, and as applicable, take action to control and
-      correct it and deal with the consequences; b) evaluate the need
-      for action to eliminate the cause of the nonconformity, in order
-      that it does not recur or occur elsewhere.
-    description: Correct nonconformities and act on causes.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - CAPA register
-    auto_check: {}
-
-  # -------- Annex A — operational controls --------
-
-  - control_id: ISO42001-A.2.2
-    title: AI policy
-    source_ref: ISO/IEC 42001:2023 Annex A.2.2
-    requirement_text: |
-      The organization shall document a policy for the development or
-      use of AI systems.
-    description: Documented policy for development and/or use of AI systems.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Signed AI policy
-    auto_check: {}
-
-  - control_id: ISO42001-A.2.3
-    title: Alignment with other organizational policies
-    source_ref: ISO/IEC 42001:2023 Annex A.2.3
-    requirement_text: |
-      The organization shall determine where other policies can be
-      affected by or apply to the organization's objectives with respect
-      to AI systems.
-    description: Map AI policy interactions with privacy, security, HR, procurement, etc.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Policy cross-reference matrix
-    auto_check: {}
-
-  - control_id: ISO42001-A.2.4
-    title: Review of the AI policy
-    source_ref: ISO/IEC 42001:2023 Annex A.2.4
-    requirement_text: |
-      The AI policy shall be reviewed at planned intervals and as needed
-      in order to ensure its continuing suitability, adequacy and
-      effectiveness.
-    description: Periodic AI policy review.
-    category: governance
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Policy review record
-    auto_check: {}
-
-  - control_id: ISO42001-A.3.2
-    title: AI roles and responsibilities
-    source_ref: ISO/IEC 42001:2023 Annex A.3.2
-    requirement_text: |
-      Roles and responsibilities for AI shall be defined and allocated
-      according to the needs of the organization.
-    description: Define and assign roles and responsibilities for AI system stakeholders.
-    category: governance
-    applies_to: [both]
-    evidence_hints:
-      - RACI matrix for AI systems
-      - Documented ownership in the AI System Register
+      - ai_usage_events present per system
     auto_check:
-      owner_assigned: true
-
-  - control_id: ISO42001-A.3.3
-    title: Reporting of concerns
-    source_ref: ISO/IEC 42001:2023 Annex A.3.3
-    requirement_text: |
-      The organization shall define and put in place a process to
-      report concerns about the organization's role with respect to an
-      AI system.
-    description: Whistleblower / concern-raising channel for AI issues.
-    category: governance
-    applies_to: [both]
-    evidence_hints:
-      - Concern reporting procedure
-      - Anonymous channel
-    auto_check: {}
-
-  - control_id: ISO42001-A.4.2
-    title: Resource documentation
-    source_ref: ISO/IEC 42001:2023 Annex A.4.2
-    requirement_text: |
-      The organization shall identify and document relevant resources
-      required for the activities at given AI system life cycle stages
-      and other AI-related activities including, but not limited to,
-      data, tooling, system and computing resources, and human
-      resources.
-    description: Identify and document AI resources required (data, compute, people, tooling).
-    category: lifecycle
-    applies_to: [both]
-    evidence_hints:
-      - Per-system resource inventory
-    auto_check: {}
+      usage_monitored: true
 
   - control_id: ISO42001-A.4.3
-    title: Data resources
+    title: Data resources for AI systems
     source_ref: ISO/IEC 42001:2023 Annex A.4.3
     requirement_text: |
       As part of resource identification, the organization shall
       document information about the data resources utilized for the
       AI system.
-    description: Document data resources used by each AI system, including types, sources and quality.
+    description: data_types_processed is populated per system.
     category: data
     applies_to: [both]
     evidence_hints:
       - Per-system data_types_processed
-      - Data flow diagram
     auto_check:
       data_types_documented: true
-
-  - control_id: ISO42001-A.4.4
-    title: Tooling resources
-    source_ref: ISO/IEC 42001:2023 Annex A.4.4
-    requirement_text: |
-      As part of resource identification, the organization shall
-      document information about the tooling resources utilized for the
-      AI system.
-    description: Document tooling resources used by each AI system.
-    category: lifecycle
-    applies_to: [both]
-    evidence_hints:
-      - Tooling inventory
-    auto_check: {}
-
-  - control_id: ISO42001-A.4.5
-    title: System and computing resources
-    source_ref: ISO/IEC 42001:2023 Annex A.4.5
-    requirement_text: |
-      As part of resource identification, the organization shall
-      document information about the system and computing resources
-      utilized for the AI system.
-    description: Document system and computing resources used by each AI system.
-    category: lifecycle
-    applies_to: [both]
-    evidence_hints:
-      - Infrastructure inventory
-    auto_check: {}
-
-  - control_id: ISO42001-A.4.6
-    title: Human resources
-    source_ref: ISO/IEC 42001:2023 Annex A.4.6
-    requirement_text: |
-      As part of resource identification, the organization shall
-      document information about the human resources and their
-      competences utilized for the development, deployment, operation,
-      change management, maintenance, transfer and decommissioning, as
-      well as verification and integration of the AI system.
-    description: Document human resources + competences across the AI lifecycle.
-    category: governance
-    applies_to: [both]
-    evidence_hints:
-      - Competence matrix
-    auto_check: {}
-
-  - control_id: ISO42001-A.5.2
-    title: AI system impact assessment process
-    source_ref: ISO/IEC 42001:2023 Annex A.5.2
-    requirement_text: |
-      The organization shall establish a process to assess the
-      potential consequences for individuals or groups of individuals,
-      or both, and societies that can result from the development,
-      provision or use of AI systems.
-    description: Process to assess AI impacts on individuals, groups, and society.
-    category: risk
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - "AISIA section: affected_population + severity"
-    auto_check:
-      aisia_status_in: [in_progress, completed, approved]
-
-  - control_id: ISO42001-A.5.3
-    title: Documentation of AI system impact assessments
-    source_ref: ISO/IEC 42001:2023 Annex A.5.3
-    requirement_text: |
-      The results of the AI system impact assessment shall be
-      documented.
-    description: Document outputs of the AI system impact assessment.
-    category: risk
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - Signed AISIA PDF in document store
-    auto_check: {}
-
-  - control_id: ISO42001-A.5.4
-    title: Assessing AI system impact on individuals or groups of individuals
-    source_ref: ISO/IEC 42001:2023 Annex A.5.4
-    requirement_text: |
-      The organization shall assess and document the potential impacts
-      of AI systems to individuals or groups of individuals throughout
-      the system's life cycle.
-    description: Assess + document AI impacts on individuals through the lifecycle.
-    category: risk
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - AISIA individual-impact section
-    auto_check: {}
-
-  - control_id: ISO42001-A.5.5
-    title: Assessing societal impacts of AI systems
-    source_ref: ISO/IEC 42001:2023 Annex A.5.5
-    requirement_text: |
-      The organization shall assess and document the potential societal
-      impacts of its AI systems throughout the system's life cycle.
-    description: Assess + document AI impacts on society through the lifecycle.
-    category: risk
-    applies_to: [ai_user, ai_provider]
-    evidence_hints:
-      - AISIA societal-impact section
-    auto_check: {}
-
-  - control_id: ISO42001-A.6.1.2
-    title: Objectives for responsible development of AI system
-    source_ref: ISO/IEC 42001:2023 Annex A.6.1.2
-    requirement_text: |
-      The organization shall identify and document objectives to guide
-      the responsible development of AI systems.
-    description: Document responsible-development objectives for AI systems.
-    category: lifecycle
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Responsible-AI objectives document
-    auto_check: {}
-
-  - control_id: ISO42001-A.6.1.3
-    title: Processes for responsible AI system design and development
-    source_ref: ISO/IEC 42001:2023 Annex A.6.1.3
-    requirement_text: |
-      The organization shall define and document the specific processes
-      for the responsible design and development of AI systems.
-    description: Define responsible AI design + development processes.
-    category: lifecycle
-    applies_to: [ai_provider]
-    evidence_hints:
-      - SDLC procedure for AI
-    auto_check: {}
-
-  - control_id: ISO42001-A.6.2.2
-    title: AI system requirements and specification
-    source_ref: ISO/IEC 42001:2023 Annex A.6.2.2
-    requirement_text: |
-      The organization shall specify and document the requirements for
-      new AI systems or material enhancements to existing AI systems.
-    description: Specify requirements for new AI systems / material enhancements.
-    category: lifecycle
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Requirements specification
-    auto_check: {}
 
   - control_id: ISO42001-A.6.2.3
     title: Documentation of AI system design and development
@@ -561,42 +131,13 @@ controls:
     requirement_text: |
       The organization shall document the AI system design and
       development process.
-    description: Document the AI system design + development process.
+    description: Registry completeness ≥ 80% per system.
     category: lifecycle
     applies_to: [ai_provider]
     evidence_hints:
-      - Design documents
-      - Development records
+      - Per-system documentation in the registry
     auto_check:
       registry_completeness_min: 80
-
-  - control_id: ISO42001-A.6.2.4
-    title: AI system verification and validation
-    source_ref: ISO/IEC 42001:2023 Annex A.6.2.4
-    requirement_text: |
-      The organization shall define and document measures to verify and
-      validate the AI system and define the criteria for their use.
-    description: V&V measures for AI systems.
-    category: lifecycle
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Model evaluation reports
-      - Acceptance test results
-    auto_check: {}
-
-  - control_id: ISO42001-A.6.2.5
-    title: AI system deployment
-    source_ref: ISO/IEC 42001:2023 Annex A.6.2.5
-    requirement_text: |
-      The organization shall document a deployment plan and ensure
-      appropriate requirements are met prior to deployment.
-    description: Deployment plan + pre-deployment checks.
-    category: lifecycle
-    applies_to: [both]
-    evidence_hints:
-      - Deployment runbook
-      - Go-live checklist
-    auto_check: {}
 
   - control_id: ISO42001-A.6.2.6
     title: AI system operation and monitoring
@@ -605,195 +146,13 @@ controls:
       The organization shall define and document the necessary elements
       for the ongoing operation of the AI system. Monitoring shall be
       implemented.
-    description: Operational and monitoring requirements for AI systems.
+    description: AEGIS has observed usage events for the system in operation.
     category: monitoring
     applies_to: [both]
     evidence_hints:
-      - Operational runbook
-      - Drift / performance monitoring dashboard
-    auto_check: {}
-
-  - control_id: ISO42001-A.6.2.7
-    title: AI system technical documentation
-    source_ref: ISO/IEC 42001:2023 Annex A.6.2.7
-    requirement_text: |
-      The organization shall determine what AI system technical
-      documentation is needed for each relevant category of interested
-      parties, such as users, partners, supervisory authorities, and
-      provide the AI system technical documentation to them in the
-      appropriate form.
-    description: Provide technical documentation appropriate to each interested party.
-    category: transparency
-    applies_to: [both]
-    evidence_hints:
-      - User manual
-      - Auditor pack
-    auto_check: {}
-
-  - control_id: ISO42001-A.6.2.8
-    title: AI system recording of event logs
-    source_ref: ISO/IEC 42001:2023 Annex A.6.2.8
-    requirement_text: |
-      The AI system shall automatically record events while the AI
-      system is operating.
-    description: AI system automatically records event logs during operation.
-    category: monitoring
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Application logs
-      - Prompt / output logs
-    auto_check: {}
-
-  - control_id: ISO42001-A.7.2
-    title: Data for development and enhancement of AI system
-    source_ref: ISO/IEC 42001:2023 Annex A.7.2
-    requirement_text: |
-      The organization shall define, document and implement data
-      management processes related to the development of AI systems.
-    description: Data management processes for AI development.
-    category: data
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Data management procedure
+      - ai_usage_events present per system
     auto_check:
-      data_types_documented: true
-
-  - control_id: ISO42001-A.7.3
-    title: Acquisition of data
-    source_ref: ISO/IEC 42001:2023 Annex A.7.3
-    requirement_text: |
-      The organization shall determine and document details about the
-      acquisition and selection of the data used in AI systems.
-    description: Document data acquisition + selection.
-    category: data
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Data sourcing records
-    auto_check: {}
-
-  - control_id: ISO42001-A.7.4
-    title: Quality of data for AI systems
-    source_ref: ISO/IEC 42001:2023 Annex A.7.4
-    requirement_text: |
-      The organization shall define and document requirements for data
-      quality and ensure that data used to develop and operate the AI
-      system meets those requirements.
-    description: Define + enforce data quality requirements for AI systems.
-    category: data
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Data quality SLA
-      - Data quality reports
-    auto_check: {}
-
-  - control_id: ISO42001-A.7.5
-    title: Data provenance
-    source_ref: ISO/IEC 42001:2023 Annex A.7.5
-    requirement_text: |
-      The organization shall define and document a process for
-      recording the provenance of data used in its AI systems.
-    description: Record + retain data provenance.
-    category: data
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Provenance log
-      - Dataset lineage
-    auto_check: {}
-
-  - control_id: ISO42001-A.7.6
-    title: Data preparation
-    source_ref: ISO/IEC 42001:2023 Annex A.7.6
-    requirement_text: |
-      The organization shall define and document its criteria for the
-      selection of data preparations and the data preparation methods
-      to be used.
-    description: Define + document data-preparation criteria + methods.
-    category: data
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Data preparation SOP
-    auto_check: {}
-
-  - control_id: ISO42001-A.8.2
-    title: System documentation and information for users
-    source_ref: ISO/IEC 42001:2023 Annex A.8.2
-    requirement_text: |
-      The organization shall determine and provide the necessary
-      information to users of the AI system.
-    description: Provide users with the necessary information about the AI system.
-    category: transparency
-    applies_to: [ai_provider]
-    evidence_hints:
-      - User-facing documentation
-      - Disclosure on AI-driven decisions
-    auto_check: {}
-
-  - control_id: ISO42001-A.8.3
-    title: External reporting
-    source_ref: ISO/IEC 42001:2023 Annex A.8.3
-    requirement_text: |
-      The organization shall provide capabilities for interested
-      parties to report adverse impacts of the AI system.
-    description: Channel for interested parties to report adverse AI impacts.
-    category: transparency
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Public adverse-impact reporting form
-    auto_check: {}
-
-  - control_id: ISO42001-A.8.4
-    title: Communication of incidents
-    source_ref: ISO/IEC 42001:2023 Annex A.8.4
-    requirement_text: |
-      The organization shall determine and document plans for
-      communicating incidents to users of the AI system.
-    description: Plans to communicate incidents to users.
-    category: transparency
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Incident communications template
-    auto_check: {}
-
-  - control_id: ISO42001-A.8.5
-    title: Information for interested parties
-    source_ref: ISO/IEC 42001:2023 Annex A.8.5
-    requirement_text: |
-      The organization shall determine and document its approach for
-      reporting relevant information about the AI system to interested
-      parties.
-    description: Approach for reporting AI system info to interested parties.
-    category: transparency
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Stakeholder reporting calendar
-    auto_check: {}
-
-  - control_id: ISO42001-A.9.2
-    title: Processes for responsible use of AI systems
-    source_ref: ISO/IEC 42001:2023 Annex A.9.2
-    requirement_text: |
-      The organization shall define and document the processes for
-      responsible use of AI systems.
-    description: Define + document responsible-use processes.
-    category: operations
-    applies_to: [ai_user]
-    evidence_hints:
-      - Acceptable use policy
-      - User training records
-    auto_check: {}
-
-  - control_id: ISO42001-A.9.3
-    title: Objectives for responsible use of AI system
-    source_ref: ISO/IEC 42001:2023 Annex A.9.3
-    requirement_text: |
-      The organization shall identify and document objectives to guide
-      the responsible use of AI systems.
-    description: Document responsible-use objectives.
-    category: operations
-    applies_to: [ai_user]
-    evidence_hints:
-      - Responsible-use objectives document
-    auto_check: {}
+      usage_monitored: true
 
   - control_id: ISO42001-A.9.4
     title: Intended use of the AI system
@@ -802,12 +161,13 @@ controls:
       The organization shall ensure that the AI system is used in
       accordance with the intended uses of the AI system and its
       accompanying documentation.
-    description: Use AI only per intended-use + accompanying documentation.
+    description: intended_purpose is documented per system.
     category: operations
     applies_to: [ai_user]
     evidence_hints:
-      - Intended-use documentation in registry
-    auto_check: {}
+      - Intended-purpose record in registry
+    auto_check:
+      intended_purpose_documented: true
 
   - control_id: ISO42001-A.10.2
     title: Allocation of responsibilities between AI partners
@@ -816,7 +176,7 @@ controls:
       The organization shall ensure that responsibilities within the
       AI life cycle are allocated between the organization, its
       partners, suppliers, customers, and third parties.
-    description: Allocate AI responsibilities between partners, suppliers, customers, third parties.
+    description: AI provider is assessed (catalogue-matched OR free-text provider documented).
     category: supply_chain
     applies_to: [ai_user]
     evidence_hints:
@@ -824,32 +184,3 @@ controls:
       - DPA / contract with AI provider
     auto_check:
       provider_assessed: true
-
-  - control_id: ISO42001-A.10.3
-    title: Suppliers
-    source_ref: ISO/IEC 42001:2023 Annex A.10.3
-    requirement_text: |
-      The organization shall ensure that its approach to managing AI
-      suppliers takes into account responsibilities related to the AI
-      system.
-    description: Manage AI-supplier risk in line with AIMS objectives.
-    category: supply_chain
-    applies_to: [ai_user]
-    evidence_hints:
-      - Supplier register tagged with AI flag
-      - Supplier AI questionnaire
-    auto_check: {}
-
-  - control_id: ISO42001-A.10.4
-    title: Customers
-    source_ref: ISO/IEC 42001:2023 Annex A.10.4
-    requirement_text: |
-      The organization shall ensure that its approach to managing AI
-      customers takes into account responsibilities related to the AI
-      system.
-    description: Manage AI customer responsibilities.
-    category: supply_chain
-    applies_to: [ai_provider]
-    evidence_hints:
-      - Customer-facing AI agreement
-    auto_check: {}

@@ -4,48 +4,17 @@ version: "IRDAI/IT/GDL/MISC/82/04/2023"
 authority: Insurance Regulatory and Development Authority of India
 jurisdiction: IN
 description: |
-  IRDAI Information and Cyber Security Guidelines applicable to all
-  Insurers, Reinsurers, Intermediaries, Insurance Repositories and the
-  Insurance Information Bureau. The Guidelines mandate the Board to
-  approve an Information & Cyber Security Policy and to constitute an
-  Information Security Committee; AI workloads inherit the same
-  obligations. Citations below are to the relevant Guideline reference.
+  IRDAI Information and Cyber Security Guidelines 2023. This catalogue
+  retains ONLY the references whose application to an AI system can be
+  tested by AEGIS against Registry, AISIA, integration metadata, and
+  provider catalogue. Paper-only references (ICS Policy, ISC charter,
+  RBAC docs, crypto policy, BCP, IRDAI incident channel, CERT-In audit)
+  are intentionally omitted.
+
+  Every `requirement_text` is a verbatim citation. Every control has a
+  non-empty `auto_check`; auto-assessment never produces `not_assessed`.
 is_active: true
 controls:
-
-  - control_id: IRDAI-ICS-1
-    title: Board-approved Information and Cyber Security Policy
-    source_ref: IRDAI ICS Guidelines 2023, Reference 1
-    requirement_text: |
-      Every regulated entity shall have a Board-approved Information
-      and Cyber Security Policy that covers the entire information
-      lifecycle, applicable to all information assets including those
-      operated by third parties on behalf of the entity.
-    description: Board-approved Information & Cyber Security Policy that explicitly covers AI workloads.
-    category: governance
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Board minutes approving the policy
-      - Signed ICS Policy
-    auto_check: {}
-
-  - control_id: IRDAI-ICS-2
-    title: Information Security Committee
-    source_ref: IRDAI ICS Guidelines 2023, Reference 2
-    requirement_text: |
-      An Information Security Committee shall be constituted by the
-      Board to oversee the implementation of the Information and Cyber
-      Security Policy and to provide direction on information security
-      strategy.
-    description: ISC oversees AI-related information security strategy + implementation.
-    category: governance
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - ISC charter
-      - ISC minutes
-    auto_check: {}
 
   - control_id: IRDAI-ICS-3
     title: Asset management
@@ -53,7 +22,7 @@ controls:
     requirement_text: |
       The regulated entity shall identify and classify all information
       assets and maintain an inventory of them.
-    description: Maintain an inventory + classification of AI information assets.
+    description: AI System Registry completeness ≥ 60% per system.
     category: governance
     is_mandatory: true
     applies_to: [ai_user]
@@ -69,12 +38,12 @@ controls:
       The regulated entity shall undertake periodic information and
       cyber risk assessments covering all information assets and
       third-party arrangements.
-    description: Periodic AI cyber risk assessments covering owned + outsourced AI.
+    description: AISIA exists and is at least in-progress per system.
     category: risk
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Cyber risk assessment report
+      - AISIA record per AI system
     auto_check:
       aisia_status_in: [in_progress, completed, approved]
 
@@ -85,117 +54,43 @@ controls:
       Data shall be classified according to its sensitivity and
       appropriate protection measures shall be applied throughout the
       data lifecycle, including for data shared with third parties.
-    description: Classify AI data + apply protection across the data lifecycle, including with AI vendors.
+    description: data_types_processed is populated per system.
     category: data
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Data classification scheme
       - Per-system data_types_processed
     auto_check:
       data_types_documented: true
 
   - control_id: IRDAI-ICS-6
-    title: Third-party / outsourcing security
+    title: Third-party / outsourcing security — AI vendor due diligence
     source_ref: IRDAI ICS Guidelines 2023, Reference 6
     requirement_text: |
       The regulated entity shall ensure that information security
       requirements are agreed with and implemented by third-party
       service providers, including cloud and AI service providers.
-    description: Third-party security requirements explicit in AI vendor contracts.
+    description: AI provider is assessed (catalogue-matched OR free-text provider documented).
     category: supply_chain
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - DPA / vendor security addendum
+      - Catalogue match OR provider_name_freetext populated
+      - DPA on file with the AI provider
     auto_check:
       provider_assessed: true
-
-  - control_id: IRDAI-ICS-7
-    title: Access management
-    source_ref: IRDAI ICS Guidelines 2023, Reference 7
-    requirement_text: |
-      Access to information assets shall be granted on a need-to-know
-      basis, with role-based access controls and review.
-    description: RBAC + access reviews for AI systems.
-    category: security
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Access review report
-    auto_check: {}
-
-  - control_id: IRDAI-ICS-8
-    title: Cryptography
-    source_ref: IRDAI ICS Guidelines 2023, Reference 8
-    requirement_text: |
-      Strong cryptographic controls shall be applied to information
-      assets, in transit and at rest, in line with industry standards.
-    description: Strong cryptography for AI data in transit and at rest.
-    category: security
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - AI provider TLS + encryption configuration
-    auto_check: {}
 
   - control_id: IRDAI-ICS-9
     title: Logging and monitoring
     source_ref: IRDAI ICS Guidelines 2023, Reference 9
     requirement_text: |
-      Logging and monitoring of information systems shall be
-      established and reviewed regularly, including for outsourced
-      services.
-    description: Log and monitor AI usage; correlate with SIEM.
+      Logging and monitoring of information systems shall be established
+      and reviewed regularly, including for outsourced services.
+    description: AEGIS has observed usage events per AI system.
     category: monitoring
     is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - AEGIS ai_usage_events
-      - SIEM correlation rules
-    auto_check: {}
-
-  - control_id: IRDAI-ICS-10
-    title: Incident management and reporting
-    source_ref: IRDAI ICS Guidelines 2023, Reference 10
-    requirement_text: |
-      Cyber incidents shall be reported to IRDAI within the
-      prescribed timelines, with appropriate incident response and
-      forensic procedures in place.
-    description: Report AI-related cyber incidents to IRDAI within prescribed timelines.
-    category: monitoring
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - Incident response plan
-      - Sample IRDAI incident report
-    auto_check: {}
-
-  - control_id: IRDAI-ICS-11
-    title: Business continuity
-    source_ref: IRDAI ICS Guidelines 2023, Reference 11
-    requirement_text: |
-      Business continuity arrangements shall cover the entire IT
-      estate including third-party dependencies.
-    description: BCP covers AI services and AI vendor dependencies.
-    category: operations
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - BCP test report for AI systems
-    auto_check: {}
-
-  - control_id: IRDAI-ICS-12
-    title: Cyber audit
-    source_ref: IRDAI ICS Guidelines 2023, Reference 12
-    requirement_text: |
-      The regulated entity shall be subject to an annual cyber audit by
-      a CERT-In empanelled auditor, covering all information assets,
-      controls and outsourced arrangements.
-    description: Annual CERT-In empanelled auditor cyber audit covering AI assets + outsourced AI services.
-    category: governance
-    is_mandatory: true
-    applies_to: [ai_user]
-    evidence_hints:
-      - CERT-In audit report
-    auto_check: {}
+      - ai_usage_events present per system
+    auto_check:
+      usage_monitored: true
