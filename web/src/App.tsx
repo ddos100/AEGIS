@@ -1,8 +1,10 @@
 import { NavLink, Link, Route, Routes } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { sessionStore, useSession } from '@/lib/session';
 import { useDashboardOverview } from '@/hooks/useCompliance';
 import EcosystemMap from '@/components/EcosystemMap';
+import LoginPage from '@/pages/auth/LoginPage';
 import RegistryListPage from '@/pages/registry/RegistryListPage';
 import RegistryDetailPage from '@/pages/registry/RegistryDetailPage';
 import RegistryEditPage from '@/pages/registry/RegistryEditPage';
@@ -46,7 +48,7 @@ function Sidebar() {
         {link('/compliance', 'Compliance')}
         {link('/reports', 'Reports')}
       </nav>
-      <div className="mt-auto text-xs text-slate-400">v0.5.0 · Phase 5</div>
+      <div className="mt-auto text-xs text-slate-400">v1.0.0 · Production</div>
     </aside>
   );
 }
@@ -192,14 +194,40 @@ function Overview() {
   );
 }
 
+function SessionMenu() {
+  const session = useSession();
+  if (!session) return null;
+  return (
+    <div className="flex items-center gap-3">
+      <div className="text-right">
+        <div className="text-xs text-slate-500">session id</div>
+        <code className="text-[11px] tabular-nums text-slate-600" title="Rotates internally every ~10 minutes">
+          {session.session_id.slice(0, 8)}…{session.session_id.slice(-4)}
+        </code>
+      </div>
+      <button
+        onClick={() => sessionStore.logout()}
+        className="rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+      >
+        Sign out
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
+  const session = useSession();
+  if (!session) return <LoginPage />;
   return (
     <div className="flex h-screen">
       <Sidebar />
       <main className="flex-1 overflow-auto">
         <header className="flex items-center justify-between border-b bg-white px-6 py-3">
           <div className="text-sm text-slate-500">Securisti Consulting LLP · CONFIDENTIAL</div>
-          <HealthBadge />
+          <div className="flex items-center gap-4">
+            <HealthBadge />
+            <SessionMenu />
+          </div>
         </header>
         <div className="p-8">
           <Routes>

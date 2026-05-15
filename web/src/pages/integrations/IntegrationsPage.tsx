@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 import {
   useConnectorTypes,
   useCreateIntegration,
@@ -8,6 +10,39 @@ import {
   useTestIntegration,
 } from '@/hooks/useIntegrations';
 import type { ConnectorInfo, IntegrationBrief, SyncRunResponse } from '@/types/integrations';
+
+interface DiscoverySource {
+  source: string;
+  vector: string;
+  mode: string;
+  cls: string;
+}
+
+// Friendly label + minimal config hint for each known discovery source.
+// The backend list (`/v1/auth/sources`) is the source of truth — these are
+// just for nicer display when the source key matches.
+const SOURCE_HINTS: Record<string, { label: string; family: string; configures: string }> = {
+  zscaler_nss:       { label: 'Zscaler ZIA',         family: 'Proxy/CASB',   configures: 'NSS feed forwarder → POST /v1/ingest/network' },
+  netskope:          { label: 'Netskope',            family: 'Proxy/CASB',   configures: 'Transaction events JSON → POST /v1/ingest/network' },
+  squid:             { label: 'Squid',               family: 'Proxy/CASB',   configures: 'Access log forwarder → POST /v1/ingest/network' },
+  forcepoint:        { label: 'Forcepoint',          family: 'Proxy/CASB',   configures: 'W3C / CEF syslog → POST /v1/ingest/network' },
+  paloalto:          { label: 'Palo Alto PAN-OS',    family: 'NGFW',         configures: 'Traffic + DNS log → POST /v1/ingest/network' },
+  fortinet:          { label: 'Fortinet FortiGate',  family: 'NGFW',         configures: 'FortiOS syslog CEF → POST /v1/ingest/network' },
+  sophos_firewall:   { label: 'Sophos XG/XGS',       family: 'NGFW',         configures: 'Syslog CEF → POST /v1/ingest/network' },
+  checkpoint:        { label: 'Check Point',         family: 'NGFW',         configures: 'Log Exporter JSON → POST /v1/ingest/network' },
+  cisco_umbrella:    { label: 'Cisco Umbrella',      family: 'DNS',          configures: 'DNS CSV + REST API → POST /v1/ingest/network' },
+  cloudflare_gateway:{ label: 'Cloudflare Gateway',  family: 'DNS',          configures: 'Logpush JSON → POST /v1/ingest/network' },
+  manageengine:      { label: 'ManageEngine',        family: 'NGFW',         configures: 'Aggregated CEF syslog → POST /v1/ingest/network' },
+  crowdstrike:       { label: 'CrowdStrike Falcon',  family: 'XDR/EDR',      configures: 'Streaming API → POST /v1/ingest/xdr' },
+  sentinelone:       { label: 'SentinelOne',         family: 'XDR/EDR',      configures: 'CEF syslog → POST /v1/ingest/xdr' },
+  sophos_xdr:        { label: 'Sophos XDR',          family: 'XDR/EDR',      configures: 'Data Lake REST → POST /v1/ingest/xdr' },
+  trellix:           { label: 'Trellix',             family: 'XDR/EDR',      configures: 'ePolicy REST / CEF → POST /v1/ingest/xdr' },
+  seqrite:           { label: 'Seqrite',             family: 'XDR/EDR',      configures: 'REST API (pull, 15 min) → POST /v1/ingest/xdr' },
+  cortex_xdr:        { label: 'Palo Alto Cortex XDR',family: 'XDR/EDR',      configures: 'REST API → POST /v1/ingest/xdr' },
+  cisco_xdr:         { label: 'Cisco XDR',           family: 'XDR/EDR',      configures: 'REST API → POST /v1/ingest/xdr' },
+  ocsf:              { label: 'Generic OCSF',        family: 'Generic',      configures: 'OCSF v1.x JSON → POST /v1/ingest/network' },
+  cef:               { label: 'Generic CEF',         family: 'Generic',      configures: 'Common Event Format → POST /v1/ingest/network' },
+};
 
 // Per-integration credential field hints. Drives the dynamic Add form.
 const CREDENTIAL_HINTS: Record<string, { key: string; type: 'text' | 'password' | 'json'; placeholder: string }[]> = {
@@ -108,17 +143,109 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      {types && types.length > 0 && !isLoading && (
-        <div className="text-xs text-slate-500">
-          <b>Available connectors:</b>{' '}
-          {types.map((t) => <code key={t.integration} className="mx-1 rounded bg-slate-100 px-1 py-0.5">{t.integration}</code>)}
-        </div>
+      {types && types.length > 0 && (
+        <ConnectorCatalogue types={types} />
       )}
+
+      <DiscoverySourcesPanel />
 
       {addOpen && types && (
         <AddIntegrationModal types={types} onClose={() => setAddOpen(false)} />
       )}
     </div>
+  );
+}
+
+// ---------- Connector catalogue (IdP / Cloud / SaaS pull-based) ----------
+
+function ConnectorCatalogue({ types }: { types: ConnectorInfo[] }) {
+  const grouped = types.reduce<Record<string, ConnectorInfo[]>>((acc, t) => {
+    (acc[t.kind] = acc[t.kind] || []).push(t);
+    return acc;
+  }, {});
+  return (
+    <section className="rounded-lg border bg-white p-4">
+      <header className="mb-3 flex items-center justify-between">
+        <h2 className="font-semibold text-brand-700">Available connectors</h2>
+        <span className="text-xs text-slate-500">{types.length} integrations</span>
+      </header>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {Object.entries(grouped).map(([kind, items]) => (
+          <div key={kind} className="rounded-md border bg-slate-50 p-3">
+            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">{kind}</div>
+            <ul className="space-y-1.5">
+              {items.map((t) => (
+                <li key={t.integration} className="flex items-start gap-2">
+                  <code className="rounded bg-white px-2 py-0.5 text-xs text-brand-700">{t.integration}</code>
+                  <span className="text-xs text-slate-600 line-clamp-2">{t.doc}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ---------- Discovery sources (network + XDR push-based) ----------
+
+function DiscoverySourcesPanel() {
+  const { data, isLoading } = useQuery<DiscoverySource[]>({
+    queryKey: ['auth', 'sources'],
+    queryFn: async () => (await api.get('/auth/sources')).data,
+    staleTime: 60_000,
+  });
+
+  if (isLoading) return null;
+  if (!data || data.length === 0) return null;
+
+  const byFamily: Record<string, DiscoverySource[]> = {};
+  for (const src of data) {
+    const family = SOURCE_HINTS[src.source]?.family
+      || (src.vector === 'xdr_edr' ? 'XDR/EDR' : 'Network');
+    (byFamily[family] = byFamily[family] || []).push(src);
+  }
+
+  return (
+    <section className="rounded-lg border bg-white p-4">
+      <header className="mb-3 flex items-end justify-between">
+        <div>
+          <h2 className="font-semibold text-brand-700">Discovery sources</h2>
+          <p className="text-xs text-slate-500">
+            Log + telemetry sources AEGIS can ingest. Push events to{' '}
+            <code className="rounded bg-slate-100 px-1">POST /v1/ingest/&#123;network|xdr&#125;</code> with the
+            <code className="ml-1 rounded bg-slate-100 px-1">X-Ingest-Key</code> header. The <code>source</code> field
+            on each batch selects the normalizer.
+          </p>
+        </div>
+        <span className="text-xs text-slate-500">{data.length} sources</span>
+      </header>
+
+      {Object.entries(byFamily).map(([family, sources]) => (
+        <div key={family} className="mb-3">
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">{family}</div>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {sources.map((s) => {
+              const hint = SOURCE_HINTS[s.source];
+              return (
+                <div key={s.source} className="rounded-md border bg-slate-50 p-3">
+                  <div className="flex items-center justify-between">
+                    <code className="text-xs text-brand-700">{s.source}</code>
+                    <span className={s.mode === 'push' ? 'badge-low' : 'badge-medium'}>{s.mode}</span>
+                  </div>
+                  {hint && <div className="mt-1 text-sm font-medium text-slate-800">{hint.label}</div>}
+                  {hint && <div className="text-xs text-slate-600">{hint.configures}</div>}
+                  <div className="mt-1 text-[10px] uppercase tracking-wide text-slate-400">
+                    vector: {s.vector}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </section>
   );
 }
 

@@ -7,7 +7,8 @@ desktop agents, cloud AI services, embedded SaaS AI features, and code-level AI
 SDK usage — classifies them by risk, enforces acceptable-use policies, and maps
 compliance to ISO 42001, EU AI Act, NIST AI RMF, DPDPA, RBI, IRDAI, and SEBI.
 
-> **Status:** Phase 5 complete — full AEGIS stack live (Discovery + Registry + Risk + Policy + Compliance + Reports), May 2026.
+> **Status — v1.0.0, final deployment build (May 2026).**
+> The full AEGIS stack (Discovery → Registry → Risk → Policy → Compliance → Reports) is wrapped in production-grade authentication: a Keycloak-fronted login form, a rotating opaque `session_id` that the server re-issues on every silent token refresh (~10 minutes), and a long-lived refresh-token chain so users never see an unexpected logout. The full 105-entry AI service catalogue is browsable in-console at **/catalogue**; every IdP/cloud/SaaS connector and every network/XDR ingestion source is listed and configurable through the **Integrations** screen.
 
 ## Prerequisites
 

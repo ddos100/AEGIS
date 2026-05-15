@@ -14,7 +14,7 @@ from app.integrations.connectors import load_all_connectors
 from app.integrations.network.base import load_all_normalizers
 from app.integrations.network.matcher import load_from_db, matcher_size
 from app.routes import (
-    aisia, catalogue, compliance, dashboard, discovery, eramba, extension,
+    aisia, auth, catalogue, compliance, dashboard, discovery, eramba, extension,
     health, ingest, integrations, me, policies, registry, reports, risk,
 )
 
@@ -55,6 +55,7 @@ def create_app() -> FastAPI:
     )
     p = settings.api_v1_prefix
     app.include_router(health.router,    prefix=p)
+    app.include_router(auth.router,      prefix=p)
     app.include_router(me.router,        prefix=p)
     app.include_router(catalogue.router, prefix=p)
     app.include_router(registry.router,  prefix=p)

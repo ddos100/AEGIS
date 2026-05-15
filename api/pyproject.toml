@@ -1,6 +1,6 @@
 [project]
 name = "aegis-api"
-version = "0.1.0"
+version = "1.0.0"
 description = "AEGIS — AI Enterprise Governance & Inventory System (Backend API)"
 readme = "README.md"
 requires-python = ">=3.12"
