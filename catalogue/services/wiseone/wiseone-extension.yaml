@@ -1,0 +1,26 @@
+id: wiseone-extension
+name: Wiseone
+provider_slug: wiseone
+category: browser_extension
+description: Reading-companion AI extension that summarises and cross-references articles.
+browser_domains:
+  - wiseone.io
+hq_country: "FR"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - summarization
+  - text_generation
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 58
+tags:
+  - browser_extension
+  - research
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

@@ -1,0 +1,29 @@
+id: zendesk-ai
+name: Zendesk AI
+provider_slug: zendesk
+category: agent
+description: Zendesk Advanced AI for ticket triage, autoresponders, and agent copilots.
+api_endpoint_patterns:
+  - api.zendesk.com
+browser_domains:
+  - zendesk.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - classification
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 72
+tags:
+  - customer_support
+  - saas_embedded
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

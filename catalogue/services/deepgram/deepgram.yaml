@@ -1,0 +1,26 @@
+id: deepgram
+name: Deepgram
+provider_slug: deepgram
+category: speech
+description: Real-time speech-to-text + text-to-speech API.
+api_endpoint_patterns:
+  - api.deepgram.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+  - text_to_speech
+input_data_types:
+  - audio
+output_data_types:
+  - text
+  - audio
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 72
+tags:
+  - speech_api
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

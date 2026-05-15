@@ -7,7 +7,7 @@ description: AI features in Zoom — meeting summaries, smart compose, transcrip
 website: https://www.zoom.com/en/ai-assistant
 api_endpoint_patterns:
   - api.zoom.us
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [text_generation, summarization, speech_to_text]

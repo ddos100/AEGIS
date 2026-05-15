@@ -1,0 +1,28 @@
+id: krea-ai
+name: Krea AI
+provider_slug: krea
+category: image_gen
+description: Real-time generative image / video platform.
+browser_domains:
+  - krea.ai
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - image_generation
+  - video_generation
+input_data_types:
+  - text
+  - image
+output_data_types:
+  - image
+  - video
+default_risk_indicators:
+  data_sensitivity_hint: low
+  capability_level: medium
+  provider_trust_score: 56
+tags:
+  - image_gen
+  - real_time
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

@@ -1,0 +1,26 @@
+id: assemblyai
+name: AssemblyAI
+provider_slug: assemblyai
+category: speech
+description: Speech-to-text and audio-intelligence API.
+api_endpoint_patterns:
+  - api.assemblyai.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+  - classification
+  - summarization
+input_data_types:
+  - audio
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 70
+tags:
+  - speech_api
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

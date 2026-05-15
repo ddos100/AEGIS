@@ -1,0 +1,29 @@
+id: heygen-studio
+name: HeyGen
+provider_slug: heygen
+category: video_gen
+description: AI spokesperson video generator with translation features.
+api_endpoint_patterns:
+  - api.heygen.com
+browser_domains:
+  - heygen.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - video_generation
+  - text_to_speech
+input_data_types:
+  - text
+  - image
+output_data_types:
+  - video
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 58
+tags:
+  - video_gen
+  - avatar
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

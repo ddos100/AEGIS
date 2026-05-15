@@ -1,0 +1,25 @@
+id: recraft-ai
+name: Recraft
+provider_slug: recraft
+category: image_gen
+description: Vector + raster generative image platform.
+browser_domains:
+  - recraft.ai
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - image_generation
+input_data_types:
+  - text
+output_data_types:
+  - image
+default_risk_indicators:
+  data_sensitivity_hint: low
+  capability_level: medium
+  provider_trust_score: 56
+tags:
+  - image_gen
+  - vector
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

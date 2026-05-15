@@ -8,7 +8,7 @@ website: https://cohere.com
 api_endpoint_patterns:
   - api.cohere.ai
   - api.cohere.com
-hq_country: CA
+hq_country: "CA"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, embedding, summarization, function_calling]

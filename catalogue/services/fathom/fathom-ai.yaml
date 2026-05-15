@@ -1,0 +1,25 @@
+id: fathom-ai
+name: Fathom
+provider_slug: fathom
+category: speech
+description: Free AI meeting note-taker; auto-summaries.
+browser_domains:
+  - fathom.video
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+  - summarization
+input_data_types:
+  - audio
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 64
+tags:
+  - meeting_notes
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

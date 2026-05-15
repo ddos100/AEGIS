@@ -1,0 +1,26 @@
+id: loom-ai
+name: Loom AI
+provider_slug: loom
+category: agent
+description: Auto-transcription + summarisation of Loom video recordings.
+browser_domains:
+  - loom.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+  - summarization
+input_data_types:
+  - video
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 70
+tags:
+  - saas_embedded
+  - video
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

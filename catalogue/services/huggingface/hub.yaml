@@ -10,7 +10,7 @@ api_endpoint_patterns:
   - huggingface.co/api
 browser_domains:
   - huggingface.co
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, embedding, image_generation, classification, code_generation]

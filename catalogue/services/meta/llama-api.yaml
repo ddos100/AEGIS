@@ -6,7 +6,7 @@ description: Meta's hosted Llama model family (Llama 3+, Llama 4).
 website: https://llama.meta.com
 api_endpoint_patterns:
   - api.llama-api.com
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, code_generation, vision]

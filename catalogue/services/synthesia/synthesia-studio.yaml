@@ -1,0 +1,26 @@
+id: synthesia-studio
+name: Synthesia
+provider_slug: synthesia
+category: video_gen
+description: AI video creation platform with realistic AI avatars.
+browser_domains:
+  - synthesia.io
+hq_country: "GB"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - video_generation
+  - text_to_speech
+input_data_types:
+  - text
+output_data_types:
+  - video
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 68
+tags:
+  - video_gen
+  - avatar
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

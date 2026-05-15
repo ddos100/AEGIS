@@ -1,0 +1,29 @@
+id: gong-revenue-ai
+name: Gong Revenue AI
+provider_slug: gong
+category: speech
+description: Revenue intelligence platform; captures and analyses customer calls.
+api_endpoint_patterns:
+  - api.gong.io
+browser_domains:
+  - gong.io
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+  - classification
+  - summarization
+input_data_types:
+  - audio
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: critical
+  capability_level: high
+  provider_trust_score: 74
+tags:
+  - sales_intelligence
+  - call_recording
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

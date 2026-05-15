@@ -1,0 +1,28 @@
+id: otter-ai
+name: Otter.ai
+provider_slug: otter
+category: speech
+description: AI meeting note-taker; joins Zoom/Meet/Teams.
+api_endpoint_patterns:
+  - api.otter.ai
+browser_domains:
+  - otter.ai
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+  - summarization
+input_data_types:
+  - audio
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 68
+tags:
+  - meeting_notes
+  - transcription
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

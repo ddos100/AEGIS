@@ -1,0 +1,26 @@
+id: duckduckgo-ai-chat
+name: DuckDuckGo AI Chat
+provider_slug: duckduckgo-ai
+category: llm
+description: Anonymous proxy chat against multiple model providers.
+browser_domains:
+  - duck.ai
+  - duckduckgo.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 70
+tags:
+  - chat
+  - proxy_chat
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

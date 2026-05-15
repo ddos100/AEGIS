@@ -1,0 +1,24 @@
+id: playground-ai-image
+name: Playground AI
+provider_slug: playground-ai
+category: image_gen
+description: Generative image platform.
+browser_domains:
+  - playground.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - image_generation
+input_data_types:
+  - text
+output_data_types:
+  - image
+default_risk_indicators:
+  data_sensitivity_hint: low
+  capability_level: medium
+  provider_trust_score: 54
+tags:
+  - image_gen
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

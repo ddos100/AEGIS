@@ -10,7 +10,7 @@ api_endpoint_patterns:
 browser_domains:
   - chat.openai.com
   - chatgpt.com
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, code_generation, vision, summarization, function_calling]

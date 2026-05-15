@@ -1,0 +1,28 @@
+id: leonardo-ai
+name: Leonardo.Ai
+provider_slug: leonardo
+category: image_gen
+description: Generative image platform for game assets and concept art.
+api_endpoint_patterns:
+  - cloud.leonardo.ai/api
+browser_domains:
+  - leonardo.ai
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - image_generation
+input_data_types:
+  - text
+  - image
+output_data_types:
+  - image
+default_risk_indicators:
+  data_sensitivity_hint: low
+  capability_level: medium
+  provider_trust_score: 58
+tags:
+  - image_gen
+  - creative
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

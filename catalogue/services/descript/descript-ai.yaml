@@ -1,0 +1,28 @@
+id: descript-ai
+name: Descript
+provider_slug: descript
+category: speech
+description: AI-powered audio/video editor with voice cloning (Overdub).
+browser_domains:
+  - descript.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+  - text_to_speech
+input_data_types:
+  - audio
+  - video
+output_data_types:
+  - audio
+  - video
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 66
+tags:
+  - audio_editing
+  - voice_cloning
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

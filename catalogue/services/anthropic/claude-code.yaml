@@ -7,7 +7,7 @@ description: Anthropic's terminal-based coding agent — reads/edits the entire 
 website: https://www.anthropic.com/claude-code
 api_endpoint_patterns:
   - api.anthropic.com/v1/messages
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [code_generation, autonomous_agent, function_calling, summarization]

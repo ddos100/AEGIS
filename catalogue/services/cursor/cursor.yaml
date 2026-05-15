@@ -9,7 +9,7 @@ api_endpoint_patterns:
   - api2.cursor.sh
   - api.cursor.sh
   - api.cursor.com
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [code_generation, text_generation, summarization]

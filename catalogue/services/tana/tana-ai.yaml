@@ -1,0 +1,25 @@
+id: tana-ai
+name: Tana
+provider_slug: tana
+category: agent
+description: AI-powered knowledge-graph note app.
+browser_domains:
+  - tana.inc
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 56
+tags:
+  - note_taking
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

@@ -6,7 +6,7 @@ description: Text-to-video generation tool.
 website: https://pika.art
 browser_domains:
   - pika.art
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [video_generation]

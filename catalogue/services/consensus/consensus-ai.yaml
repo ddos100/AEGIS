@@ -1,0 +1,25 @@
+id: consensus-ai
+name: Consensus AI
+provider_slug: consensus
+category: search
+description: Search engine extracting findings from peer-reviewed papers.
+browser_domains:
+  - consensus.app
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 72
+tags:
+  - research
+  - academic
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

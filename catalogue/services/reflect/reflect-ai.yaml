@@ -1,0 +1,25 @@
+id: reflect-ai
+name: Reflect
+provider_slug: reflect
+category: agent
+description: Networked notes app with GPT-4 AI assistant.
+browser_domains:
+  - reflect.app
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 58
+tags:
+  - note_taking
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

@@ -1,0 +1,31 @@
+id: d-id-studio
+name: D-ID Studio
+provider_slug: d-id
+category: video_gen
+description: AI avatar / talking-head video generation.
+api_endpoint_patterns:
+  - api.d-id.com
+browser_domains:
+  - d-id.com
+  - studio.d-id.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - video_generation
+  - text_to_speech
+input_data_types:
+  - text
+  - image
+output_data_types:
+  - video
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 52
+tags:
+  - avatar
+  - video_gen
+  - deepfake_risk
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

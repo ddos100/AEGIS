@@ -8,7 +8,7 @@ api_endpoint_patterns:
   - api.elevenlabs.io
 browser_domains:
   - elevenlabs.io
-hq_country: GB
+hq_country: "GB"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [text_to_speech]

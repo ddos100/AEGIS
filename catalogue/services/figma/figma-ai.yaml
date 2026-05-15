@@ -1,0 +1,29 @@
+id: figma-ai
+name: Figma AI
+provider_slug: figma
+category: agent
+description: Generative design features inside Figma (Make Designs, Visual Search).
+api_endpoint_patterns:
+  - api.figma.com
+browser_domains:
+  - figma.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - image_generation
+  - text_generation
+input_data_types:
+  - text
+  - image
+output_data_types:
+  - image
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 70
+tags:
+  - design
+  - saas_embedded
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

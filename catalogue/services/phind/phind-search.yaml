@@ -1,0 +1,28 @@
+id: phind-search
+name: Phind
+provider_slug: phind
+category: search
+subcategory: developer_search
+description: AI search engine for developers.
+browser_domains:
+  - phind.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - code_generation
+input_data_types:
+  - text
+output_data_types:
+  - text
+  - code
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 62
+tags:
+  - search
+  - developer
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

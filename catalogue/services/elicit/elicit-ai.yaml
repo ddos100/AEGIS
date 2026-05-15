@@ -1,0 +1,26 @@
+id: elicit-ai
+name: Elicit
+provider_slug: elicit
+category: search
+description: AI research assistant for systematic literature reviews.
+browser_domains:
+  - elicit.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - summarization
+  - text_generation
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 70
+tags:
+  - research
+  - academic
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

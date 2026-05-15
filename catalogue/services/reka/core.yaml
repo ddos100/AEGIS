@@ -6,7 +6,7 @@ description: Multimodal LLM family from Reka AI (Singapore-based).
 website: https://www.reka.ai
 api_endpoint_patterns:
   - api.reka.ai
-hq_country: SG
+hq_country: "SG"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, vision, code_generation, function_calling]

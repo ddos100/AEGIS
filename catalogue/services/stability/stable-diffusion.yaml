@@ -6,7 +6,7 @@ description: Open-weight diffusion models for text-to-image generation, hosted b
 website: https://stability.ai
 api_endpoint_patterns:
   - api.stability.ai
-hq_country: GB
+hq_country: "GB"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [image_generation]

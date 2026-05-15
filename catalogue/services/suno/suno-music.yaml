@@ -1,0 +1,23 @@
+id: suno-music
+name: Suno
+provider_slug: suno
+category: other
+subcategory: music_generation
+description: Generative music / song AI.
+browser_domains:
+  - suno.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+input_data_types:
+  - text
+output_data_types:
+  - audio
+default_risk_indicators:
+  data_sensitivity_hint: low
+  capability_level: medium
+  provider_trust_score: 50
+tags:
+  - music_gen
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

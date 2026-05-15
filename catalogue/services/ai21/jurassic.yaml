@@ -6,7 +6,7 @@ description: AI21 Labs' Jamba family — hybrid SSM/transformer LLMs.
 website: https://www.ai21.com
 api_endpoint_patterns:
   - api.ai21.com
-hq_country: IL
+hq_country: "IL"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, summarization]

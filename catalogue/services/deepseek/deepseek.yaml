@@ -8,7 +8,7 @@ api_endpoint_patterns:
   - api.deepseek.com
 browser_domains:
   - chat.deepseek.com
-hq_country: CN
+hq_country: "CN"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, code_generation, function_calling]

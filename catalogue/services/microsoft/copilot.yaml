@@ -12,7 +12,7 @@ browser_domains:
   - m365.cloud.microsoft
 entra_app_ids:
   - "ce8e5e2f-c20d-4b6e-9d12-ff5ec55b3e0e"
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, summarization, function_calling]

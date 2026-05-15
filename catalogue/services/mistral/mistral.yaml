@@ -8,7 +8,7 @@ api_endpoint_patterns:
   - api.mistral.ai
 browser_domains:
   - chat.mistral.ai
-hq_country: FR
+hq_country: "FR"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, code_generation, function_calling, embedding]

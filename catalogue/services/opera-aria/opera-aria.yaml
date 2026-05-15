@@ -1,0 +1,26 @@
+id: opera-aria
+name: Opera Aria
+provider_slug: opera-aria
+category: browser_extension
+description: Aria AI assistant built into Opera browser.
+browser_domains:
+  - opera.com
+hq_country: "NO"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 64
+tags:
+  - browser_assistant
+  - opera
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

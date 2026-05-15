@@ -1,0 +1,27 @@
+id: sider-ai
+name: Sider AI
+provider_slug: sider
+category: browser_extension
+description: Sidebar AI assistant browser extension; multi-model.
+browser_domains:
+  - sider.ai
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+input_data_types:
+  - text
+  - image
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: high
+  provider_trust_score: 40
+tags:
+  - browser_extension
+  - shadow_ai_risk
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

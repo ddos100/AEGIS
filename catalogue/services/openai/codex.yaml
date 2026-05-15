@@ -7,7 +7,7 @@ description: OpenAI's command-line coding agent that reads + edits source files 
 website: https://github.com/openai/codex
 api_endpoint_patterns:
   - api.openai.com/v1/responses
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [code_generation, autonomous_agent, function_calling]

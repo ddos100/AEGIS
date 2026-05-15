@@ -7,7 +7,7 @@ description: Browser extension AI assistant invoking GPT/Claude on selected text
 website: https://merlin.foyer.work
 browser_domains:
   - merlin.foyer.work
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [text_generation, summarization]

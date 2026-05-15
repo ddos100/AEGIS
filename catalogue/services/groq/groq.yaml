@@ -9,7 +9,7 @@ api_endpoint_patterns:
   - api.groq.com
 browser_domains:
   - groq.com
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, code_generation, function_calling]

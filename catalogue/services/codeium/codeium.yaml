@@ -8,7 +8,7 @@ website: https://codeium.com
 api_endpoint_patterns:
   - server.codeium.com
   - inference.codeium.com
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [code_generation, text_generation]

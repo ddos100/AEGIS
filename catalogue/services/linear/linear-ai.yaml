@@ -1,0 +1,28 @@
+id: linear-ai
+name: Linear AI
+provider_slug: linear
+category: agent
+description: AI summarisation and triage inside Linear issue tracker.
+api_endpoint_patterns:
+  - api.linear.app
+browser_domains:
+  - linear.app
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - summarization
+  - classification
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: low
+  provider_trust_score: 70
+tags:
+  - saas_embedded
+  - engineering
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

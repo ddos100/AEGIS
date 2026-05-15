@@ -1,0 +1,24 @@
+id: rev-ai
+name: Rev AI
+provider_slug: rev
+category: speech
+description: Speech-to-text API (Rev).
+api_endpoint_patterns:
+  - api.rev.ai
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - speech_to_text
+input_data_types:
+  - audio
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: low
+  provider_trust_score: 68
+tags:
+  - speech_api
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

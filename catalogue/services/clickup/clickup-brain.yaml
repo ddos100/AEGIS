@@ -1,0 +1,28 @@
+id: clickup-brain
+name: ClickUp Brain
+provider_slug: clickup
+category: agent
+description: AI assistant embedded in ClickUp project management.
+api_endpoint_patterns:
+  - api.clickup.com/api/v2
+browser_domains:
+  - clickup.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 64
+tags:
+  - saas_embedded
+  - productivity
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

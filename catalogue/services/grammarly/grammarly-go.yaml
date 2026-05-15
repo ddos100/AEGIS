@@ -1,0 +1,33 @@
+id: grammarly-go
+name: Grammarly Go
+provider_slug: grammarly
+category: llm
+subcategory: writing_assistant
+description: AI writing assistant integrated into desktop apps, browser, and Office.
+website: "https://www.grammarly.com/business"
+api_endpoint_patterns:
+  - api.grammarly.com/v1
+  - capi.grammarly.com
+browser_domains:
+  - app.grammarly.com
+  - grammarly.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 74
+tags:
+  - writing_assistant
+  - browser_extension
+  - saas_embedded
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

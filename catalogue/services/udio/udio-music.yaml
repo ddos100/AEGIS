@@ -1,0 +1,23 @@
+id: udio-music
+name: Udio
+provider_slug: udio
+category: other
+subcategory: music_generation
+description: AI music generation platform.
+browser_domains:
+  - udio.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+input_data_types:
+  - text
+output_data_types:
+  - audio
+default_risk_indicators:
+  data_sensitivity_hint: low
+  capability_level: medium
+  provider_trust_score: 48
+tags:
+  - music_gen
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

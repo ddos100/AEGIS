@@ -1,0 +1,29 @@
+id: monday-ai
+name: monday.com AI
+provider_slug: monday
+category: agent
+description: Embedded AI assistant inside monday.com work-OS.
+api_endpoint_patterns:
+  - api.monday.com/v2
+browser_domains:
+  - monday.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+  - classification
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: high
+  capability_level: medium
+  provider_trust_score: 66
+tags:
+  - saas_embedded
+  - productivity
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

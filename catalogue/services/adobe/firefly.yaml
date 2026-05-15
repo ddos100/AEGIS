@@ -1,0 +1,25 @@
+id: adobe-firefly
+name: Adobe Firefly
+provider_slug: adobe
+category: image_gen
+subcategory: enterprise_image_gen
+description: Adobe's generative image model integrated into Creative Cloud and Express.
+website: https://firefly.adobe.com
+api_endpoint_patterns:
+  - firefly-api.adobe.io/v3/images/generate
+  - firefly-api-enterprise.adobe.io/v3/images/generate
+browser_domains:
+  - firefly.adobe.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [image_generation, vision]
+input_data_types: [text, image]
+output_data_types: [image]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 82
+tags: [image_gen, adobe, creative_cloud, enterprise]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-15"

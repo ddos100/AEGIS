@@ -1,0 +1,28 @@
+id: kagi-search
+name: Kagi Search
+provider_slug: kagi
+category: search
+description: Paid premium search engine with AI Universal Summarizer + The Assistant.
+api_endpoint_patterns:
+  - kagi.com/api/v0
+browser_domains:
+  - kagi.com
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - text_generation
+  - summarization
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 72
+tags:
+  - search
+  - premium_search
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

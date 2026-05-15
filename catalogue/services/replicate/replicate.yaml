@@ -8,7 +8,7 @@ website: https://replicate.com
 api_endpoint_patterns:
   - api.replicate.com
   - replicate.delivery
-hq_country: US
+hq_country: "US"
 gdpr_applicable: true
 eu_ai_act_category: general_purpose_ai
 capabilities: [text_generation, image_generation, video_generation, classification, embedding]

@@ -8,7 +8,7 @@ website: https://www.atlassian.com/software/rovo
 api_endpoint_patterns:
   - api.atlassian.com
   - .atlassian.net/gateway/api
-hq_country: AU
+hq_country: "AU"
 gdpr_applicable: true
 eu_ai_act_category: limited_risk
 capabilities: [text_generation, summarization, function_calling]

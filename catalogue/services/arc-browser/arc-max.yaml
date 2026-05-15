@@ -1,0 +1,26 @@
+id: arc-max
+name: Arc Max
+provider_slug: arc-browser
+category: browser_extension
+description: AI features (Ask on Page, Tidy Tabs, 5-second Previews) bundled with Arc browser.
+browser_domains:
+  - arc.net
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - summarization
+  - text_generation
+input_data_types:
+  - text
+output_data_types:
+  - text
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 66
+tags:
+  - browser_assistant
+  - arc
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"

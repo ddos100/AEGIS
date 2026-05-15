@@ -1,0 +1,29 @@
+id: clipdrop
+name: Clipdrop
+provider_slug: clipdrop
+category: image_gen
+description: Stability-owned image editing + generation suite.
+api_endpoint_patterns:
+  - clipdrop-api.co
+browser_domains:
+  - clipdrop.co
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities:
+  - image_generation
+  - vision
+input_data_types:
+  - image
+  - text
+output_data_types:
+  - image
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 64
+tags:
+  - image_gen
+  - stability
+catalogue_version: 1.0.0
+last_updated: "2026-05-15"
