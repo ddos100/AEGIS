@@ -79,7 +79,7 @@ controls:
     category: risk
     applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - AISIA section: affected_population + severity
+      - "AISIA section: affected_population + severity"
     auto_check:
       aisia_status_in: [in_progress, completed, approved]
 

@@ -10,7 +10,7 @@ properties:
   name:        { type: string, maxLength: 255 }
   version:     { type: string, maxLength: 32 }
   authority:   { type: string, maxLength: 128 }
-  jurisdiction:{ type: string, maxLength: 32 }
+  jurisdiction: { type: string, maxLength: 32 }
   description: { type: string }
   is_active:   { type: boolean }
   controls:
