@@ -1,0 +1,136 @@
+slug: iso_42001
+name: ISO/IEC 42001:2023 — AI Management System
+version: "2023"
+authority: ISO
+jurisdiction: global
+description: |
+  AI Management System international standard. The first ISO standard
+  specifically for managing AI systems. AEGIS implements the operational
+  core of Clauses 4 (Context) through 10 (Improvement), with primary
+  coverage of Annex A controls.
+is_active: true
+controls:
+  - control_id: ISO42001-4.1
+    title: Understanding the organization and its context
+    description: Determine external + internal issues relevant to the AI management system's intended purpose.
+    category: governance
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Context analysis document
+      - Stakeholder map
+    auto_check: {}
+
+  - control_id: ISO42001-4.3
+    title: AI System Register
+    description: Establish, document, and maintain a register of AI systems used or developed by the organisation.
+    category: governance
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - AEGIS AI System Registry export
+      - Per-system records covering name, purpose, owner, data types
+    auto_check:
+      registry_completeness_min: 60
+
+  - control_id: ISO42001-6.1.2
+    title: AI System Impact Assessment (AISIA)
+    description: Assess impacts of AI systems on individuals, groups, and society; document treatment decisions.
+    category: risk
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Completed AISIA report
+      - Treatment decision (accept/restrict/block)
+    auto_check:
+      aisia_status_in: [completed, approved]
+
+  - control_id: ISO42001-A.2.2
+    title: AI policy
+    description: An overarching AI policy approved by top management and communicated to relevant stakeholders.
+    category: governance
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Signed AI policy
+      - Communication record (email/intranet)
+    auto_check: {}
+
+  - control_id: ISO42001-A.3.2
+    title: AI roles and responsibilities
+    description: Define and assign roles and responsibilities for AI system stakeholders.
+    category: governance
+    applies_to: [both]
+    evidence_hints:
+      - RACI matrix for AI systems
+      - Documented ownership in the AI System Register
+    auto_check:
+      owner_assigned: true
+
+  - control_id: ISO42001-A.4.3
+    title: AI system documentation
+    description: Document each AI system — purpose, data, capabilities, oversight, lifecycle stage.
+    category: lifecycle
+    applies_to: [both]
+    evidence_hints:
+      - Per-system documentation in the registry
+    auto_check:
+      registry_completeness_min: 80
+
+  - control_id: ISO42001-A.5.2
+    title: Impact on individuals
+    description: Consider and document impacts of AI systems on individuals (rights, freedoms, fairness).
+    category: risk
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - AISIA section: affected_population + severity
+    auto_check:
+      aisia_status_in: [in_progress, completed, approved]
+
+  - control_id: ISO42001-A.6.2
+    title: AI system lifecycle
+    description: Define and apply lifecycle management for AI systems — development, deployment, retirement.
+    category: lifecycle
+    applies_to: [both]
+    evidence_hints:
+      - Lifecycle process document
+      - first_deployed_at + decommission_date in registry
+    auto_check: {}
+
+  - control_id: ISO42001-A.7.2
+    title: Data for AI systems
+    description: Identify, classify, and document data used by AI systems including quality + provenance.
+    category: data
+    applies_to: [both]
+    evidence_hints:
+      - Per-system data_types_processed
+      - Data flow diagram
+    auto_check:
+      data_types_documented: true
+
+  - control_id: ISO42001-A.8.2
+    title: Information for interested parties
+    description: Provide information about AI systems to users + affected parties (transparency).
+    category: transparency
+    applies_to: [ai_provider]
+    evidence_hints:
+      - User-facing documentation
+      - Disclosure on AI-driven decisions
+    auto_check: {}
+
+  - control_id: ISO42001-A.9.2
+    title: Responsible use of AI
+    description: Ensure AI systems are used responsibly (consistent with policy, intended purpose).
+    category: operations
+    applies_to: [ai_user]
+    evidence_hints:
+      - Acceptable use policy
+      - User training records
+    auto_check: {}
+
+  - control_id: ISO42001-A.10.2
+    title: Third-party AI services
+    description: Risks from third-party AI services are identified and managed.
+    category: supply_chain
+    applies_to: [ai_user]
+    evidence_hints:
+      - Provider risk assessment
+      - DPA / contract with AI provider
+    auto_check:
+      provider_assessed: true

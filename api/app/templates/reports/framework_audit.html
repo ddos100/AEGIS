@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AEGIS Framework Audit — {{ framework.name }}</title>
+  <style>{% include "_base.css" %}</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Securisti Consulting LLP</div>
+  <h1>{{ framework.name }} — Compliance Audit</h1>
+  <div class="meta">
+    Version {{ framework.version }}{% if framework.authority %} · {{ framework.authority }}{% endif %} ·
+    Generated {{ generated_at }} · Tenant {{ tenant_id }}
+  </div>
+</header>
+
+<section>
+  <h2>Headline score</h2>
+  <div class="callout">
+    <div style="font-size: 28pt; font-weight: 700; color: #1F3864;">{{ score.score_pct }}%</div>
+    <div class="muted">
+      {{ score.total_controls }} controls evaluated.
+      Implemented {{ score.by_status.implemented }} ·
+      Partial {{ score.by_status.partial }} ·
+      Not implemented {{ score.by_status.not_implemented }} ·
+      Not applicable {{ score.by_status.not_applicable }} ·
+      Not assessed {{ score.by_status.not_assessed }}.
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Outstanding gaps</h2>
+  {% if score.gaps %}
+  <table>
+    <thead>
+      <tr><th>Control</th><th>Title</th><th>Category</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for g in score.gaps %}
+      <tr>
+        <td><code>{{ g.control_id }}</code></td>
+        <td>{{ g.title }}</td>
+        <td>{{ g.category or "" }}</td>
+        <td>
+          <span class="badge {% if g.status == 'not_implemented' %}badge-critical{% else %}badge-medium{% endif %}">
+            {{ g.status }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No outstanding gaps — all controls are at least partially implemented or marked not-applicable.</p>
+  {% endif %}
+</section>
+
+<div class="footer">
+  AEGIS · This audit is generated from live data and is point-in-time.
+  Auto-marked statuses (partial / not_implemented) reflect AEGIS predicates;
+  human attestation is required for the "implemented" status.
+</div>
+
+</body>
+</html>

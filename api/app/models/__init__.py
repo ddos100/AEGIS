@@ -22,6 +22,10 @@ from app.models.risk_assessment import RiskAssessment
 from app.models.aisia_record import AISIARecord
 from app.models.policy import Policy
 from app.models.policy_violation import PolicyViolation
+from app.models.compliance_framework import ComplianceFramework
+from app.models.compliance_control import ComplianceControl
+from app.models.compliance_mapping import ComplianceMapping
+from app.models.report import Report
 from app.models.audit_log import AuditLog
 
 __all__ = [
@@ -30,5 +34,6 @@ __all__ = [
     "DiscoveryVector", "ExtensionDevice",
     "IntegrationCredential", "IdpUser", "OAuthGrant", "CloudAIResource",
     "RiskAssessment", "AISIARecord", "Policy", "PolicyViolation",
+    "ComplianceFramework", "ComplianceControl", "ComplianceMapping", "Report",
     "AuditLog",
 ]

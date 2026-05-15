@@ -1,0 +1,73 @@
+slug: rbi_it_governance
+name: RBI IT Governance Framework
+version: "2023"
+authority: Reserve Bank of India
+jurisdiction: IN
+description: |
+  RBI Master Directions on IT Governance, Risk, Controls and Assurance
+  Practices. Mapped here for AI-specific applicability to RBI-regulated
+  entities (banks, NBFCs, payment system operators).
+is_active: true
+controls:
+  - control_id: RBI-ITG-3.1
+    title: IT asset inventory
+    description: Maintain a complete inventory of IT assets including AI systems.
+    category: governance
+    applies_to: [ai_user]
+    evidence_hints:
+      - AEGIS Registry export
+    auto_check:
+      registry_completeness_min: 60
+
+  - control_id: RBI-ITG-3.2
+    title: Risk classification
+    description: AI systems are classified by risk and reviewed periodically.
+    category: risk
+    applies_to: [ai_user]
+    evidence_hints:
+      - Risk classification per AI system
+      - Daily risk recalculation evidence
+    auto_check:
+      risk_assessed: true
+
+  - control_id: RBI-ITG-5.1
+    title: Third-party risk management
+    description: AI vendors / providers are assessed for risks before engagement.
+    category: supply_chain
+    applies_to: [ai_user]
+    evidence_hints:
+      - Vendor risk assessment
+      - Provider DPA
+    auto_check:
+      provider_assessed: true
+
+  - control_id: RBI-ITG-7.1
+    title: Incident management
+    description: AI-related incidents are detected, reported, and managed within RBI timelines.
+    category: monitoring
+    applies_to: [ai_user]
+    evidence_hints:
+      - Incident response procedure including AI
+      - CERT-In reporting evidence
+    auto_check: {}
+
+  - control_id: RBI-ITG-8.1
+    title: Data confidentiality
+    description: AI systems processing customer or financial data implement confidentiality controls.
+    category: data
+    applies_to: [ai_user]
+    evidence_hints:
+      - Encryption at rest + in transit
+      - Access control matrix
+    auto_check: {}
+
+  - control_id: RBI-ITG-9.1
+    title: Continuous monitoring
+    description: AI systems subject to continuous monitoring for security + operational issues.
+    category: monitoring
+    applies_to: [ai_user]
+    evidence_hints:
+      - Monitoring dashboard
+      - SIEM rules covering AI events
+    auto_check:
+      usage_monitored: true

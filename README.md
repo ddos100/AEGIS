@@ -7,7 +7,7 @@ desktop agents, cloud AI services, embedded SaaS AI features, and code-level AI
 SDK usage — classifies them by risk, enforces acceptable-use policies, and maps
 compliance to ISO 42001, EU AI Act, NIST AI RMF, DPDPA, RBI, IRDAI, and SEBI.
 
-> **Status:** Phase 2 — Discovery Engine: network telemetry + browser extension live (May 2026).
+> **Status:** Phase 5 complete — full AEGIS stack live (Discovery + Registry + Risk + Policy + Compliance + Reports), May 2026.
 
 ## Prerequisites
 

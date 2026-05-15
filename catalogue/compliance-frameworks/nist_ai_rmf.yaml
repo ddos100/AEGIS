@@ -1,0 +1,91 @@
+slug: nist_ai_rmf
+name: NIST AI Risk Management Framework
+version: "1.0"
+authority: NIST
+jurisdiction: US
+description: |
+  NIST AI RMF 1.0 — voluntary framework structured around four functions
+  (Govern, Map, Measure, Manage) and their sub-categories.
+is_active: true
+controls:
+  - control_id: NIST-AI-RMF-GOVERN-1.1
+    title: Establish AI governance structure
+    description: Legal and regulatory requirements involving AI are understood, managed, and documented.
+    category: governance
+    applies_to: [both]
+    evidence_hints:
+      - Governance committee charter
+      - Legal review register for AI
+    auto_check: {}
+
+  - control_id: NIST-AI-RMF-GOVERN-2.1
+    title: Roles, responsibilities, lines of communication
+    description: Roles and responsibilities related to mapping, measuring, managing AI risks are documented.
+    category: governance
+    applies_to: [both]
+    evidence_hints:
+      - RACI for AI risk
+    auto_check:
+      owner_assigned: true
+
+  - control_id: NIST-AI-RMF-MAP-1.1
+    title: Context of AI system established
+    description: Intended purpose, deployment context, capabilities, and limitations of AI are documented.
+    category: lifecycle
+    applies_to: [both]
+    evidence_hints:
+      - intended_purpose in registry
+      - System context document
+    auto_check:
+      intended_purpose_documented: true
+
+  - control_id: NIST-AI-RMF-MAP-2.2
+    title: Categorization of AI system informed by impact
+    description: Impact on individuals, groups, communities, organizations, society is characterized.
+    category: risk
+    applies_to: [both]
+    evidence_hints:
+      - AISIA affected_population + severity
+    auto_check:
+      aisia_status_in: [in_progress, completed, approved]
+
+  - control_id: NIST-AI-RMF-MEASURE-2.7
+    title: AI system security and resilience
+    description: AI system's security and resilience are evaluated and documented.
+    category: security
+    applies_to: [both]
+    evidence_hints:
+      - Security testing report
+      - Threat model
+    auto_check: {}
+
+  - control_id: NIST-AI-RMF-MEASURE-2.9
+    title: Model fairness assessed
+    description: Fairness and bias are measured and documented.
+    category: risk
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Bias evaluation report
+    auto_check: {}
+
+  - control_id: NIST-AI-RMF-MANAGE-1.3
+    title: Responses to risks documented
+    description: Documented responses to identified risks; treatment decisions linked to risk register.
+    category: risk
+    applies_to: [both]
+    evidence_hints:
+      - AISIA treatment_decision
+      - Mitigation plan
+    auto_check:
+      aisia_treatment_decided: true
+
+  - control_id: NIST-AI-RMF-MANAGE-4.1
+    title: Post-deployment monitoring
+    description: AI system is monitored after deployment for performance, drift, harmful outputs.
+    category: monitoring
+    applies_to: [both]
+    evidence_hints:
+      - Monitoring dashboard
+      - Drift detection alerts
+    auto_check:
+      usage_monitored: true

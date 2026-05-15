@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AEGIS Executive Report</title>
+  <style>{% include "_base.css" %}</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">{{ branding.company | default("Securisti Consulting LLP") }}</div>
+  <h1>AEGIS — Executive AI Posture Report</h1>
+  <div class="meta">Generated {{ generated_at }} · Tenant {{ tenant_id }} · CONFIDENTIAL</div>
+</header>
+
+<section>
+  <h2>Executive summary</h2>
+  <div class="callout">
+    {{ summary | replace("\n", "<br>") | safe }}
+  </div>
+</section>
+
+<section>
+  <h2>Snapshot</h2>
+  <div class="kv">
+    <div class="k">Total AI systems in registry</div><div>{{ stats.total_systems }}</div>
+    <div class="k">Shadow AI detected</div><div>{{ stats.shadow_count }}</div>
+    <div class="k">Average risk score</div><div>{{ stats.avg_risk_score }} / 100</div>
+    <div class="k">Critical-risk systems</div><div>{{ stats.by_level.get("critical", 0) }}</div>
+    <div class="k">High-risk systems</div><div>{{ stats.by_level.get("high", 0) }}</div>
+    <div class="k">AISIA pending</div><div>{{ stats.aisia_pending }}</div>
+    <div class="k">Open policy violations</div><div>{{ stats.violations_open }}</div>
+  </div>
+</section>
+
+<section>
+  <h2>Risk-level distribution</h2>
+  <table>
+    <thead><tr><th>Level</th><th>Count</th><th style="width:60%">Share</th></tr></thead>
+    <tbody>
+      {% for level in ["critical","high","medium","low"] %}
+      {% set count = stats.by_level.get(level, 0) %}
+      {% set pct = (100 * count / stats.total_systems) | round(1) if stats.total_systems > 0 else 0 %}
+      <tr>
+        <td><span class="badge badge-{{ level }}">{{ level | upper }}</span></td>
+        <td>{{ count }}</td>
+        <td>
+          <div class="bar-bg" style="width:100%"><div class="bar-fill" style="width: {{ pct }}%"></div></div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Compliance coverage</h2>
+  {% if framework_scores %}
+  <table>
+    <thead><tr><th>Framework</th><th>Score</th><th>Gaps</th></tr></thead>
+    <tbody>
+      {% for f in framework_scores %}
+      <tr>
+        <td>{{ f.name }}</td>
+        <td>{{ f.score_pct }}%</td>
+        <td>{{ f.gap_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No compliance frameworks imported yet.</p>
+  {% endif %}
+</section>
+
+<div class="footer">
+  AEGIS · AI Enterprise Governance & Inventory System · © Securisti Consulting LLP ·
+  This report is for internal risk management only and does not constitute legal advice.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+slug: irdai_cybersecurity
+name: IRDAI Cybersecurity Guidelines
+version: "2023"
+authority: Insurance Regulatory and Development Authority of India
+jurisdiction: IN
+description: |
+  IRDAI Information and Cyber Security Guidelines, mapped here for
+  AI-specific applicability — particularly underwriting, claims, and
+  fraud detection AI processing policyholder data.
+is_active: true
+controls:
+  - control_id: IRDAI-2.1
+    title: Information security policy includes AI
+    description: Organisation's ISP explicitly addresses AI systems and their risks.
+    category: governance
+    applies_to: [ai_user]
+    evidence_hints:
+      - ISP document with AI section
+    auto_check: {}
+
+  - control_id: IRDAI-3.2
+    title: Risk assessment of AI systems
+    description: All AI systems processing policyholder data undergo risk assessment.
+    category: risk
+    applies_to: [ai_user]
+    evidence_hints:
+      - AISIA for every AI system processing policyholder data
+    auto_check:
+      aisia_status_in: [completed, approved]
+
+  - control_id: IRDAI-4.1
+    title: Data classification
+    description: Policyholder data classified; AI processing restricted by classification.
+    category: data
+    applies_to: [ai_user]
+    evidence_hints:
+      - data_types_processed populated for each AI system
+    auto_check:
+      data_types_documented: true
+
+  - control_id: IRDAI-5.3
+    title: Third-party AI vendor management
+    description: AI vendors are contractually obligated to IRDAI controls.
+    category: supply_chain
+    applies_to: [ai_user]
+    evidence_hints:
+      - Vendor risk assessment
+      - DPA referencing IRDAI requirements
+    auto_check:
+      provider_assessed: true
+
+  - control_id: IRDAI-6.2
+    title: Incident reporting
+    description: Cybersecurity incidents involving AI reported per IRDAI timelines.
+    category: monitoring
+    applies_to: [ai_user]
+    evidence_hints:
+      - Incident response plan including AI
+    auto_check: {}
+
+  - control_id: IRDAI-7.1
+    title: Human oversight of automated decisions
+    description: Automated underwriting / claims AI must have documented human override.
+    category: human_oversight
+    applies_to: [ai_user]
+    evidence_hints:
+      - Human oversight design (human_oversight_desc populated)
+    auto_check:
+      human_oversight_documented: true

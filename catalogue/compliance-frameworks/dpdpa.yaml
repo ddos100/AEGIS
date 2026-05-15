@@ -1,0 +1,81 @@
+slug: dpdpa
+name: Digital Personal Data Protection Act
+version: "2023"
+authority: Government of India
+jurisdiction: IN
+description: |
+  India's Digital Personal Data Protection Act, 2023. AEGIS maps the
+  practical obligations for Data Fiduciaries deploying or consuming AI
+  systems that process personal data of Data Principals (Indian residents).
+is_active: true
+controls:
+  - control_id: DPDPA-S6
+    title: Notice for consent
+    description: Notice provided to Data Principals when collecting personal data via AI systems.
+    category: transparency
+    applies_to: [ai_user]
+    evidence_hints:
+      - Notice document with AI-specific clauses
+    auto_check: {}
+
+  - control_id: DPDPA-S7
+    title: Consent management
+    description: Consent obtained for processing personal data via AI; withdrawal mechanism documented.
+    category: governance
+    applies_to: [ai_user]
+    evidence_hints:
+      - Consent flow documentation
+      - Withdrawal process record
+    auto_check: {}
+
+  - control_id: DPDPA-S8
+    title: Reasonable security safeguards
+    description: Implement reasonable security safeguards to prevent breach of personal data in AI processing.
+    category: security
+    applies_to: [both]
+    evidence_hints:
+      - Security assessment of AI vendor
+      - Encryption + access controls evidence
+    auto_check: {}
+
+  - control_id: DPDPA-S9
+    title: Data Principal rights
+    description: Mechanisms to honor Data Principal rights (access, correction, erasure, grievance redressal).
+    category: governance
+    applies_to: [ai_user]
+    evidence_hints:
+      - Rights-handling SOP
+      - Grievance officer contact
+    auto_check: {}
+
+  - control_id: DPDPA-S10
+    title: Significant Data Fiduciary obligations
+    description: Where applicable, additional obligations — DPIA, Data Auditor, DPO appointment.
+    category: governance
+    applies_to: [ai_user]
+    evidence_hints:
+      - DPIA report
+      - DPO appointment letter
+    auto_check:
+      aisia_status_in: [completed, approved]
+
+  - control_id: DPDPA-S16
+    title: Cross-border data transfer
+    description: Personal data transferred to AI providers outside India only to permitted jurisdictions.
+    category: data
+    applies_to: [ai_user]
+    evidence_hints:
+      - Provider data residency documentation
+    auto_check:
+      provider_jurisdiction_permitted: true
+
+  - control_id: DPDPA-AI-PROCESSOR
+    title: AI provider as Data Processor
+    description: AI service providers processing personal data are treated as Data Processors with contractual safeguards.
+    category: supply_chain
+    applies_to: [ai_user]
+    evidence_hints:
+      - Data Processing Agreement with AI vendor
+      - Provider risk assessment
+    auto_check:
+      provider_assessed: true

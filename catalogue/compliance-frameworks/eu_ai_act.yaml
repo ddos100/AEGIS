@@ -1,0 +1,103 @@
+slug: eu_ai_act
+name: EU AI Act
+version: "2024"
+authority: European Union
+jurisdiction: EU
+description: |
+  Regulation (EU) 2024/1689 — risk-based regulation of AI systems placed on
+  the EU market or affecting EU residents. AEGIS maps the operational
+  controls relevant to AI users (Title III obligations for users of
+  high-risk systems) and GPAI provider obligations.
+is_active: true
+controls:
+  - control_id: EU-AI-ACT-Art5
+    title: Prohibited AI practices (Article 5)
+    description: AI systems with unacceptable risk are prohibited.
+    category: governance
+    applies_to: [both]
+    evidence_hints:
+      - Block-list policy for unacceptable-risk AI
+      - Policy engine rule blocking unacceptable category
+    auto_check:
+      eu_ai_act_category_not: unacceptable
+
+  - control_id: EU-AI-ACT-Art6
+    title: Classification of high-risk AI systems (Article 6)
+    description: Determine whether each AI system is high-risk under Annex I or III.
+    category: governance
+    applies_to: [both]
+    evidence_hints:
+      - eu_ai_act_category set on every AI system in the registry
+    auto_check:
+      eu_ai_act_category_documented: true
+
+  - control_id: EU-AI-ACT-Art9
+    title: Risk management system (Article 9)
+    description: Establish, implement, document, maintain a risk management system for high-risk AI.
+    category: risk
+    applies_to: [both]
+    evidence_hints:
+      - AISIA report
+      - Daily risk recalculation evidence
+    auto_check:
+      risk_assessed: true
+
+  - control_id: EU-AI-ACT-Art10
+    title: Data and data governance (Article 10)
+    description: Training, validation, testing datasets meet quality criteria (relevance, representativeness, completeness).
+    category: data
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Dataset documentation
+      - Bias mitigation evidence
+    auto_check: {}
+
+  - control_id: EU-AI-ACT-Art13
+    title: Transparency and information to users (Article 13)
+    description: High-risk AI systems must be transparent to enable appropriate use.
+    category: transparency
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Instructions for use document
+      - User-facing AI disclosure
+    auto_check: {}
+
+  - control_id: EU-AI-ACT-Art14
+    title: Human oversight (Article 14)
+    description: High-risk AI systems must be designed for effective human oversight.
+    category: human_oversight
+    applies_to: [both]
+    evidence_hints:
+      - Human oversight design documented in AISIA
+      - human_oversight_desc populated
+    auto_check:
+      human_oversight_documented: true
+
+  - control_id: EU-AI-ACT-Art26
+    title: Obligations of deployers (Article 26)
+    description: Deployers of high-risk AI use the system per instructions, assign human oversight, monitor.
+    category: operations
+    applies_to: [ai_user]
+    evidence_hints:
+      - Operational procedures + monitoring evidence
+      - Logged usage events
+    auto_check: {}
+
+  - control_id: EU-AI-ACT-Art52
+    title: GPAI transparency (Article 52)
+    description: General-purpose AI models must comply with transparency and copyright obligations.
+    category: transparency
+    applies_to: [ai_provider]
+    evidence_hints:
+      - GPAI model card
+      - Training data copyright summary
+    auto_check: {}
+
+  - control_id: EU-AI-ACT-Art56
+    title: Codes of practice (Article 56)
+    description: Adherence to AI office codes of practice where applicable.
+    category: governance
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Statement of adherence
+    auto_check: {}

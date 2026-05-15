@@ -48,6 +48,9 @@ catalogue-validate: ## Validate every catalogue YAML against schema
 catalogue-import: ## Validate + upsert every catalogue YAML into ai_services / ai_providers
 	docker compose exec api python /workspace/catalogue/scripts/importer.py -v
 
+framework-import: ## Validate + upsert every compliance framework YAML into compliance_frameworks / compliance_controls
+	docker compose exec api python /workspace/catalogue/scripts/import_frameworks.py -v
+
 dev-login: ## Fetch a JWT from the dev Keycloak realm and print the browser snippet
 	@bash infra/scripts/dev-login.sh
 

@@ -14,8 +14,8 @@ from app.integrations.connectors import load_all_connectors
 from app.integrations.network.base import load_all_normalizers
 from app.integrations.network.matcher import load_from_db, matcher_size
 from app.routes import (
-    aisia, catalogue, discovery, extension, health, ingest, integrations,
-    me, policies, registry, risk,
+    aisia, catalogue, compliance, dashboard, discovery, eramba, extension,
+    health, ingest, integrations, me, policies, registry, reports, risk,
 )
 
 
@@ -65,6 +65,10 @@ def create_app() -> FastAPI:
     app.include_router(risk.router,         prefix=p)
     app.include_router(aisia.router,        prefix=p)
     app.include_router(policies.router,     prefix=p)
+    app.include_router(compliance.router,   prefix=p)
+    app.include_router(reports.router,      prefix=p)
+    app.include_router(dashboard.router,    prefix=p)
+    app.include_router(eramba.router,       prefix=p)
     return app
 
 
