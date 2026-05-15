@@ -12,6 +12,7 @@ import asyncio
 import json
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy import desc, func, select, text
@@ -131,6 +132,71 @@ async def top_systems(
     return [
         {"id": str(r.id), "name": r.name, "category": r.category, "is_shadow": r.is_shadow,
          "event_count": r.event_count, "unique_users": r.unique_users}
+        for r in rows
+    ]
+
+
+@router.get("/discovery/oauth-grants")
+async def list_oauth_grants(
+    db: DBSession,
+    user: CurrentUser,  # noqa: ARG001
+    integration_id: UUID | None = None,
+    matched_only: bool = False,
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+):
+    """Phase 3 — IdP-discovered OAuth grants. Filterable by integration."""
+    from app.models.oauth_grant import OAuthGrant
+    stmt = select(OAuthGrant).order_by(desc(OAuthGrant.last_seen_at)).limit(limit)
+    if integration_id:
+        stmt = stmt.where(OAuthGrant.integration_id == integration_id)
+    if matched_only:
+        stmt = stmt.where(OAuthGrant.catalogue_match.is_not(None))
+    rows = (await db.execute(stmt)).scalars().all()
+    return [
+        {
+            "id": str(r.id), "integration_id": str(r.integration_id),
+            "app_id": r.app_id, "app_name": r.app_name,
+            "app_publisher": r.app_publisher,
+            "granted_scopes": r.granted_scopes,
+            "catalogue_match": str(r.catalogue_match) if r.catalogue_match else None,
+            "ai_system_id": str(r.ai_system_id) if r.ai_system_id else None,
+            "first_seen_at": r.first_seen_at.isoformat() if r.first_seen_at else None,
+            "last_seen_at": r.last_seen_at.isoformat() if r.last_seen_at else None,
+            "is_revoked": r.is_revoked,
+        }
+        for r in rows
+    ]
+
+
+@router.get("/discovery/cloud-resources")
+async def list_cloud_resources(
+    db: DBSession,
+    user: CurrentUser,  # noqa: ARG001
+    cloud_provider: str | None = None,
+    resource_type: str | None = None,
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+):
+    """Phase 3 — cloud AI inventory (Bedrock, SageMaker, Azure OpenAI, Vertex)."""
+    from app.models.cloud_ai_resource import CloudAIResource
+    stmt = select(CloudAIResource).order_by(desc(CloudAIResource.last_scanned_at)).limit(limit)
+    if cloud_provider:
+        stmt = stmt.where(CloudAIResource.cloud_provider == cloud_provider)
+    if resource_type:
+        stmt = stmt.where(CloudAIResource.resource_type == resource_type)
+    rows = (await db.execute(stmt)).scalars().all()
+    return [
+        {
+            "id": str(r.id), "cloud_provider": r.cloud_provider,
+            "resource_type": r.resource_type,
+            "resource_id": r.resource_id, "resource_name": r.resource_name,
+            "region": r.region, "account_id": r.account_id, "project_id": r.project_id,
+            "service_name": r.service_name, "model_id": r.model_id,
+            "status": r.status,
+            "catalogue_match": str(r.catalogue_match) if r.catalogue_match else None,
+            "ai_system_id": str(r.ai_system_id) if r.ai_system_id else None,
+            "first_seen_at": r.first_seen_at.isoformat() if r.first_seen_at else None,
+            "last_scanned_at": r.last_scanned_at.isoformat() if r.last_scanned_at else None,
+        }
         for r in rows
     ]
 

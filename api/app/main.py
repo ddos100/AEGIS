@@ -10,9 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.logging import configure_logging, log
+from app.integrations.connectors import load_all_connectors
 from app.integrations.network.base import load_all_normalizers
 from app.integrations.network.matcher import load_from_db, matcher_size
-from app.routes import catalogue, discovery, extension, health, ingest, me, registry
+from app.routes import (
+    catalogue, discovery, extension, health, ingest, integrations, me, registry,
+)
 
 
 @asynccontextmanager
@@ -21,6 +24,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if settings.sentry_dsn:
         sentry_sdk.init(dsn=settings.sentry_dsn, traces_sample_rate=0.1, environment=settings.env)
     load_all_normalizers()
+    load_all_connectors()
     try:
         await load_from_db()
         log.info("aegis.matcher.loaded", **matcher_size())
@@ -56,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(ingest.router,    prefix=p)
     app.include_router(extension.router, prefix=p)
     app.include_router(discovery.router, prefix=p)
+    app.include_router(integrations.router, prefix=p)
     return app
 
 

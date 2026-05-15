@@ -1,11 +1,12 @@
 """Celery application + beat schedule.
 
 Beat jobs:
-  - heartbeat        every minute   liveness signal
-  - rebuild_matcher  every 4 hours  reload Aho-Corasick automaton from DB
+  - heartbeat            every minute   liveness signal
+  - rebuild_matcher      every 4 hours  reload Aho-Corasick automaton from DB
+  - sync_all_integrations  daily 02:00  per-tenant connector sync
 
-Worker startup also loads every registered normalizer so the discovery
-ingest pipeline can dispatch by source string.
+Worker startup also loads every registered normalizer and connector so the
+ingest + connector dispatch paths can resolve by source/integration key.
 """
 from __future__ import annotations
 
@@ -41,15 +42,21 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.rebuild_matcher",
         "schedule": crontab(minute="0", hour="*/4"),
     },
+    "sync-integrations": {
+        "task": "app.workers.tasks.sync_all_integrations",
+        "schedule": crontab(minute="0", hour="2"),
+    },
 }
 
 
 @worker_process_init.connect
 def _on_worker_init(**_kwargs) -> None:
-    """Eagerly import every normalizer module on worker boot.
+    """Eagerly import every normalizer + connector module on worker boot.
 
     Without this the @register decorators don't fire until the first task hits
     the module, which would lose the first batch of any new source.
     """
     from app.integrations.network.base import load_all_normalizers
+    from app.integrations.connectors import load_all_connectors
     load_all_normalizers()
+    load_all_connectors()

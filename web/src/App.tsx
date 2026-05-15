@@ -7,6 +7,7 @@ import RegistryDetailPage from '@/pages/registry/RegistryDetailPage';
 import RegistryEditPage from '@/pages/registry/RegistryEditPage';
 import CatalogueBrowsePage from '@/pages/catalogue/CatalogueBrowsePage';
 import DiscoveryPage from '@/pages/discovery/DiscoveryPage';
+import IntegrationsPage from '@/pages/integrations/IntegrationsPage';
 
 function Sidebar() {
   const link = (to: string, label: string, end = false) =>
@@ -31,12 +32,13 @@ function Sidebar() {
         {link('/registry', 'AI Registry')}
         {link('/catalogue', 'Catalogue')}
         {link('/discovery', 'Discovery')}
+        {link('/integrations', 'Integrations')}
         {link('/risk', 'Risk')}
         {link('/policy', 'Policies')}
         {link('/compliance', 'Compliance')}
         {link('/settings', 'Settings')}
       </nav>
-      <div className="mt-auto text-xs text-slate-400">v0.2.0 · Phase 2</div>
+      <div className="mt-auto text-xs text-slate-400">v0.3.0 · Phase 3</div>
     </aside>
   );
 }
@@ -119,6 +121,7 @@ export default function App() {
             <Route path="/registry/:id/edit" element={<RegistryEditPage />} />
             <Route path="/catalogue" element={<CatalogueBrowsePage />} />
             <Route path="/discovery" element={<DiscoveryPage />} />
+            <Route path="/integrations" element={<IntegrationsPage />} />
             <Route path="/risk" element={<Placeholder title="Risk Assessment" phase="Phase 4" />} />
             <Route path="/policy" element={<Placeholder title="Policy Engine" phase="Phase 4" />} />
             <Route path="/compliance" element={<Placeholder title="Compliance" phase="Phase 5" />} />

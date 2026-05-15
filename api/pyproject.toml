@@ -33,6 +33,8 @@ dependencies = [
     # HTTP & integrations
     "httpx>=0.28.0",
     "tenacity>=9.0.0",
+    # Phase 3 cloud connectors
+    "boto3>=1.35.0",
 
     # Discovery — matching
     "pyahocorasick>=2.1.0",

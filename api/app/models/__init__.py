@@ -14,6 +14,10 @@ from app.models.ai_system import AISystem
 from app.models.ai_usage_event import AIUsageEvent
 from app.models.discovery_vector import DiscoveryVector
 from app.models.extension_device import ExtensionDevice
+from app.models.integration_credential import IntegrationCredential
+from app.models.idp_user import IdpUser
+from app.models.oauth_grant import OAuthGrant
+from app.models.cloud_ai_resource import CloudAIResource
 from app.models.audit_log import AuditLog
 
 __all__ = [
@@ -27,5 +31,9 @@ __all__ = [
     "AIUsageEvent",
     "DiscoveryVector",
     "ExtensionDevice",
+    "IntegrationCredential",
+    "IdpUser",
+    "OAuthGrant",
+    "CloudAIResource",
     "AuditLog",
 ]
