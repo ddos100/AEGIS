@@ -181,6 +181,7 @@ async def _ingest_normalized(tenant_id, events: list[NormalizedEvent]) -> dict:
 
     tenant_uuid = UUID(str(tenant_id))
     new_shadow = 0
+    pending_broadcasts: list[dict] = []
     async with session_scope(tenant_id=tenant_uuid) as session:
         slugs = {hit.pattern.catalogue_slug for _, hit in matched}
         existing = (await session.execute(
@@ -216,19 +217,17 @@ async def _ingest_normalized(tenant_id, events: list[NormalizedEvent]) -> dict:
             await session.flush()
             slug_to_system[slug] = system.id
             new_shadow += 1
-            try:
-                await publish_discovery(str(tenant_uuid), {
-                    "type": "new_system",
-                    "payload": {
-                        "id": str(system.id), "name": system.name, "category": system.category,
-                        "catalogue_slug": slug,
-                        "first_discovered_at": sample_ev.occurred_at.isoformat(),
-                        "vector": "browser_ext",
-                    },
-                })
-            except Exception as exc:  # noqa: BLE001
-                log.warning("aegis.discovery.publish_failed", error=str(exc),
-                            tenant_id=str(tenant_uuid), slug=slug)
+            # Queue the broadcast for after-commit; never block this transaction
+            # on Redis.
+            pending_broadcasts.append({
+                "type": "new_system",
+                "payload": {
+                    "id": str(system.id), "name": system.name, "category": system.category,
+                    "catalogue_slug": slug,
+                    "first_discovered_at": sample_ev.occurred_at.isoformat(),
+                    "vector": "browser_ext",
+                },
+            })
 
         rows = [{
             "tenant_id": tenant_uuid,
@@ -243,8 +242,13 @@ async def _ingest_normalized(tenant_id, events: list[NormalizedEvent]) -> dict:
             "occurred_at": ev.occurred_at,
         } for ev, hit in matched]
         await session.execute(pg_insert(AIUsageEvent).values(rows))
+    # Session committed. Now fan out broadcasts — each is timeout-bounded
+    # and never raises (see app.core.redis.publish_discovery).
+    for payload in pending_broadcasts:
+        await publish_discovery(str(tenant_uuid), payload)
 
     log.info("aegis.extension.events_processed",
              tenant_id=str(tenant_uuid), accepted=len(events),
-             matched=len(matched), shadow_new=new_shadow)
+             matched=len(matched), shadow_new=new_shadow,
+             broadcasts=len(pending_broadcasts))
     return {"matched": len(matched), "shadow_new": new_shadow}

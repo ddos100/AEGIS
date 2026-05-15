@@ -88,6 +88,7 @@ async def process_batch(
         return {"accepted": len(events), "matched": 0, "shadow_new": 0}
 
     new_shadow_count = 0
+    pending_broadcasts: list[dict[str, Any]] = []  # published AFTER commit
     async with session_scope(tenant_id=tenant_id) as session:
         # Look up which catalogue slugs already have a registry entry for this tenant.
         slugs_seen = {hit.pattern.catalogue_slug for _ev, hit in parsed}
@@ -102,9 +103,11 @@ async def process_batch(
 
         # Create shadow records for slugs we don't have yet.
         for slug in slugs_seen - set(slug_to_system):
-            system_id = await _create_shadow_system(session, slug, tenant_id, parsed)
-            if system_id is not None:
+            result = await _create_shadow_system(session, slug, tenant_id, parsed)
+            if result is not None:
+                system_id, broadcast = result
                 slug_to_system[slug] = system_id
+                pending_broadcasts.append(broadcast)
                 new_shadow_count += 1
 
         # Bulk insert usage events.
@@ -135,6 +138,12 @@ async def process_batch(
         if rows:
             stmt = pg_insert(AIUsageEvent).values(rows)
             await session.execute(stmt)
+    # ↑ session_scope commits here. From this point a slow Redis cannot
+    # delay the DB write or hold the connection open.
+
+    # Best-effort fan-out — each publish has its own 2s timeout and never raises.
+    for payload in pending_broadcasts:
+        await publish_discovery(str(tenant_id), payload)
 
     log.info(
         "aegis.ingest.batch_processed",
@@ -143,6 +152,7 @@ async def process_batch(
         accepted=len(events),
         matched=len(parsed),
         new_shadow=new_shadow_count,
+        broadcasts=len(pending_broadcasts),
     )
     return {"accepted": len(events), "matched": len(parsed), "shadow_new": new_shadow_count}
 
@@ -150,9 +160,12 @@ async def process_batch(
 async def _create_shadow_system(
     session, slug: str, tenant_id: UUID,
     parsed: list[tuple[NormalizedEvent, MatchResult]],
-) -> UUID | None:
-    """Create a shadow AISystem record + broadcast over Redis."""
-    # Find any matched record for this slug (we need its discovery context).
+) -> tuple[UUID, dict[str, Any]] | None:
+    """Create a shadow AISystem record. Returns (system_id, broadcast_payload).
+
+    The caller publishes the broadcast AFTER the session has committed —
+    Redis must never block the DB transaction or the response.
+    """
     sample_ev, sample_hit = next(((e, h) for e, h in parsed
                                   if h.pattern.catalogue_slug == slug), (None, None))
     if sample_ev is None or sample_hit is None:
@@ -183,26 +196,16 @@ async def _create_shadow_system(
     await session.flush()
     await session.refresh(system)
 
-    # Await the broadcast — previously we used asyncio.create_task() which
-    # could be cancelled when the request handler returned before the publish
-    # completed. The cost of awaiting is ~1ms (redis publish over loopback),
-    # and we'd rather pay it than silently lose Shadow AI Radar updates.
-    # Failures here must NOT roll back the DB insert.
-    try:
-        await publish_discovery(str(tenant_id), {
-            "type": "new_system",
-            "payload": {
-                "id": str(system.id),
-                "name": system.name,
-                "category": system.category,
-                "catalogue_slug": slug,
-                "first_discovered_at": sample_ev.occurred_at.isoformat(),
-                "vector": sample_ev.vector,
-                "detected_by_user": sample_ev.user_email,
-                "department": sample_ev.department,
-            },
-        })
-    except Exception as exc:  # noqa: BLE001
-        log.warning("aegis.discovery.publish_failed", error=str(exc),
-                    tenant_id=str(tenant_id), slug=slug)
-    return system.id
+    return system.id, {
+        "type": "new_system",
+        "payload": {
+            "id": str(system.id),
+            "name": system.name,
+            "category": system.category,
+            "catalogue_slug": slug,
+            "first_discovered_at": sample_ev.occurred_at.isoformat(),
+            "vector": sample_ev.vector,
+            "detected_by_user": sample_ev.user_email,
+            "department": sample_ev.department,
+        },
+    }
