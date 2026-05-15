@@ -24,6 +24,10 @@ class ComplianceControl(Base):
     control_id: Mapped[str] = mapped_column(String(64), nullable=False)
     title: Mapped[str] = mapped_column(String(512), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Verbatim regulatory text + authoritative citation. Populated from YAML
+    # so the importer is fully deterministic — no LLM paraphrasing path.
+    requirement_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
     category: Mapped[str | None] = mapped_column(String(64), nullable=True)
     is_mandatory: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     applies_to: Mapped[list[str]] = mapped_column(ARRAY(String(32)), nullable=False, default=list)

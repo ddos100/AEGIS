@@ -31,6 +31,12 @@ class ControlBrief(BaseModel):
     control_id: str
     title: str
     description: str | None
+    # Verbatim regulatory clause — exactly as published in the source
+    # document. The API never paraphrases this, never sends it to any LLM,
+    # and serves the same byte-content for the same control_id on every run.
+    requirement_text: str | None = None
+    # Authoritative citation, e.g. "ISO/IEC 42001:2023 Annex A.4.3".
+    source_ref: str | None = None
     category: str | None
     is_mandatory: bool
     applies_to: list[str] = Field(default_factory=list)

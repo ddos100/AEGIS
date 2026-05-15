@@ -1,103 +1,457 @@
 slug: eu_ai_act
-name: EU AI Act
-version: "2024"
+name: EU AI Act (Regulation (EU) 2024/1689)
+version: "2024/1689"
 authority: European Union
 jurisdiction: EU
 description: |
-  Regulation (EU) 2024/1689 — risk-based regulation of AI systems placed on
-  the EU market or affecting EU residents. AEGIS maps the operational
-  controls relevant to AI users (Title III obligations for users of
-  high-risk systems) and GPAI provider obligations.
+  Regulation (EU) 2024/1689 of the European Parliament and of the Council
+  laying down harmonised rules on artificial intelligence (AI Act). Each
+  `requirement_text` below is a direct citation from the published OJ
+  text of the Regulation. The `description` is AEGIS's operational
+  interpretation; the regulatory citation is `source_ref`.
+
+  Applicability triggers (high-risk AI, GPAI provider, deployer, etc.)
+  are encoded under `applies_to`. Auditors should always read the cited
+  Article in conjunction with this entry.
 is_active: true
 controls:
-  - control_id: EU-AI-ACT-Art5
-    title: Prohibited AI practices (Article 5)
-    description: AI systems with unacceptable risk are prohibited.
-    category: governance
-    applies_to: [both]
-    evidence_hints:
-      - Block-list policy for unacceptable-risk AI
-      - Policy engine rule blocking unacceptable category
-    auto_check:
-      eu_ai_act_category_not: unacceptable
 
-  - control_id: EU-AI-ACT-Art6
-    title: Classification of high-risk AI systems (Article 6)
-    description: Determine whether each AI system is high-risk under Annex I or III.
+  - control_id: EUAI-ART-5
+    title: Prohibited AI practices
+    source_ref: Regulation (EU) 2024/1689 Article 5
+    requirement_text: |
+      The following AI practices shall be prohibited: (a) the placing on
+      the market, the putting into service or the use of an AI system
+      that deploys subliminal techniques beyond a person's consciousness
+      or purposefully manipulative or deceptive techniques, with the
+      objective or the effect of materially distorting the behaviour of
+      a person or a group of persons by appreciably impairing their
+      ability to make an informed decision; (b)–(h) [exploitation of
+      vulnerabilities, social scoring, predictive policing solely from
+      profiling, untargeted scraping of facial images, emotion
+      inference in workplaces / education, biometric categorisation of
+      sensitive attributes, and real-time remote biometric
+      identification in publicly accessible spaces, save for the narrow
+      law-enforcement exceptions in Art. 5(2)–(7)].
+    description: AI systems falling into any Art. 5 prohibited-practice category must not be placed on the market, put into service, or used.
     category: governance
-    applies_to: [both]
+    is_mandatory: true
+    applies_to: [ai_provider, ai_user]
     evidence_hints:
-      - eu_ai_act_category set on every AI system in the registry
-    auto_check:
-      eu_ai_act_category_documented: true
+      - Confirmation that the system does not perform any practice listed in Art. 5
+      - Pre-deployment prohibited-practice screen
+    auto_check: {}
 
-  - control_id: EU-AI-ACT-Art9
-    title: Risk management system (Article 9)
-    description: Establish, implement, document, maintain a risk management system for high-risk AI.
+  - control_id: EUAI-ART-6
+    title: Classification rules for high-risk AI systems
+    source_ref: Regulation (EU) 2024/1689 Article 6
+    requirement_text: |
+      An AI system shall be considered high-risk where it is intended to
+      be used as a safety component of a product, or is itself a
+      product, covered by the Union harmonisation legislation listed in
+      Annex I; or it is referred to in Annex III, unless it does not
+      pose a significant risk of harm to the health, safety or
+      fundamental rights of natural persons.
+    description: Determine and document whether each AI system is high-risk per Annex I/III.
     category: risk
-    applies_to: [both]
+    is_mandatory: true
+    applies_to: [ai_provider, ai_user]
     evidence_hints:
-      - AISIA report
-      - Daily risk recalculation evidence
+      - High-risk classification record per AI system
+      - Annex III mapping
     auto_check:
-      risk_assessed: true
+      eu_ai_act_category_in: [high_risk, limited_risk, minimal_risk, general_purpose_ai, not_applicable]
 
-  - control_id: EU-AI-ACT-Art10
-    title: Data and data governance (Article 10)
-    description: Training, validation, testing datasets meet quality criteria (relevance, representativeness, completeness).
+  - control_id: EUAI-ART-9
+    title: Risk management system
+    source_ref: Regulation (EU) 2024/1689 Article 9
+    requirement_text: |
+      A risk management system shall be established, implemented,
+      documented and maintained in relation to high-risk AI systems.
+      The risk management system shall be understood as a continuous
+      iterative process planned and run throughout the entire lifecycle
+      of a high-risk AI system, requiring regular systematic review and
+      updating.
+    description: Continuous risk-management process for every high-risk AI system.
+    category: risk
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Lifecycle risk management plan
+      - Risk review minutes
+    auto_check:
+      aisia_status_in: [in_progress, completed, approved]
+
+  - control_id: EUAI-ART-10
+    title: Data and data governance
+    source_ref: Regulation (EU) 2024/1689 Article 10
+    requirement_text: |
+      High-risk AI systems which make use of techniques involving the
+      training of AI models with data shall be developed on the basis
+      of training, validation and testing data sets that meet the
+      quality criteria referred to in paragraphs 2 to 5. Training,
+      validation and testing data sets shall be subject to data
+      governance and management practices appropriate for the intended
+      purpose of the high-risk AI system.
+    description: Training / validation / testing datasets meet Art. 10 quality + governance.
     category: data
+    is_mandatory: true
     applies_to: [ai_provider]
     evidence_hints:
       - Dataset documentation
-      - Bias mitigation evidence
-    auto_check: {}
+      - Bias evaluation report
+    auto_check:
+      data_types_documented: true
 
-  - control_id: EU-AI-ACT-Art13
-    title: Transparency and information to users (Article 13)
-    description: High-risk AI systems must be transparent to enable appropriate use.
+  - control_id: EUAI-ART-11
+    title: Technical documentation
+    source_ref: Regulation (EU) 2024/1689 Article 11
+    requirement_text: |
+      The technical documentation of a high-risk AI system shall be
+      drawn up before that system is placed on the market or put into
+      service and shall be kept up-to-date. The technical documentation
+      shall be drawn up in such a way as to demonstrate that the
+      high-risk AI system complies with the requirements set out in
+      this Section and to provide national competent authorities and
+      notified bodies with all the necessary information in a clear and
+      comprehensive form to assess the compliance of the AI system with
+      those requirements.
+    description: Technical documentation prepared before placing on the market; kept up to date.
     category: transparency
+    is_mandatory: true
     applies_to: [ai_provider]
     evidence_hints:
-      - Instructions for use document
-      - User-facing AI disclosure
+      - Annex IV technical documentation
+    auto_check:
+      registry_completeness_min: 80
+
+  - control_id: EUAI-ART-12
+    title: Record-keeping (logging)
+    source_ref: Regulation (EU) 2024/1689 Article 12
+    requirement_text: |
+      High-risk AI systems shall technically allow for the automatic
+      recording of events ('logs') over the duration of the lifetime
+      of the system.
+    description: Automatic event logging over the system lifetime.
+    category: monitoring
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Log retention policy
+      - Sample log export
     auto_check: {}
 
-  - control_id: EU-AI-ACT-Art14
-    title: Human oversight (Article 14)
-    description: High-risk AI systems must be designed for effective human oversight.
-    category: human_oversight
-    applies_to: [both]
+  - control_id: EUAI-ART-13
+    title: Transparency and provision of information to deployers
+    source_ref: Regulation (EU) 2024/1689 Article 13
+    requirement_text: |
+      High-risk AI systems shall be designed and developed in such a
+      way to ensure that their operation is sufficiently transparent to
+      enable deployers to interpret a system's output and use it
+      appropriately. An appropriate type and degree of transparency
+      shall be ensured with a view to achieving compliance with the
+      relevant obligations of the provider and deployer set out in
+      Section 3.
+    description: System is transparent enough for deployers to interpret outputs.
+    category: transparency
+    is_mandatory: true
+    applies_to: [ai_provider]
     evidence_hints:
-      - Human oversight design documented in AISIA
-      - human_oversight_desc populated
+      - Instructions for use
+      - Model card
+    auto_check: {}
+
+  - control_id: EUAI-ART-14
+    title: Human oversight
+    source_ref: Regulation (EU) 2024/1689 Article 14
+    requirement_text: |
+      High-risk AI systems shall be designed and developed in such a
+      way, including with appropriate human-machine interface tools,
+      that they can be effectively overseen by natural persons during
+      the period in which they are in use.
+    description: Effective human oversight of every high-risk AI system in use.
+    category: human_oversight
+    is_mandatory: true
+    applies_to: [ai_provider, ai_user]
+    evidence_hints:
+      - Human-oversight design document
+      - Operator training records
     auto_check:
       human_oversight_documented: true
 
-  - control_id: EU-AI-ACT-Art26
-    title: Obligations of deployers (Article 26)
-    description: Deployers of high-risk AI use the system per instructions, assign human oversight, monitor.
+  - control_id: EUAI-ART-15
+    title: Accuracy, robustness and cybersecurity
+    source_ref: Regulation (EU) 2024/1689 Article 15
+    requirement_text: |
+      High-risk AI systems shall be designed and developed in such a
+      way that they achieve an appropriate level of accuracy,
+      robustness and cybersecurity, and that they perform consistently
+      in those respects throughout their lifecycle.
+    description: Accuracy, robustness, cybersecurity baselines for high-risk AI systems.
+    category: security
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Accuracy metrics
+      - Red-team / adversarial testing report
+    auto_check: {}
+
+  - control_id: EUAI-ART-16
+    title: Obligations of providers of high-risk AI systems
+    source_ref: Regulation (EU) 2024/1689 Article 16
+    requirement_text: |
+      Providers of high-risk AI systems shall ensure that their
+      high-risk AI systems are compliant with the requirements set out
+      in Section 2 [Articles 8 to 15] before placing them on the market
+      or putting them into service; affix the CE marking; register the
+      system in the EU database; and take immediate corrective action
+      in case of non-conformity.
+    description: Provider obligations — compliance, CE marking, EU-database registration, corrective action.
+    category: governance
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - CE declaration
+      - EU database entry
+    auto_check: {}
+
+  - control_id: EUAI-ART-17
+    title: Quality management system
+    source_ref: Regulation (EU) 2024/1689 Article 17
+    requirement_text: |
+      Providers of high-risk AI systems shall put a quality management
+      system in place that ensures compliance with this Regulation.
+      That system shall be documented in a systematic and orderly
+      manner in the form of written policies, procedures and
+      instructions.
+    description: Documented quality management system for high-risk AI.
+    category: governance
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - QMS documentation
+    auto_check: {}
+
+  - control_id: EUAI-ART-18
+    title: Documentation keeping
+    source_ref: Regulation (EU) 2024/1689 Article 18
+    requirement_text: |
+      The provider shall, for a period ending 10 years after the
+      high-risk AI system has been placed on the market or put into
+      service, keep at the disposal of the national competent
+      authorities the technical documentation, the QMS documentation
+      and other records.
+    description: 10-year retention of technical + QMS documentation.
+    category: governance
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Retention schedule
+    auto_check: {}
+
+  - control_id: EUAI-ART-19
+    title: Automatically generated logs
+    source_ref: Regulation (EU) 2024/1689 Article 19
+    requirement_text: |
+      Providers of high-risk AI systems shall keep the logs referred to
+      in Article 12, automatically generated by their high-risk AI
+      systems, to the extent such logs are under their control. The
+      logs shall be kept for a period appropriate to the intended
+      purpose of the high-risk AI system, of at least six months,
+      unless provided otherwise in applicable Union or national law.
+    description: Retain auto-generated logs for at least 6 months.
+    category: monitoring
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Log retention configuration
+    auto_check: {}
+
+  - control_id: EUAI-ART-20
+    title: Corrective actions and duty of information
+    source_ref: Regulation (EU) 2024/1689 Article 20
+    requirement_text: |
+      Providers of high-risk AI systems which consider or have reason
+      to consider that a high-risk AI system that they have placed on
+      the market or put into service is not in conformity with this
+      Regulation shall immediately take the necessary corrective
+      actions to bring that system into conformity, to withdraw it, to
+      disable it, or to recall it, as appropriate.
+    description: Corrective actions + duty to inform authorities upon non-conformity.
     category: operations
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Corrective-action register
+      - Authority notification template
+    auto_check: {}
+
+  - control_id: EUAI-ART-26
+    title: Obligations of deployers of high-risk AI systems
+    source_ref: Regulation (EU) 2024/1689 Article 26
+    requirement_text: |
+      Deployers of high-risk AI systems shall take appropriate
+      technical and organisational measures to ensure they use such
+      systems in accordance with the instructions for use accompanying
+      the systems.
+    description: Deployer obligations — usage in line with provider instructions, oversight, monitoring, incident reporting.
+    category: operations
+    is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Operational procedures + monitoring evidence
-      - Logged usage events
+      - Acceptance of provider instructions
+      - Deployer monitoring procedure
     auto_check: {}
 
-  - control_id: EU-AI-ACT-Art52
-    title: GPAI transparency (Article 52)
-    description: General-purpose AI models must comply with transparency and copyright obligations.
+  - control_id: EUAI-ART-27
+    title: Fundamental rights impact assessment for high-risk AI systems
+    source_ref: Regulation (EU) 2024/1689 Article 27
+    requirement_text: |
+      Prior to deploying a high-risk AI system referred to in Article
+      6(2), with the exception of high-risk AI systems intended to be
+      used in the area listed in point 2 of Annex III, deployers that
+      are bodies governed by public law, or are private entities
+      providing public services, and deployers of high-risk AI systems
+      referred to in Annex III, point 5(b) and (c), shall perform an
+      assessment of the impact on fundamental rights that the use of
+      such system may produce.
+    description: Fundamental Rights Impact Assessment (FRIA) before deploying covered high-risk AI.
+    category: risk
+    is_mandatory: true
+    applies_to: [ai_user]
+    evidence_hints:
+      - Completed FRIA
+    auto_check:
+      aisia_status_in: [completed, approved]
+
+  - control_id: EUAI-ART-50
+    title: Transparency obligations for providers and deployers of certain AI systems
+    source_ref: Regulation (EU) 2024/1689 Article 50
+    requirement_text: |
+      Providers shall ensure that AI systems intended to interact
+      directly with natural persons are designed and developed in such
+      a way that the natural persons concerned are informed that they
+      are interacting with an AI system, unless this is obvious. Where
+      AI systems generate synthetic audio, image, video or text
+      content, providers shall ensure outputs are marked in a
+      machine-readable format and detectable as artificially generated
+      or manipulated.
+    description: Inform users they are interacting with AI; mark synthetic content.
     category: transparency
-    applies_to: [ai_provider]
+    is_mandatory: true
+    applies_to: [ai_provider, ai_user]
     evidence_hints:
-      - GPAI model card
-      - Training data copyright summary
+      - UI disclosure
+      - Watermarking / provenance metadata
     auto_check: {}
 
-  - control_id: EU-AI-ACT-Art56
-    title: Codes of practice (Article 56)
-    description: Adherence to AI office codes of practice where applicable.
+  - control_id: EUAI-ART-52
+    title: Codes of conduct for transparency
+    source_ref: Regulation (EU) 2024/1689 Article 52
+    requirement_text: |
+      The AI Office and the Member States shall encourage and
+      facilitate the drawing up of codes of conduct, including related
+      governance mechanisms, intended to foster the voluntary
+      application to AI systems, other than high-risk AI systems, of
+      some or all of the requirements set out in Chapter III, Section
+      2.
+    description: Voluntary codes of conduct for non-high-risk AI.
     category: governance
+    is_mandatory: false
     applies_to: [ai_provider]
     evidence_hints:
-      - Statement of adherence
+      - Signed code of conduct
+    auto_check: {}
+
+  - control_id: EUAI-ART-53
+    title: Obligations for providers of general-purpose AI models
+    source_ref: Regulation (EU) 2024/1689 Article 53
+    requirement_text: |
+      Providers of general-purpose AI models shall: (a) draw up and
+      keep up-to-date the technical documentation of the model
+      [Annex XI]; (b) draw up information and documentation for
+      downstream providers [Annex XII]; (c) put in place a policy to
+      comply with Union copyright law; (d) draw up and make publicly
+      available a sufficiently detailed summary about the content used
+      for training of the general-purpose AI model.
+    description: GPAI providers — technical docs, downstream info pack, copyright policy, training-data summary.
+    category: governance
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - GPAI technical documentation
+      - Public training-data summary
+    auto_check: {}
+
+  - control_id: EUAI-ART-55
+    title: Obligations for providers of general-purpose AI models with systemic risk
+    source_ref: Regulation (EU) 2024/1689 Article 55
+    requirement_text: |
+      Providers of general-purpose AI models with systemic risk shall:
+      (a) perform model evaluation including adversarial testing; (b)
+      assess and mitigate possible systemic risks; (c) keep track of
+      and report serious incidents; (d) ensure an adequate level of
+      cybersecurity protection for the model and its physical
+      infrastructure.
+    description: GPAI-with-systemic-risk — adversarial testing, systemic risk mitigation, incident reporting, cybersecurity.
+    category: security
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Adversarial test report
+      - Serious-incident register
+    auto_check: {}
+
+  - control_id: EUAI-ART-72
+    title: Post-market monitoring by providers
+    source_ref: Regulation (EU) 2024/1689 Article 72
+    requirement_text: |
+      Providers shall establish and document a post-market monitoring
+      system in a manner that is proportionate to the nature of the AI
+      technologies and the risks of the high-risk AI system.
+    description: Post-market monitoring system for high-risk AI.
+    category: monitoring
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Post-market monitoring plan
+    auto_check: {}
+
+  - control_id: EUAI-ART-73
+    title: Reporting of serious incidents
+    source_ref: Regulation (EU) 2024/1689 Article 73
+    requirement_text: |
+      Providers of high-risk AI systems placed on the Union market
+      shall report any serious incident to the market surveillance
+      authorities of the Member States in which that incident
+      occurred.
+    description: Report serious incidents to market surveillance authorities.
+    category: monitoring
+    is_mandatory: true
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Incident reports filed
+    auto_check: {}
+
+  - control_id: EUAI-ART-86
+    title: Right to explanation of individual decision-making
+    source_ref: Regulation (EU) 2024/1689 Article 86
+    requirement_text: |
+      Any affected person subject to a decision which is taken by the
+      deployer on the basis of the output from a high-risk AI system
+      listed in Annex III, with the exception of systems listed under
+      point 2 thereof, and which produces legal effects or similarly
+      significantly affects that person in a way that they consider to
+      have an adverse impact on their health, safety or fundamental
+      rights shall have the right to obtain from the deployer clear
+      and meaningful explanations of the role of the AI system in the
+      decision-making procedure and the main elements of the decision
+      taken.
+    description: Deployers must provide explanations on AI-influenced decisions to affected persons.
+    category: transparency
+    is_mandatory: true
+    applies_to: [ai_user]
+    evidence_hints:
+      - Decision-explanation template
+      - Subject-rights handling SOP
     auto_check: {}

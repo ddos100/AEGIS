@@ -15,6 +15,31 @@ export function useFrameworks() {
   });
 }
 
+export interface ControlBrief {
+  id: string;
+  framework_id: string;
+  control_id: string;
+  title: string;
+  description: string | null;
+  requirement_text: string | null;
+  source_ref: string | null;
+  category: string | null;
+  is_mandatory: boolean;
+  applies_to: string[];
+  evidence_hints: string[];
+}
+
+export function useFrameworkControls(slug: string | undefined) {
+  return useQuery({
+    queryKey: ['compliance', 'frameworks', slug, 'controls'],
+    enabled: !!slug,
+    // The API returns controls already sorted by control_id; do not re-sort
+    // here so what the user sees matches the deterministic digest 1:1.
+    queryFn: async () =>
+      (await api.get<ControlBrief[]>(`/compliance/frameworks/${slug}/controls`)).data,
+  });
+}
+
 export function useFrameworkScore(slug: string | undefined) {
   return useQuery({
     queryKey: ['compliance', 'frameworks', slug, 'score'],

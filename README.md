@@ -195,7 +195,7 @@ aegis/
 2. **AI System Registry** — ISO 42001 Clause 4 register, auto-populated by discovery, with 20 canonical fields per system.
 3. **Risk Assessment Engine** — 5-dimension weighted scoring (data sensitivity, AI capability, regulatory exposure, access scope, provider trust), daily recalculation, AISIA workflow.
 4. **Policy Engine** — Rule evaluation in priority order: Allow / Monitor / Alert / Block / Require Approval.
-5. **Compliance Module** — Mapping to ISO 42001, EU AI Act, NIST AI RMF, DPDPA, RBI, IRDAI, SEBI; audit-ready evidence packs.
+5. **Compliance Module** — Maps each AI system to **152 verbatim AI-applicable requirements** across ISO 42001:2023 (55), EU AI Act (23), NIST AI RMF 1.0 (23), DPDPA 2023 (16), RBI IT Governance 2023 (10), IRDAI ICS Guidelines 2023 (12), and SEBI CSCRF 2024 (13). Every requirement carries the exact regulatory clause (`requirement_text`) and an authoritative citation (`source_ref`); the catalogue is fully deterministic — the importer prints a SHA-256 of the loaded inventory and a CI test asserts that the digest matches the pinned `catalogue/compliance-frameworks/.inventory_digest`. No LLM is anywhere in the requirements path. Audit-ready evidence packs included.
 6. **Dashboard & Reporting** — AI Ecosystem Map (D3 force graph), Shadow AI Radar, Risk Posture, Executive PDFs.
 
 ## Phase roadmap

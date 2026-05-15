@@ -1,73 +1,179 @@
 slug: rbi_it_governance
-name: RBI IT Governance Framework
-version: "2023"
+name: RBI Master Direction on Information Technology Governance, Risk, Controls and Assurance Practices, 2023
+version: "2023 (07-Nov-2023)"
 authority: Reserve Bank of India
 jurisdiction: IN
 description: |
-  RBI Master Directions on IT Governance, Risk, Controls and Assurance
-  Practices. Mapped here for AI-specific applicability to RBI-regulated
-  entities (banks, NBFCs, payment system operators).
+  Reserve Bank of India Master Direction on IT Governance, Risk, Controls
+  and Assurance Practices (Reference DOR.MRG.REC.94/00-00-018/2023-24
+  dated 07-Nov-2023), applicable to all Scheduled Commercial Banks
+  (excluding Regional Rural Banks), Small Finance Banks, Payments Banks,
+  NBFCs (incl. Housing Finance Companies) and Credit Information Companies.
+  Sections cited below are the ones that directly apply to AI systems used
+  by Regulated Entities (REs).
 is_active: true
 controls:
-  - control_id: RBI-ITG-3.1
-    title: IT asset inventory
-    description: Maintain a complete inventory of IT assets including AI systems.
+
+  - control_id: RBI-ITG-7.a
+    title: IT Strategy Committee
+    source_ref: RBI Master Direction on IT Governance 2023, Para 7(a)
+    requirement_text: |
+      The Board shall constitute a Board-level IT Strategy Committee
+      (ITSC) to provide direction to IT functions and ensure that the
+      IT strategy is aligned with the business strategy.
+    description: Board-level ITSC sets AI strategy direction and oversees IT-aligned AI initiatives.
     category: governance
+    is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - AEGIS Registry export
+      - ITSC charter
+      - ITSC minutes
+    auto_check: {}
+
+  - control_id: RBI-ITG-9.b
+    title: Comprehensive IT and Information Asset Inventory
+    source_ref: RBI Master Direction on IT Governance 2023, Para 9(b)
+    requirement_text: |
+      The RE shall maintain an up-to-date inventory of its information
+      and IT assets, the criticality / sensitivity of which is
+      determined based on the business processes they support.
+    description: Maintain an up-to-date inventory of AI systems and AI-data assets with criticality.
+    category: governance
+    is_mandatory: true
+    applies_to: [ai_user]
+    evidence_hints:
+      - AEGIS AI System Registry export
     auto_check:
       registry_completeness_min: 60
 
-  - control_id: RBI-ITG-3.2
-    title: Risk classification
-    description: AI systems are classified by risk and reviewed periodically.
+  - control_id: RBI-ITG-12.b
+    title: Information security risk assessment
+    source_ref: RBI Master Direction on IT Governance 2023, Para 12(b)
+    requirement_text: |
+      The RE shall conduct comprehensive information security risk
+      assessment, including assessment of risks emanating from
+      emerging technologies and new business processes, on a periodic
+      basis.
+    description: Periodically assess AI / emerging-tech risks across the enterprise.
     category: risk
+    is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Risk classification per AI system
-      - Daily risk recalculation evidence
+      - Periodic AI risk assessment
     auto_check:
-      risk_assessed: true
+      aisia_status_in: [in_progress, completed, approved]
 
-  - control_id: RBI-ITG-5.1
-    title: Third-party risk management
-    description: AI vendors / providers are assessed for risks before engagement.
-    category: supply_chain
+  - control_id: RBI-ITG-15
+    title: Data governance
+    source_ref: RBI Master Direction on IT Governance 2023, Para 15
+    requirement_text: |
+      The RE shall ensure that adequate data governance arrangements
+      are in place to provide a structured and consistent approach to
+      the management of data throughout its lifecycle, including the
+      classification of data, definition of ownership and management
+      of access.
+    description: Data governance covering AI training, validation, and operational data.
+    category: data
+    is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Vendor risk assessment
-      - Provider DPA
+      - Data classification policy
+      - Data owner register
+    auto_check:
+      data_types_documented: true
+
+  - control_id: RBI-ITG-17
+    title: Outsourcing of IT services
+    source_ref: RBI Master Direction on IT Governance 2023, Para 17 (read with RBI Outsourcing Master Direction)
+    requirement_text: |
+      Outsourcing of IT activities by the Regulated Entity shall be in
+      accordance with the relevant Reserve Bank instructions on
+      outsourcing including the Master Direction on Outsourcing of
+      Information Technology Services.
+    description: Treat cloud AI / SaaS AI vendors as IT outsourcing and apply RBI outsourcing controls.
+    category: supply_chain
+    is_mandatory: true
+    applies_to: [ai_user]
+    evidence_hints:
+      - Outsourcing agreement with AI vendor
+      - Material outsourcing register entry
     auto_check:
       provider_assessed: true
 
-  - control_id: RBI-ITG-7.1
-    title: Incident management
-    description: AI-related incidents are detected, reported, and managed within RBI timelines.
-    category: monitoring
+  - control_id: RBI-ITG-19
+    title: Business Continuity and Disaster Recovery
+    source_ref: RBI Master Direction on IT Governance 2023, Para 19
+    requirement_text: |
+      The RE shall establish, implement, maintain and continually
+      improve a Business Continuity Management System (BCMS) covering
+      the entire IT environment including the third-party services
+      that are critical to the RE's business operations.
+    description: BCMS coverage extends to AI systems and AI third-party services.
+    category: operations
+    is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Incident response procedure including AI
-      - CERT-In reporting evidence
+      - BCMS document
+      - DR test reports for AI services
     auto_check: {}
 
-  - control_id: RBI-ITG-8.1
-    title: Data confidentiality
-    description: AI systems processing customer or financial data implement confidentiality controls.
-    category: data
+  - control_id: RBI-ITG-20
+    title: Information system audit
+    source_ref: RBI Master Direction on IT Governance 2023, Para 20
+    requirement_text: |
+      The RE shall undertake Information System Audit (IS Audit) of
+      its IT infrastructure, IT applications, IT processes, including
+      those that are outsourced.
+    description: Include AI systems + cloud AI services in the IS Audit scope.
+    category: governance
+    is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Encryption at rest + in transit
-      - Access control matrix
+      - IS Audit report covering AI systems
     auto_check: {}
 
-  - control_id: RBI-ITG-9.1
-    title: Continuous monitoring
-    description: AI systems subject to continuous monitoring for security + operational issues.
+  - control_id: RBI-ITG-21
+    title: Incident reporting
+    source_ref: RBI Master Direction on IT Governance 2023, Para 21 (read with RBI cyber incident reporting circulars)
+    requirement_text: |
+      The RE shall report all cyber incidents to the Reserve Bank
+      within the prescribed timelines and shall maintain documented
+      processes for incident management.
+    description: Report AI-related cyber incidents to RBI per the prescribed timelines.
     category: monitoring
+    is_mandatory: true
     applies_to: [ai_user]
     evidence_hints:
-      - Monitoring dashboard
-      - SIEM rules covering AI events
-    auto_check:
-      usage_monitored: true
+      - Incident response procedure
+      - Sample RBI incident report
+    auto_check: {}
+
+  - control_id: RBI-ITG-22
+    title: Access control
+    source_ref: RBI Master Direction on IT Governance 2023, Para 22
+    requirement_text: |
+      The RE shall implement access control measures, including
+      role-based access controls and the principle of least privilege,
+      for all information assets.
+    description: RBAC + least-privilege for AI systems and AI data stores.
+    category: security
+    is_mandatory: true
+    applies_to: [ai_user]
+    evidence_hints:
+      - RBAC matrix for AI systems
+    auto_check: {}
+
+  - control_id: RBI-ITG-23
+    title: Cryptographic controls
+    source_ref: RBI Master Direction on IT Governance 2023, Para 23
+    requirement_text: |
+      The RE shall implement and maintain appropriate cryptographic
+      controls to protect the confidentiality, integrity and
+      authenticity of information.
+    description: Cryptographic controls for AI data in transit and at rest.
+    category: security
+    is_mandatory: true
+    applies_to: [ai_user]
+    evidence_hints:
+      - Encryption configuration of AI provider
+    auto_check: {}

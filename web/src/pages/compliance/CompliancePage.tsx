@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useAutoAssess,
+  useFrameworkControls,
   useFrameworkScore,
   useFrameworks,
 } from '@/hooks/useCompliance';
+import type { ControlBrief } from '@/hooks/useCompliance';
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   implemented:     { label: 'Implemented',     cls: 'badge-low' },
@@ -110,6 +112,8 @@ export default function CompliancePage() {
             </div>
           </section>
 
+          <RequirementsCatalogue slug={slug} />
+
           <section className="rounded-lg border bg-white">
             <header className="flex items-center justify-between border-b px-4 py-2">
               <h2 className="font-semibold text-brand-700">Outstanding gaps</h2>
@@ -149,6 +153,149 @@ export default function CompliancePage() {
         </>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Requirements catalogue — verbatim AI requirements for the selected framework
+// ---------------------------------------------------------------------------
+//
+// What you see in this panel is what the auditor sees: the exact regulatory
+// clause `requirement_text` (verbatim from the source document), the
+// authoritative citation `source_ref`, and the deterministic control_id.
+// The order on screen is the API order (sorted by control_id), so the visual
+// output is stable across consequential runs.
+function RequirementsCatalogue({ slug }: { slug: string }) {
+  const { data: controls, isLoading } = useFrameworkControls(slug);
+  const [q, setQ] = useState('');
+  const [category, setCategory] = useState<string>('');
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    (controls ?? []).forEach((c) => c.category && set.add(c.category));
+    return Array.from(set).sort();
+  }, [controls]);
+
+  const filtered: ControlBrief[] = useMemo(() => {
+    if (!controls) return [];
+    const needle = q.trim().toLowerCase();
+    return controls.filter((c) => {
+      if (category && c.category !== category) return false;
+      if (!needle) return true;
+      const haystack = `${c.control_id}\n${c.title}\n${c.requirement_text ?? ''}\n${c.source_ref ?? ''}`.toLowerCase();
+      return haystack.includes(needle);
+    });
+  }, [controls, q, category]);
+
+  return (
+    <section className="rounded-lg border bg-white">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
+        <div>
+          <h2 className="font-semibold text-brand-700">Requirements catalogue</h2>
+          <p className="text-xs text-slate-500">
+            Verbatim regulatory text applicable to AI for this framework. Sorted
+            by control ID; output is identical on every consequential run.
+          </p>
+        </div>
+        <span className="text-xs text-slate-500">
+          {controls ? `${filtered.length} of ${controls.length} requirements` : ''}
+        </span>
+      </header>
+
+      <div className="flex flex-wrap items-center gap-2 border-b bg-slate-50 px-4 py-2">
+        <input
+          type="search"
+          placeholder="Search ID, title or text…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="flex-1 min-w-[220px] rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        />
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+        >
+          <option value="">All categories</option>
+          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
+      {isLoading && <div className="p-4 text-sm text-slate-500">Loading requirements…</div>}
+
+      {controls && filtered.length === 0 && !isLoading && (
+        <div className="p-6 text-center text-sm text-slate-500">No requirements match the filter.</div>
+      )}
+
+      <ul className="divide-y divide-slate-100">
+        {filtered.map((c) => {
+          const isOpen = openId === c.id;
+          return (
+            <li key={c.id} className="px-4 py-3">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setOpenId(isOpen ? null : c.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpenId(isOpen ? null : c.id); }}
+                className="flex cursor-pointer items-start gap-3"
+              >
+                <code className="mt-0.5 shrink-0 rounded bg-slate-100 px-2 py-0.5 font-mono text-xs text-brand-700">
+                  {c.control_id}
+                </code>
+                <div className="flex-1">
+                  <div className="font-medium text-slate-800">{c.title}</div>
+                  {c.source_ref && (
+                    <div className="text-xs italic text-slate-500">{c.source_ref}</div>
+                  )}
+                </div>
+                {c.category && (
+                  <span className="badge bg-slate-100 text-slate-700">{c.category}</span>
+                )}
+                {!c.is_mandatory && (
+                  <span className="badge bg-amber-100 text-amber-800">Optional</span>
+                )}
+              </div>
+
+              {isOpen && (
+                <div className="ml-[5.5rem] mt-2 space-y-2 text-sm">
+                  {c.requirement_text && (
+                    <blockquote className="rounded-md border-l-4 border-brand-500 bg-slate-50 p-3 font-serif text-slate-800 whitespace-pre-wrap">
+                      {c.requirement_text}
+                    </blockquote>
+                  )}
+                  {c.description && (
+                    <div>
+                      <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        AEGIS interpretation
+                      </span>
+                      <p className="text-slate-700">{c.description}</p>
+                    </div>
+                  )}
+                  {c.applies_to.length > 0 && (
+                    <div className="text-xs text-slate-600">
+                      <span className="font-medium uppercase tracking-wide text-slate-500">
+                        Applies to:
+                      </span>{' '}
+                      {c.applies_to.join(', ')}
+                    </div>
+                  )}
+                  {c.evidence_hints.length > 0 && (
+                    <div className="text-xs text-slate-600">
+                      <span className="font-medium uppercase tracking-wide text-slate-500">
+                        Evidence:
+                      </span>
+                      <ul className="ml-4 list-disc">
+                        {c.evidence_hints.map((h) => <li key={h}>{h}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

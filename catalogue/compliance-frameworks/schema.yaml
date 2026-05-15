@@ -24,6 +24,11 @@ properties:
         control_id:  { type: string, maxLength: 64 }
         title:       { type: string, maxLength: 512 }
         description: { type: string }
+        # Verbatim regulatory text — what the auditor reads. Must NOT be
+        # paraphrased; copy directly from the source document.
+        requirement_text: { type: string }
+        # Authoritative citation, e.g. "ISO/IEC 42001:2023 Annex A.4.3".
+        source_ref:       { type: string, maxLength: 255 }
         category:
           type: string
           enum: [governance, risk, data, operations, lifecycle, supply_chain,

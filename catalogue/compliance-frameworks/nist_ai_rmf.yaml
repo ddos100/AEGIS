@@ -1,91 +1,356 @@
 slug: nist_ai_rmf
-name: NIST AI Risk Management Framework
+name: NIST AI Risk Management Framework 1.0
 version: "1.0"
-authority: NIST
+authority: NIST (U.S. Department of Commerce)
 jurisdiction: US
 description: |
-  NIST AI RMF 1.0 — voluntary framework structured around four functions
-  (Govern, Map, Measure, Manage) and their sub-categories.
+  NIST AI 100-1, AI Risk Management Framework 1.0 (January 2023). Voluntary,
+  function-and-category structure (Govern, Map, Measure, Manage). Each
+  `requirement_text` quotes the AI RMF Core verbatim; the operational
+  `description` is AEGIS's interpretation. Additional sub-categories from
+  the AI RMF Playbook can be appended without code changes.
 is_active: true
 controls:
-  - control_id: NIST-AI-RMF-GOVERN-1.1
-    title: Establish AI governance structure
-    description: Legal and regulatory requirements involving AI are understood, managed, and documented.
+
+  # GOVERN
+  - control_id: NIST-GOVERN-1.1
+    title: GOVERN 1.1 — Legal and regulatory requirements
+    source_ref: NIST AI RMF 1.0 Govern 1.1
+    requirement_text: |
+      Legal and regulatory requirements involving AI are understood,
+      managed, and documented.
+    description: Track and document legal + regulatory requirements applicable to each AI system.
     category: governance
-    applies_to: [both]
+    applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - Governance committee charter
-      - Legal review register for AI
+      - Regulatory applicability matrix
     auto_check: {}
 
-  - control_id: NIST-AI-RMF-GOVERN-2.1
-    title: Roles, responsibilities, lines of communication
-    description: Roles and responsibilities related to mapping, measuring, managing AI risks are documented.
+  - control_id: NIST-GOVERN-1.2
+    title: GOVERN 1.2 — Characteristics of trustworthy AI
+    source_ref: NIST AI RMF 1.0 Govern 1.2
+    requirement_text: |
+      The characteristics of trustworthy AI are integrated into
+      organizational policies, processes, procedures, and practices.
+    description: Embed trustworthy-AI characteristics in policies + processes.
     category: governance
-    applies_to: [both]
+    applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - RACI for AI risk
+      - AI policy mapping to trustworthy-AI characteristics
+    auto_check: {}
+
+  - control_id: NIST-GOVERN-1.3
+    title: GOVERN 1.3 — Risk management activities
+    source_ref: NIST AI RMF 1.0 Govern 1.3
+    requirement_text: |
+      Processes, procedures, and practices are in place to determine
+      the needed level of risk management activities based on the
+      organization's risk tolerance.
+    description: Risk-management activities scaled to organizational risk tolerance.
+    category: risk
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Risk tolerance statement
+    auto_check: {}
+
+  - control_id: NIST-GOVERN-2.1
+    title: GOVERN 2.1 — Roles and responsibilities
+    source_ref: NIST AI RMF 1.0 Govern 2.1
+    requirement_text: |
+      Roles and responsibilities and lines of communication related to
+      mapping, measuring, and managing AI risks are documented and are
+      clear to individuals and teams throughout the organization.
+    description: Document roles, responsibilities, and communication lines for AI risk activities.
+    category: governance
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - RACI matrix for AI risk
     auto_check:
       owner_assigned: true
 
-  - control_id: NIST-AI-RMF-MAP-1.1
-    title: Context of AI system established
-    description: Intended purpose, deployment context, capabilities, and limitations of AI are documented.
-    category: lifecycle
-    applies_to: [both]
+  - control_id: NIST-GOVERN-3.2
+    title: GOVERN 3.2 — Human-AI configurations
+    source_ref: NIST AI RMF 1.0 Govern 3.2
+    requirement_text: |
+      Policies and procedures are in place to define and differentiate
+      roles and responsibilities for human-AI configurations and
+      oversight of AI systems.
+    description: Define + differentiate roles for human-AI configurations + oversight.
+    category: human_oversight
+    applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - intended_purpose in registry
-      - System context document
-    auto_check:
-      intended_purpose_documented: true
-
-  - control_id: NIST-AI-RMF-MAP-2.2
-    title: Categorization of AI system informed by impact
-    description: Impact on individuals, groups, communities, organizations, society is characterized.
-    category: risk
-    applies_to: [both]
-    evidence_hints:
-      - AISIA affected_population + severity
-    auto_check:
-      aisia_status_in: [in_progress, completed, approved]
-
-  - control_id: NIST-AI-RMF-MEASURE-2.7
-    title: AI system security and resilience
-    description: AI system's security and resilience are evaluated and documented.
-    category: security
-    applies_to: [both]
-    evidence_hints:
-      - Security testing report
-      - Threat model
+      - Human-AI interaction design document
     auto_check: {}
 
-  - control_id: NIST-AI-RMF-MEASURE-2.9
-    title: Model fairness assessed
-    description: Fairness and bias are measured and documented.
+  - control_id: NIST-GOVERN-4.1
+    title: GOVERN 4.1 — Safety-first culture
+    source_ref: NIST AI RMF 1.0 Govern 4.1
+    requirement_text: |
+      Organizational policies and practices are in place to foster a
+      critical thinking and safety-first mindset in the design,
+      development, deployment, and uses of AI systems to minimize
+      negative impacts.
+    description: Foster a critical-thinking, safety-first culture for AI work.
+    category: governance
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - AI safety culture survey
+    auto_check: {}
+
+  - control_id: NIST-GOVERN-5.1
+    title: GOVERN 5.1 — External stakeholder engagement
+    source_ref: NIST AI RMF 1.0 Govern 5.1
+    requirement_text: |
+      Organizational policies and practices are in place to collect,
+      consider, prioritize, and integrate feedback from those external
+      to the team that developed or deployed the AI system regarding
+      the potential individual and societal impacts related to AI
+      risks.
+    description: Engage external stakeholders on AI impact + feedback.
+    category: governance
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Stakeholder feedback log
+    auto_check: {}
+
+  - control_id: NIST-GOVERN-6.1
+    title: GOVERN 6.1 — Third-party policies
+    source_ref: NIST AI RMF 1.0 Govern 6.1
+    requirement_text: |
+      Policies and procedures are in place that address AI risks
+      associated with third-party entities, including risks of
+      infringement of a third party's intellectual property or other
+      rights.
+    description: Policies to manage third-party AI risk including IP infringement.
+    category: supply_chain
+    applies_to: [ai_user]
+    evidence_hints:
+      - Third-party AI policy
+      - DPA / IP-warranty clauses
+    auto_check:
+      provider_assessed: true
+
+  # MAP
+  - control_id: NIST-MAP-1.1
+    title: MAP 1.1 — Context and intended purposes
+    source_ref: NIST AI RMF 1.0 Map 1.1
+    requirement_text: |
+      Intended purposes, potentially beneficial uses, context-specific
+      laws, norms and expectations, and prospective settings in which
+      the AI system will be deployed are understood and documented.
+    description: Document intended purpose + deployment context for each AI system.
+    category: governance
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Intended-purpose record in registry
+    auto_check:
+      registry_completeness_min: 60
+
+  - control_id: NIST-MAP-2.3
+    title: MAP 2.3 — Scientific integrity / TEVV
+    source_ref: NIST AI RMF 1.0 Map 2.3
+    requirement_text: |
+      Scientific integrity and TEVV considerations are identified and
+      documented, including those related to experimental design, data
+      collection and selection (e.g., availability, representativeness,
+      suitability), system trustworthiness, and construct validation.
+    description: Document Test/Evaluation/Verification/Validation considerations + data choices.
     category: risk
     applies_to: [ai_provider]
     evidence_hints:
-      - Bias evaluation report
+      - TEVV plan
     auto_check: {}
 
-  - control_id: NIST-AI-RMF-MANAGE-1.3
-    title: Responses to risks documented
-    description: Documented responses to identified risks; treatment decisions linked to risk register.
+  - control_id: NIST-MAP-3.1
+    title: MAP 3.1 — Benefits of intended functionality
+    source_ref: NIST AI RMF 1.0 Map 3.1
+    requirement_text: |
+      Potential benefits of intended AI system functionality and
+      performance are examined and documented.
+    description: Document the benefits of the AI system's intended functionality.
     category: risk
-    applies_to: [both]
+    applies_to: [ai_user, ai_provider]
     evidence_hints:
-      - AISIA treatment_decision
-      - Mitigation plan
-    auto_check:
-      aisia_treatment_decided: true
+      - Benefit/value analysis
+    auto_check: {}
 
-  - control_id: NIST-AI-RMF-MANAGE-4.1
-    title: Post-deployment monitoring
-    description: AI system is monitored after deployment for performance, drift, harmful outputs.
-    category: monitoring
-    applies_to: [both]
+  - control_id: NIST-MAP-4.1
+    title: MAP 4.1 — Technology and legal risks of components
+    source_ref: NIST AI RMF 1.0 Map 4.1
+    requirement_text: |
+      Approaches for mapping AI technology and legal risks of its
+      components – including the use of third-party data or software
+      – are in place, followed, and documented.
+    description: Map technology + legal risks of AI components and third-party dependencies.
+    category: risk
+    applies_to: [ai_provider]
     evidence_hints:
-      - Monitoring dashboard
-      - Drift detection alerts
+      - Component risk map
+      - SBOM
+    auto_check: {}
+
+  - control_id: NIST-MAP-5.1
+    title: MAP 5.1 — Impact likelihood and magnitude
+    source_ref: NIST AI RMF 1.0 Map 5.1
+    requirement_text: |
+      Likelihood and magnitude of each identified impact (both
+      potentially beneficial and harmful) based on expected use, past
+      uses of AI systems in similar contexts, public incident
+      reports, feedback from those external to the team that
+      developed or deployed the AI system, or other data are
+      identified and documented.
+    description: Quantify likelihood + magnitude of identified AI impacts.
+    category: risk
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Impact likelihood / magnitude analysis (AISIA)
     auto_check:
-      usage_monitored: true
+      aisia_status_in: [completed, approved]
+
+  # MEASURE
+  - control_id: NIST-MEASURE-1.1
+    title: MEASURE 1.1 — Selecting metrics
+    source_ref: NIST AI RMF 1.0 Measure 1.1
+    requirement_text: |
+      Approaches and metrics for measurement of AI risks enumerated
+      during the MAP function are selected for implementation starting
+      with the most significant AI risks. The risks or trustworthiness
+      characteristics that will not – or cannot – be measured are
+      properly documented.
+    description: Select measurement metrics for the most significant AI risks; document risks that cannot be measured.
+    category: monitoring
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Metric selection rationale
+    auto_check: {}
+
+  - control_id: NIST-MEASURE-2.1
+    title: MEASURE 2.1 — Test sets and validation
+    source_ref: NIST AI RMF 1.0 Measure 2.1
+    requirement_text: |
+      Test sets, metrics, and details about the tools used during
+      TEVV are documented.
+    description: Document TEVV test sets, metrics, and tooling.
+    category: monitoring
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Test set inventory
+      - Metric definitions
+    auto_check: {}
+
+  - control_id: NIST-MEASURE-2.7
+    title: MEASURE 2.7 — Security and resilience
+    source_ref: NIST AI RMF 1.0 Measure 2.7
+    requirement_text: |
+      AI system security and resilience – as identified in the MAP
+      function – are evaluated and documented.
+    description: Evaluate + document AI system security and resilience.
+    category: security
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Security assessment report
+    auto_check: {}
+
+  - control_id: NIST-MEASURE-3.1
+    title: MEASURE 3.1 — Tracking emergent risks
+    source_ref: NIST AI RMF 1.0 Measure 3.1
+    requirement_text: |
+      Approaches, personnel, and documentation are in place to
+      regularly identify and track existing, unanticipated, and
+      emergent AI risks based on factors such as intended and actual
+      performance in deployed contexts.
+    description: Continuously track existing, unanticipated, and emergent AI risks.
+    category: monitoring
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Risk tracking register
+    auto_check: {}
+
+  - control_id: NIST-MEASURE-4.1
+    title: MEASURE 4.1 — Domain-expert consultation
+    source_ref: NIST AI RMF 1.0 Measure 4.1
+    requirement_text: |
+      Measurement approaches for identifying AI risks are connected to
+      deployment context(s) and informed through consultation with
+      domain experts and other end users. Approaches are documented.
+    description: Connect risk-measurement approaches to deployment context + domain-expert input.
+    category: monitoring
+    applies_to: [ai_provider]
+    evidence_hints:
+      - Domain expert consultation log
+    auto_check: {}
+
+  # MANAGE
+  - control_id: NIST-MANAGE-1.1
+    title: MANAGE 1.1 — Go / no-go on intended purpose
+    source_ref: NIST AI RMF 1.0 Manage 1.1
+    requirement_text: |
+      A determination is made as to whether the AI system achieves
+      its intended purposes and stated objectives and whether its
+      development or deployment should proceed.
+    description: Decide whether to proceed based on whether the system meets its stated objectives.
+    category: risk
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Go / no-go decision record
+    auto_check: {}
+
+  - control_id: NIST-MANAGE-1.3
+    title: MANAGE 1.3 — Risk response
+    source_ref: NIST AI RMF 1.0 Manage 1.3
+    requirement_text: |
+      Responses to the AI risks deemed high priority, as identified
+      by the MAP function, are developed, planned, and documented.
+      Risk response options can include mitigating, transferring,
+      avoiding, or accepting.
+    description: Develop + document responses to high-priority AI risks.
+    category: risk
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Treatment plan per high-priority risk
+    auto_check: {}
+
+  - control_id: NIST-MANAGE-2.1
+    title: MANAGE 2.1 — Non-AI alternatives and resource trade-offs
+    source_ref: NIST AI RMF 1.0 Manage 2.1
+    requirement_text: |
+      Resources required to manage AI risks are taken into account –
+      along with viable non-AI alternative systems, approaches, or
+      methods – to reduce the magnitude or likelihood of potential
+      impacts.
+    description: Consider non-AI alternatives + resources required to manage AI risks.
+    category: risk
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Alternatives-analysis memo
+    auto_check: {}
+
+  - control_id: NIST-MANAGE-3.1
+    title: MANAGE 3.1 — Third-party risk monitoring
+    source_ref: NIST AI RMF 1.0 Manage 3.1
+    requirement_text: |
+      AI risks and benefits from third-party resources are regularly
+      monitored, and risk controls are applied and documented.
+    description: Monitor + control AI risks from third-party resources.
+    category: supply_chain
+    applies_to: [ai_user]
+    evidence_hints:
+      - Third-party AI monitoring report
+    auto_check: {}
+
+  - control_id: NIST-MANAGE-4.1
+    title: MANAGE 4.1 — Post-deployment monitoring + decommissioning
+    source_ref: NIST AI RMF 1.0 Manage 4.1
+    requirement_text: |
+      Post-deployment AI system monitoring plans are implemented,
+      including mechanisms for capturing and evaluating input from
+      users and other relevant AI actors, appeal and override,
+      decommissioning, incident response, recovery, and change
+      management.
+    description: Post-deployment monitoring, appeal, override, decommissioning, incident response, change mgmt.
+    category: monitoring
+    applies_to: [ai_user, ai_provider]
+    evidence_hints:
+      - Post-deployment monitoring plan
+      - Decommissioning procedure
+    auto_check: {}
