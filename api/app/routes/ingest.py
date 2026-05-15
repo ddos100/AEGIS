@@ -18,7 +18,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from app.core.deps import verify_ingest_key
 from app.integrations.network.base import registered_sources
 from app.schemas.ingest import IngestBatch, IngestResponse, MatcherStats
-from app.workers.ingest import process_batch
+from app.workers.ingest import IngestError, process_batch
 from app.workers.tasks import process_log_batch
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
@@ -63,11 +63,14 @@ async def _dispatch(payload: IngestBatch) -> IngestResponse:
         raise HTTPException(status_code=400, detail="Empty event batch")
 
     if len(payload.events) <= INLINE_BATCH_LIMIT:
-        result = await process_batch(
-            tenant_id=payload.tenant_id,
-            source=payload.source,
-            events=payload.events,
-        )
+        try:
+            result = await process_batch(
+                tenant_id=payload.tenant_id,
+                source=payload.source,
+                events=payload.events,
+            )
+        except IngestError as exc:
+            raise HTTPException(status_code=exc.http_status, detail=exc.detail) from exc
         return IngestResponse(
             accepted=result["accepted"],
             queued=False,

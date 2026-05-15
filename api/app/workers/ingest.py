@@ -36,6 +36,31 @@ from app.models.ai_system import AISystem
 from app.models.ai_usage_event import AIUsageEvent
 
 
+class IngestError(Exception):
+    """Recoverable ingest error — surfaces as a 4xx to the caller."""
+    def __init__(self, http_status: int, detail: str):
+        self.http_status = http_status
+        self.detail = detail
+        super().__init__(detail)
+
+
+async def _verify_tenant(tenant_id: UUID) -> None:
+    """Confirm the tenant row exists before we attempt any FK-bound writes.
+
+    Without this check, a request with an unknown tenant_id would surface as
+    a generic 500 from a deep Postgres ForeignKeyViolation. We'd rather give
+    the operator a clean 400 with the actual tenant_id they typoed.
+    """
+    from sqlalchemy import select as _sel
+    from app.core.database import engine
+    from app.models.tenant import Tenant
+    async with engine.connect() as conn:
+        row = (await conn.execute(_sel(Tenant.id).where(Tenant.id == tenant_id))).first()
+    if row is None:
+        raise IngestError(400, f"Unknown tenant_id: {tenant_id}. "
+                                "Run `alembic upgrade head` to seed the dev tenant.")
+
+
 async def process_batch(
     *,
     tenant_id: UUID,
@@ -43,7 +68,11 @@ async def process_batch(
     events: list[Any],
 ) -> dict[str, int]:
     """Run a single batch through the full pipeline. Returns counts dict."""
-    normalizer = get_normalizer(source)
+    await _verify_tenant(tenant_id)
+    try:
+        normalizer = get_normalizer(source)
+    except KeyError as exc:
+        raise IngestError(400, str(exc)) from exc
     parsed: list[tuple[NormalizedEvent, MatchResult]] = []
 
     for raw in events:
