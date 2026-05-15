@@ -1,0 +1,37 @@
+id: eu-ai-act
+name: EU AI Act
+description: |
+  Baseline rules for EU AI Act risk-based restrictions. Use this template
+  for organisations placing AI systems on the EU market or affecting EU
+  residents.
+rules:
+  - name: Block unacceptable-risk AI
+    description: EU AI Act Article 5 prohibitions — unacceptable-risk AI is not permitted.
+    conditions:
+      eu_ai_act_category: [unacceptable]
+    action: block
+    action_config:
+      block_message: |
+        This AI system falls under EU AI Act Article 5 (unacceptable risk)
+        and may not be used. Contact the AI Governance Committee.
+
+  - name: High-risk AI requires conformity assessment
+    description: Article 6/8 — high-risk AI systems require documented conformity assessment.
+    conditions:
+      eu_ai_act_category: [high_risk]
+    action: require_approval
+    action_config:
+      approval_group: ai_governance_committee
+      block_message: |
+        EU AI Act high-risk systems require a conformity assessment + AISIA
+        + human oversight design before deployment.
+
+  - name: Alert on shadow general-purpose AI
+    description: GPAI obligations (Art 51-55) — newly-discovered general-purpose AI must be registered.
+    conditions:
+      is_shadow: true
+      eu_ai_act_category: [general_purpose_ai]
+    action: alert
+    action_config:
+      alert_channels: [dashboard, email]
+      alert_recipients: [ai_lead, dpo]

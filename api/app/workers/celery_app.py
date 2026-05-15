@@ -46,6 +46,11 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.sync_all_integrations",
         "schedule": crontab(minute="0", hour="2"),
     },
+    # Phase 4 — daily risk recalc 03:00 UTC (after integration sync settles)
+    "recalculate-risk": {
+        "task": "app.workers.tasks.recalculate_all_risk",
+        "schedule": crontab(minute="0", hour="3"),
+    },
 }
 
 

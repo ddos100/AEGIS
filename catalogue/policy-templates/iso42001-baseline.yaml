@@ -1,0 +1,40 @@
+id: iso42001-baseline
+name: ISO/IEC 42001:2023 Baseline
+description: |
+  Default acceptable-use policy mapping to ISO 42001 Annex A controls.
+  Suitable for any organisation pursuing ISO 42001 certification.
+rules:
+  - name: Critical AI requires completed AISIA (Clause 6.1.2)
+    conditions:
+      risk_level: [critical]
+    action: require_approval
+    action_config:
+      approval_group: ai_governance_committee
+      block_message: |
+        ISO 42001 Clause 6.1.2 requires AISIA completion for Critical-risk
+        AI systems. Complete the assessment and obtain committee approval.
+
+  - name: High-risk AI requires AISIA
+    conditions:
+      risk_level: [high]
+    action: alert
+    action_config:
+      alert_channels: [dashboard]
+      alert_recipients: [ai_lead]
+
+  - name: Document intended purpose (A.4.3)
+    description: Any AI system in the registry must have a documented intended purpose.
+    conditions:
+      is_shadow: true
+    action: alert
+    action_config:
+      alert_channels: [dashboard]
+      alert_recipients: [ai_lead]
+      remediation_hint: "Complete intended_purpose, owner, and data_types fields."
+
+  - name: Monitor autonomous agents
+    conditions:
+      ai_category: [agent]
+    action: monitor
+    action_config:
+      retention_days: 365

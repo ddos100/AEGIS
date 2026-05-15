@@ -1,0 +1,34 @@
+id: irdai-cybersecurity
+name: IRDAI Cybersecurity Guidelines
+description: |
+  AI-specific controls for insurance entities under IRDAI's Cybersecurity
+  Guidelines. Focus on policyholder data protection and underwriting
+  decision systems.
+rules:
+  - name: Block AI making underwriting decisions without human override
+    description: AI systems making automated insurance decisions require documented human-override mechanisms.
+    conditions:
+      ai_category: [classifier, recommendation, agent]
+      data_classification: [health, sensitive_personal]
+    action: require_approval
+    action_config:
+      approval_group: chief_underwriter
+      block_message: |
+        IRDAI requires human oversight for automated underwriting decisions
+        affecting policyholders. Document the override mechanism in the
+        AISIA before approval.
+
+  - name: Alert on AI systems processing health data
+    conditions:
+      data_classification: [health]
+    action: alert
+    action_config:
+      alert_channels: [dashboard, email]
+      alert_recipients: [ciso, dpo]
+
+  - name: Monitor every AI used in claims processing
+    conditions:
+      ai_category: [llm, classifier, recommendation]
+    action: monitor
+    action_config:
+      retention_days: 730

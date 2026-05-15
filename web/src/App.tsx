@@ -8,6 +8,10 @@ import RegistryEditPage from '@/pages/registry/RegistryEditPage';
 import CatalogueBrowsePage from '@/pages/catalogue/CatalogueBrowsePage';
 import DiscoveryPage from '@/pages/discovery/DiscoveryPage';
 import IntegrationsPage from '@/pages/integrations/IntegrationsPage';
+import RiskPage from '@/pages/risk/RiskPage';
+import AISIAListPage from '@/pages/aisia/AISIAListPage';
+import AISIAWizardPage from '@/pages/aisia/AISIAWizardPage';
+import PoliciesPage from '@/pages/policies/PoliciesPage';
 
 function Sidebar() {
   const link = (to: string, label: string, end = false) =>
@@ -34,11 +38,12 @@ function Sidebar() {
         {link('/discovery', 'Discovery')}
         {link('/integrations', 'Integrations')}
         {link('/risk', 'Risk')}
+        {link('/aisia', 'AISIA')}
         {link('/policy', 'Policies')}
         {link('/compliance', 'Compliance')}
         {link('/settings', 'Settings')}
       </nav>
-      <div className="mt-auto text-xs text-slate-400">v0.3.0 · Phase 3</div>
+      <div className="mt-auto text-xs text-slate-400">v0.4.0 · Phase 4</div>
     </aside>
   );
 }
@@ -122,8 +127,10 @@ export default function App() {
             <Route path="/catalogue" element={<CatalogueBrowsePage />} />
             <Route path="/discovery" element={<DiscoveryPage />} />
             <Route path="/integrations" element={<IntegrationsPage />} />
-            <Route path="/risk" element={<Placeholder title="Risk Assessment" phase="Phase 4" />} />
-            <Route path="/policy" element={<Placeholder title="Policy Engine" phase="Phase 4" />} />
+            <Route path="/risk"        element={<RiskPage />} />
+            <Route path="/aisia"       element={<AISIAListPage />} />
+            <Route path="/aisia/:id"   element={<AISIAWizardPage />} />
+            <Route path="/policy"      element={<PoliciesPage />} />
             <Route path="/compliance" element={<Placeholder title="Compliance" phase="Phase 5" />} />
             <Route path="/settings" element={<Placeholder title="Settings" phase="Phase 0" />} />
           </Routes>

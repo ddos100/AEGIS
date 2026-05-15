@@ -18,22 +18,17 @@ from app.models.integration_credential import IntegrationCredential
 from app.models.idp_user import IdpUser
 from app.models.oauth_grant import OAuthGrant
 from app.models.cloud_ai_resource import CloudAIResource
+from app.models.risk_assessment import RiskAssessment
+from app.models.aisia_record import AISIARecord
+from app.models.policy import Policy
+from app.models.policy_violation import PolicyViolation
 from app.models.audit_log import AuditLog
 
 __all__ = [
-    "Base",
-    "Tenant",
-    "User",
-    "Department",
-    "AIProvider",
-    "AIService",
-    "AISystem",
-    "AIUsageEvent",
-    "DiscoveryVector",
-    "ExtensionDevice",
-    "IntegrationCredential",
-    "IdpUser",
-    "OAuthGrant",
-    "CloudAIResource",
+    "Base", "Tenant", "User", "Department",
+    "AIProvider", "AIService", "AISystem", "AIUsageEvent",
+    "DiscoveryVector", "ExtensionDevice",
+    "IntegrationCredential", "IdpUser", "OAuthGrant", "CloudAIResource",
+    "RiskAssessment", "AISIARecord", "Policy", "PolicyViolation",
     "AuditLog",
 ]

@@ -1,0 +1,41 @@
+id: dpdpa-baseline
+name: DPDPA 2023 Baseline
+description: |
+  Minimum controls for India's Digital Personal Data Protection Act 2023.
+  Designed for Data Fiduciaries deploying or consuming AI that processes
+  personal data of Indian residents.
+rules:
+  - name: Require approval for AI processing sensitive personal data
+    description: AI systems handling biometric, health, or sensitive personal data require Data Protection Officer approval before use.
+    conditions:
+      data_classification: [sensitive_personal, biometric, health]
+      ai_category: [llm, classifier, recommendation, agent]
+    action: require_approval
+    action_config:
+      approval_group: dpo
+      block_message: |
+        DPDPA 2023 requires DPO approval before AI systems may process
+        sensitive personal data. Submit the AISIA assessment and await sign-off.
+
+  - name: Alert on shadow AI with personal data
+    description: Newly-discovered (unsanctioned) AI systems handling personal data are flagged for immediate review.
+    conditions:
+      is_shadow: true
+      data_classification: [personal, sensitive_personal]
+    action: alert
+    action_config:
+      alert_channels: [email, dashboard]
+      alert_recipients: [admin, dpo]
+
+  - name: Block AI from non-adequate jurisdictions
+    description: |
+      DPDPA cross-border transfer controls — block AI services whose providers
+      operate from jurisdictions not on the adequate-protection list.
+    conditions:
+      data_classification: [personal, sensitive_personal]
+      eu_ai_act_category: [unacceptable]
+    action: block
+    action_config:
+      block_message: |
+        Cross-border transfer of personal data to this AI service is not
+        permitted under DPDPA. Use an in-region alternative.

@@ -1,0 +1,35 @@
+id: rbi-it-governance
+name: RBI IT Governance Framework
+description: |
+  Baseline AI controls aligned to RBI's IT Governance Framework. Targets
+  regulated entities (banks, NBFCs, payment system operators).
+rules:
+  - name: Critical and High-risk AI requires AISIA
+    description: All Critical or High-risk AI systems must have a completed AISIA before production use.
+    conditions:
+      risk_level: [critical, high]
+    action: require_approval
+    action_config:
+      approval_group: risk_committee
+      block_message: |
+        RBI IT Governance requires risk assessment and approval for high-risk
+        IT assets. Complete the AISIA and obtain risk committee sign-off.
+
+  - name: Block shadow AI handling financial data
+    description: Shadow AI processing financial data is blocked pending registration and approval.
+    conditions:
+      is_shadow: true
+      data_classification: [financial]
+    action: block
+    action_config:
+      block_message: |
+        RBI third-party risk framework — AI systems handling financial data
+        must be registered as IT assets before use.
+
+  - name: Monitor LLM use across the organisation
+    description: All LLM usage is monitored for audit trail purposes.
+    conditions:
+      ai_category: [llm]
+    action: monitor
+    action_config:
+      retention_days: 365
