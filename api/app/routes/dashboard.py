@@ -37,7 +37,18 @@ async def overview(db: DBSession, user: CurrentUser):  # noqa: ARG001
     )).all()))
     crit  = by_level.get("critical", 0)
     high  = by_level.get("high", 0)
-    avg   = (await db.execute(select(func.avg(AISystem.current_risk_score)))).scalar_one() or 0
+    # Risk posture: weighted average of every system that actually has a
+    # score. We count scored systems separately so the UI can distinguish
+    # "0/100 because everything is genuinely low risk" from "haven't run
+    # the risk engine yet" — the latter returns None, not 0.
+    scored_systems = (await db.execute(
+        select(func.count(AISystem.id)).where(AISystem.current_risk_score.is_not(None))
+    )).scalar_one()
+    avg_raw = (await db.execute(
+        select(func.avg(AISystem.current_risk_score))
+        .where(AISystem.current_risk_score.is_not(None))
+    )).scalar_one()
+    avg = float(avg_raw) if avg_raw is not None else None
     aisia_pending = (await db.execute(
         select(func.count(AISIARecord.id)).where(AISIARecord.status == "initiated")
     )).scalar_one()
@@ -76,7 +87,8 @@ async def overview(db: DBSession, user: CurrentUser):  # noqa: ARG001
     )).all()
 
     return DashboardOverview(
-        risk_posture_score=round(float(avg), 1),
+        risk_posture_score=(round(avg, 1) if avg is not None else None),
+        scored_systems=scored_systems,
         total_systems=total, shadow_count=shadow,
         critical_count=crit, high_count=high,
         aisia_pending_count=aisia_pending,

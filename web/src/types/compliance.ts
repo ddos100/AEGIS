@@ -53,7 +53,10 @@ export interface EcosystemGraph {
 }
 
 export interface DashboardOverview {
-  risk_posture_score: number;
+  // null while no system has been scored yet — the UI must distinguish
+  // "0 by computation" (every system scored, all low) from "no data".
+  risk_posture_score: number | null;
+  scored_systems: number;
   total_systems: number;
   shadow_count: number;
   critical_count: number;

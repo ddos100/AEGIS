@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { NavLink, Link, Route, Routes } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { sessionStore, useSession } from '@/lib/session';
 import { useDashboardOverview } from '@/hooks/useCompliance';
@@ -75,6 +76,76 @@ function StatCard({ label, value, hint }: { label: string; value: React.ReactNod
   );
 }
 
+function useRecalcAllRisk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => (await api.post('/risk/recalculate-all')).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: ['risk'] });
+    },
+  });
+}
+
+function RiskPostureCard({ value, scored, total }: {
+  value: number | null | undefined;
+  scored: number;
+  total: number;
+}) {
+  const recalc = useRecalcAllRisk();
+  const [justRan, setJustRan] = useState<{ scored: number; total: number } | null>(null);
+
+  const hasValue = value !== null && value !== undefined;
+  const display = hasValue ? `${value}/100` : '—';
+  const hint =
+    !hasValue
+      ? (total === 0
+           ? 'No AI systems registered yet'
+           : `${scored} of ${total} scored — run recalc to populate`)
+      : `Weighted avg of ${scored} scored system${scored === 1 ? '' : 's'}`;
+
+  const onRecalc = async () => {
+    try {
+      const result = await recalc.mutateAsync();
+      setJustRan({ scored: result.scored ?? 0, total: result.total ?? 0 });
+    } catch {
+      // Errors surface via recalc.isError below.
+    }
+  };
+
+  return (
+    <div className="rounded-lg border bg-white p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-sm text-slate-500">Risk posture</div>
+          <div className="mt-1 text-3xl font-bold tabular-nums">{display}</div>
+        </div>
+        {total > 0 && (
+          <button
+            onClick={onRecalc}
+            disabled={recalc.isPending}
+            className="rounded border border-brand-500 bg-white px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 disabled:opacity-50"
+            title="Re-score every AI system in this tenant now"
+          >
+            {recalc.isPending ? 'Recalculating…' : 'Recalc now'}
+          </button>
+        )}
+      </div>
+      <div className="mt-1 text-xs text-slate-400">{hint}</div>
+      {justRan && (
+        <div className="mt-2 rounded border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">
+          Scored {justRan.scored} of {justRan.total} systems.
+        </div>
+      )}
+      {recalc.isError && (
+        <div className="mt-2 rounded border border-red-200 bg-red-50 p-1.5 text-[11px] text-red-800">
+          {(recalc.error as Error).message}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Overview() {
   const { data, isLoading } = useDashboardOverview();
   return (
@@ -94,8 +165,11 @@ function Overview() {
         <StatCard label="Shadow AI"        value={data?.shadow_count ?? '—'}  hint="Auto-flagged" />
         <StatCard label="Critical + High"  value={data ? data.critical_count + data.high_count : '—'}
                   hint={data ? `${data.critical_count} critical · ${data.high_count} high` : ''} />
-        <StatCard label="Risk posture"     value={data ? `${data.risk_posture_score}/100` : '—'}
-                  hint="Weighted avg" />
+        <RiskPostureCard
+          value={data?.risk_posture_score ?? null}
+          scored={data?.scored_systems ?? 0}
+          total={data?.total_systems ?? 0}
+        />
       </div>
 
       {data && (data.aisia_pending_count > 0 || data.violations_open > 0) && (

@@ -80,6 +80,71 @@ async def system_history(
     return [RiskAssessmentRow.model_validate(r) for r in rows]
 
 
+@router.post("/recalculate-all")
+async def recalculate_all(
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_analyst)],
+) -> dict:
+    """Score every AI system in the current tenant synchronously.
+
+    Designed for the "Risk posture is blank" path: a fresh tenant has no
+    scored systems, so the dashboard average is 0 / null. Hitting this
+    endpoint walks the Registry, computes the 5-dimension score per
+    system, writes a RiskAssessment history row, and mirrors the score
+    onto the registry row — same code path as POST /systems/{id}/assess,
+    but applied to every system at once. Claude narratives are skipped
+    here to keep the response fast; the daily Celery beat picks them up
+    for Critical / High systems.
+    """
+    systems = (await db.execute(select(AISystem))).scalars().all()
+    if not systems:
+        return {"ok": True, "scored": 0, "skipped": 0, "tenant_empty": True}
+
+    scored = 0
+    skipped = 0
+    for system in systems:
+        catalogue = None
+        if system.catalogue_service_id:
+            cat_row = (await db.execute(
+                select(AIService).where(AIService.id == system.catalogue_service_id)
+            )).scalar_one_or_none()
+            if cat_row is not None:
+                catalogue = {
+                    "capabilities":   cat_row.capabilities,
+                    "risk_hints":     cat_row.risk_hints,
+                    "provider_id":    cat_row.provider_id,
+                }
+
+        try:
+            score = compute_risk_score(_system_dict(system), catalogue=catalogue)
+        except Exception:  # noqa: BLE001 — keep going on individual failures
+            skipped += 1
+            continue
+
+        row = RiskAssessment(
+            tenant_id=user.tenant_id,
+            ai_system_id=system.id,
+            data_sensitivity_score=score.data_sensitivity,
+            ai_capability_score=score.ai_capability,
+            regulatory_exposure_score=score.regulatory_exposure,
+            access_scope_score=score.access_scope,
+            provider_trust_score=score.provider_trust,
+            total_score=score.total,
+            risk_level=score.risk_level,
+            scoring_inputs=score.inputs,
+            ai_narrative=None,
+            calculated_by="manual-bulk",
+            calculated_at=datetime.now(timezone.utc),
+        )
+        db.add(row)
+        system.current_risk_score    = score.total
+        system.last_risk_assessed_at = row.calculated_at
+        scored += 1
+
+    await db.flush()
+    return {"ok": True, "scored": scored, "skipped": skipped, "total": len(systems)}
+
+
 @router.post("/systems/{system_id}/assess", response_model=RiskAssessmentRow)
 async def reassess(
     system_id: UUID,

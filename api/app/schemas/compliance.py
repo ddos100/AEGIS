@@ -138,7 +138,12 @@ class EcosystemGraph(BaseModel):
 # ---------- dashboard overview ----------
 
 class DashboardOverview(BaseModel):
-    risk_posture_score: float
+    # `risk_posture_score` is the weighted average of `current_risk_score`
+    # across all systems that have been scored. It is `None` (not 0) when
+    # no system has been scored yet — 0 would imply a meaningful "low
+    # risk" verdict, which is misleading.
+    risk_posture_score: float | None = None
+    scored_systems: int = 0
     total_systems: int
     shadow_count: int
     critical_count: int
