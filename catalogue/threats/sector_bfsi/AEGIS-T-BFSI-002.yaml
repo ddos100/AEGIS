@@ -1,0 +1,38 @@
+threat_id: AEGIS-T-BFSI-002
+title: Credit-decisioning data processed by AI provider without RBI outsourcing approval
+source_ref: "RBI Master Direction on Outsourcing of IT Services 2023 — Para 4 (accessed 2026-05-18)"
+verbatim_description: |
+  Regulated Entities shall obtain prior approval of the Reserve Bank of
+  India for outsourcing of activities that involve customer information,
+  including credit decisions, KYC processing, or fraud monitoring, to a
+  service provider where such processing happens outside India or
+  involves a third-party AI model.
+description: |
+  Exposure inferred when an AI system is tagged as touching credit /
+  KYC / fraud-monitoring data AND the provider is either offshore OR
+  not on the tenant's approved-outsourcing list.
+severity: critical
+classes: [cross_border_transfer, regulated_secret_leak]
+vectors: [cloud_ai_control_plane, embedded_saas, cli_sdk]
+sector_amplifiers: [bfsi]
+applies_to_jurisdictions: [IN]
+exposure_check:
+  any_system_data_type_in: [credit_decisioning, kyc, fraud_monitoring]
+  observed_provider_jurisdiction: ["US", "GB", "EU", "SG", "JP", "AU", "CA"]
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: block_url_category_by_data_class
+      params: { data_classes: [credit, kyc], category: "Offshore AI Providers" }
+  alternates:
+    - integration: microsoft_purview_dlp
+      action: sensitive_info_type_policy
+      params: { policy_ref: "tenant:credit_kyc_to_offshore_block" }
+evidence_hints:
+  - ai_systems with data_types_processed containing credit_decisioning/kyc/fraud
+  - ai_provider.hq_country observed
+compliance_implications:
+  - RBI-ITG-17
+  - DPDPA-S-16
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

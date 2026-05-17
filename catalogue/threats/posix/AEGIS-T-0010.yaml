@@ -1,0 +1,42 @@
+threat_id: AEGIS-T-0010
+title: AI tool installer uses curl-pipe-to-shell with no signature verification
+source_ref: "AEGIS Research T-POSIX-001 (2026-05-18) — derived from CIS Distribution-Independent Linux Benchmark §1.7"
+verbatim_description: |
+  Several AI tools and MCP servers ship installation instructions of the
+  form `curl https://<host>/install.sh | sh`. The installer is fetched
+  over TLS but is not authenticated against a signing key. A network
+  attacker who compromises the upstream host or the TLS chain can
+  substitute arbitrary code to be executed with the user's privileges.
+description: |
+  Common offenders include Ollama, Cursor, Continue, several community
+  MCP servers, and convenience wrappers around llama.cpp. AEGIS Endpoint
+  Agent detects the syscall pattern: /bin/sh whose stdin is connected to
+  a socket established by curl/wget/fetch.
+severity: high
+classes: [insecure_install, supply_chain]
+vectors: [cli_sdk, local_model, mcp_agent]
+sector_amplifiers: [dev_heavy_orgs]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_curl_pipe_sh_within_days: 30
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: curl_pipe_sh_block
+      params: { allowlist: "tenant:approved_installers" }
+      requires_module: AEGIS-EA
+  alternates:
+    - integration: crowdstrike
+      action: ioa_rule
+      params: { ioa_id: "AEGIS-IOA-CURL-PIPE-SH" }
+    - integration: sentinelone
+      action: storyline_block
+      params: { story_ref: "AEGIS-S1-CURL-PIPE-SH" }
+evidence_hints:
+  - curl_pipe_sh_detected event from AEGIS-EA
+  - process_exec with parent=curl, child=/bin/sh
+compliance_implications:
+  - ISO42001-A.10.2
+  - RBI-ITG-17
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

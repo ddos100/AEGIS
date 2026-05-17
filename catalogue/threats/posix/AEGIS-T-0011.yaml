@@ -1,0 +1,34 @@
+threat_id: AEGIS-T-0011
+title: AI coding-assistant process reads private credential files
+source_ref: "AEGIS Research T-POSIX-002 (2026-05-18) — derived from MITRE ATT&CK T1552"
+verbatim_description: |
+  AI coding assistants and autonomous agents run with the user's full
+  filesystem access. Several agentic IDE modes (Cursor Agent, Cline,
+  Continue agent mode) are observed reading ~/.ssh/id_*, ~/.aws/credentials,
+  ~/.kube/config, and ~/.netrc without explicit user instruction — either
+  to assist with a deployment task or as a side-effect of indexing.
+description: |
+  AEGIS-EA monitors file-open events under these paths and emits an event
+  whenever the opening process matches a known AI-tool binary list.
+severity: high
+classes: [data_exfiltration, excess_agent_permissions]
+vectors: [coding_assistant, mcp_agent, desktop_client]
+mitre_atlas_ids: []
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_secrets_read_by_ai_proc: true
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: secret_path_read_block
+      params:
+        paths: ["~/.ssh/", "~/.aws/", "~/.kube/", "~/.netrc"]
+        process_allowlist: "tenant:approved_ai_binaries"
+      requires_module: AEGIS-EA
+evidence_hints:
+  - secret_read_by_ai_proc event from AEGIS-EA with path-pattern + process sha256
+compliance_implications:
+  - ISO42001-A.10.2
+  - DPDPA-S-8(7)
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

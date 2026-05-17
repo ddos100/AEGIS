@@ -1,0 +1,33 @@
+threat_id: AEGIS-T-0012
+title: AI tool installer tampers with shell rc files to inject PATH or LD_PRELOAD
+source_ref: "AEGIS Research T-POSIX-003 (2026-05-18) — derived from MITRE ATT&CK T1546.004"
+verbatim_description: |
+  AI tools written to install user-local often append PATH-prepend or
+  LD_PRELOAD directives to ~/.bashrc, ~/.zshrc, ~/.profile, or the macOS
+  per-user launchctl environment. The directive persists across sessions
+  and can be used (intentionally or by a later supply-chain compromise of
+  the same tool) to shadow system binaries.
+description: |
+  Detected by AEGIS-EA file-write events on the rc paths combined with a
+  process-tree match against known AI-tool installer binaries.
+severity: medium
+classes: [insecure_install, supply_chain]
+vectors: [coding_assistant, local_model, cli_sdk]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_path_hijack_detected: true
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: shell_rc_write_block
+      params:
+        files: ["~/.bashrc", "~/.zshrc", "~/.profile", "~/.bash_profile"]
+        process_denylist: "tenant:ai_installers_denied"
+      requires_module: AEGIS-EA
+evidence_hints:
+  - file_write_to_watched_path event on shell rc with content sha256
+  - path_shadow_detected event for python/pip/git binaries
+compliance_implications:
+  - ISO42001-A.6.2.6
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

@@ -1,0 +1,51 @@
+threat_id: AEGIS-T-0001
+title: Indirect prompt injection via web content read by browser AI assistant
+source_ref: "OWASP LLM Top 10 (2025) LLM01 — Prompt Injection — accessed 2026-05-18"
+verbatim_description: |
+  Indirect Prompt Injections occur when an LLM accepts input from external
+  sources that can be controlled by an attacker, such as websites or files.
+  The attacker may embed a prompt injection in the external content
+  hijacking the conversation context. Once the LLM ingests the content,
+  the malicious instructions are executed.
+description: |
+  Browser-based AI assistants (Monica, Sider, Brave Leo) and any AI tool
+  that reads page DOM are vulnerable when an attacker plants hostile text
+  in a shared document, web page, or email content the user asks the
+  assistant to summarise.
+severity: high
+classes: [indirect_prompt_injection, data_exfiltration]
+vectors: [browser_webapp, browser_extension, desktop_client]
+mitre_atlas_ids: [AML.T0051]
+owasp_llm_ids:   [LLM01]
+sector_amplifiers: [bfsi, capital_markets]
+applies_to_jurisdictions: [global]
+exposure_check:
+  any_system_category_in: [llm, browser_extension]
+  observed_provider_domains:
+    - chat.openai.com
+    - claude.ai
+    - gemini.google.com
+    - copilot.microsoft.com
+    - monica.im
+    - sider.ai
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: block_url_category
+      params: { category: "Unsanctioned AI Assistants" }
+      severity_min: high
+    - integration: chrome_enterprise
+      action: extension_install_blocklist
+      params: { extensions: [monica, sider, merlin, maxai, harpa] }
+  rollback:
+    - integration: zscaler
+      action: remove_url_category_block
+      params: { category: "Unsanctioned AI Assistants" }
+evidence_hints:
+  - registered domain observed in ai_usage_events
+  - browser extension installed events from AEGIS-EA
+compliance_implications:
+  - ISO42001-A.9.4
+  - EUAI-ART-14
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

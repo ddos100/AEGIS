@@ -1,0 +1,39 @@
+threat_id: AEGIS-T-0004
+title: MCP server granted filesystem scope at host root
+source_ref: "OWASP LLM Top 10 (2025) LLM06 — Excessive Agency — accessed 2026-05-18"
+verbatim_description: |
+  Excessive Agency vulnerability is the vulnerability that enables damaging
+  actions to be performed in response to unexpected, ambiguous or
+  manipulated outputs from an LLM. The risk is amplified when an agent is
+  granted permissions broader than required to complete its intended task.
+description: |
+  Several MCP servers ship a default config that scopes the filesystem
+  tool at "/" or "~" rather than the project root, granting an agent
+  read/write access to the entire home directory (including ~/.ssh,
+  ~/.aws/credentials, browser cookies). Detected by AEGIS Endpoint Agent
+  scanning mcp.json on host.
+severity: critical
+classes: [excess_agent_permissions, insecure_install]
+vectors: [mcp_agent, coding_assistant]
+owasp_llm_ids: [LLM06]
+sector_amplifiers: [dev_heavy_orgs]
+applies_to_jurisdictions: [global]
+exposure_check:
+  mcp_server_with_scope: ["/", "~", "$HOME"]
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: mcp_config_policy_warn
+      params: { allowed_roots: ["${project_root}", "${workspace_folder}"] }
+      requires_module: AEGIS-EA
+  alternates:
+    - integration: chrome_enterprise
+      action: ide_extension_install_blocklist
+      params: { mcp_servers_with_root_scope: true }
+evidence_hints:
+  - mcp_config_observed event from AEGIS-EA listing forbidden scope
+compliance_implications:
+  - ISO42001-A.10.2
+  - NIST-GOVERN-2.1
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

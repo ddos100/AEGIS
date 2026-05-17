@@ -1,0 +1,50 @@
+threat_id: AEGIS-T-0002
+title: Slopsquatted AI helper package recommended by a coding assistant
+source_ref: "OWASP LLM Top 10 (2025) LLM05 — Supply Chain Vulnerabilities — accessed 2026-05-18"
+verbatim_description: |
+  LLM-based coding assistants can hallucinate package or library names that
+  do not exist. Adversaries register the hallucinated names on public
+  package indices and add malicious code (typically as a post-install
+  script) that runs when a developer follows the assistant's suggestion.
+  This pattern is colloquially called slopsquatting.
+description: |
+  Concrete instances observed against npm (e.g. fake @openai/* packages),
+  PyPI (claude-helper-*, langchain-utils-*), and Homebrew taps for AI
+  tooling. The exposure surface is engineering teams using Copilot,
+  Cursor, Cline, Codeium, Continue, etc.
+severity: critical
+classes: [supply_chain, insecure_install]
+vectors: [coding_assistant, cli_sdk]
+owasp_llm_ids: [LLM05]
+sector_amplifiers: [dev_heavy_orgs, bfsi]
+applies_to_jurisdictions: [global]
+exposure_check:
+  any_system_category_in: [code, code_ai, coding_assistant]
+  observed_provider_domains:
+    - api.cursor.sh
+    - api.cline.bot
+    - api.github.com
+    - api.codeium.com
+    - api.continue.dev
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: package_install_pre_hook_block
+      params: { ecosystems: [npm, pip, brew], policy_ref: "tenant:approved_ai_packages" }
+      requires_module: AEGIS-EA
+    - integration: cloudflare_gateway
+      action: block_dns_category
+      params: { category: "Unsanctioned AI Coding Tools" }
+  alternates:
+    - integration: crowdstrike
+      action: ioa_rule
+      params: { ioa_id: "AEGIS-IOA-NPM-POSTINSTALL-EXFIL" }
+evidence_hints:
+  - npm/pip install event from AEGIS-EA
+  - DNS query to typosquat package mirror domain
+  - process_exec from package post-install script with curl|sh
+compliance_implications:
+  - ISO42001-A.10.2
+  - NIST-GOVERN-6.1
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

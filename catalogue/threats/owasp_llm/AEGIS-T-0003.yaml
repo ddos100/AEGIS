@@ -1,0 +1,48 @@
+threat_id: AEGIS-T-0003
+title: Sensitive data exfiltration via prompt to a public LLM provider
+source_ref: "OWASP LLM Top 10 (2025) LLM02 — Sensitive Information Disclosure — accessed 2026-05-18"
+verbatim_description: |
+  Sensitive information leakage from LLM applications occurs when the LLM
+  application reveals confidential data, proprietary algorithms, or other
+  sensitive details through its outputs, or when sensitive data placed in
+  a prompt is processed and potentially retained by the provider.
+description: |
+  Employees paste customer data, source code with secrets, or board papers
+  into ChatGPT / Claude / Gemini consumer apps. AEGIS infers exposure from
+  the observed provider domain plus the system's category.
+severity: high
+classes: [data_exfiltration, regulated_secret_leak]
+vectors: [browser_webapp, desktop_client]
+owasp_llm_ids: [LLM02]
+sector_amplifiers: [bfsi, insurance, capital_markets]
+applies_to_jurisdictions: [global]
+exposure_check:
+  any_system_category_in: [llm]
+  observed_provider_domains:
+    - chat.openai.com
+    - chatgpt.com
+    - claude.ai
+    - gemini.google.com
+    - copilot.microsoft.com
+    - perplexity.ai
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: block_url_category
+      params: { category: "Public AI Chatbots" }
+    - integration: microsoft_purview_dlp
+      action: sensitive_info_type_policy
+      params: { policy_ref: "tenant:pii_to_ai_block" }
+  alternates:
+    - integration: cisco_umbrella
+      action: domain_destination_list
+      params: { list_ref: "AEGIS-DL-PUBLIC-LLMS" }
+evidence_hints:
+  - ai_usage_events count to listed domains
+  - DLP hit from M365 / Defender for Cloud Apps
+compliance_implications:
+  - DPDPA-S-8(7)
+  - RBI-ITG-15
+  - ISO42001-A.4.3
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, "phase-7/**"]
   pull_request:
 
 concurrency:
@@ -77,3 +77,17 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: gitleaks/gitleaks-action@v2
         env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+
+  threats:
+    name: Threats catalogue (schema + digest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install deps
+        run: pip install --quiet pyyaml jsonschema
+      - name: Validate threat YAML against schema
+        run: python catalogue/scripts/threats_validate.py
+      - name: Verify inventory digest is pinned
+        run: python catalogue/scripts/threats_digest.py --check

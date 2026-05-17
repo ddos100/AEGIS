@@ -1,0 +1,43 @@
+threat_id: AEGIS-T-0021
+title: Browser AI extension exfiltrates DOM input fields enterprise-wide
+source_ref: "MITRE ATLAS AML.T0017 — Discover ML Artifacts (accessed 2026-05-18)"
+verbatim_description: |
+  Browser extensions with broad host_permissions and content-script
+  injection capabilities can read every input field on every page the
+  user visits. Several AI assistant extensions request such permissions
+  to provide "rewrite this field" functionality and are observed sending
+  the DOM contents to the extension provider.
+description: |
+  AEGIS detects exposure by the catalogue match on the extension ID +
+  observed extension events from the AEGIS Chrome extension itself
+  (which lists peer-installed AI extensions).
+severity: high
+classes: [data_exfiltration, output_oversharing]
+vectors: [browser_extension]
+mitre_atlas_ids: [AML.T0017]
+applies_to_jurisdictions: [global]
+exposure_check:
+  any_system_category_in: [browser_extension]
+  observed_provider_domains:
+    - monica.im
+    - sider.ai
+    - getmerlin.in
+    - maxai.me
+    - harpa.ai
+mitigation:
+  preferred:
+    - integration: chrome_enterprise
+      action: extension_install_blocklist
+      params: { extensions: [monica, sider, merlin, maxai, harpa] }
+  alternates:
+    - integration: zscaler
+      action: block_url_category
+      params: { category: "Unsanctioned AI Browser Extensions" }
+evidence_hints:
+  - extension_devices entry naming the extension
+  - ai_usage_events to extension provider domain
+compliance_implications:
+  - ISO42001-A.9.4
+  - DPDPA-S-8(3)
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

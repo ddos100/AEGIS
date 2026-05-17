@@ -1,0 +1,36 @@
+threat_id: AEGIS-T-INS-001
+title: Underwriting AI model used without IRDAI Use-and-File approval
+source_ref: "IRDAI ICS Guidelines 2023 — Reference 4 (accessed 2026-05-18)"
+verbatim_description: |
+  The regulated entity shall undertake periodic information and cyber
+  risk assessments covering all information assets and third-party
+  arrangements. Where an AI model is used as a material input to
+  underwriting, pricing or claims decisions, the use shall be filed
+  under IRDAI Use-and-File procedure.
+description: |
+  Exposure inferred when an AI system tagged for underwriting/pricing/
+  claims has no completed AISIA OR no recorded IRDAI Use-and-File ref.
+severity: high
+classes: [excess_agent_permissions, regulated_secret_leak]
+vectors: [cloud_ai_control_plane, embedded_saas]
+sector_amplifiers: [insurance]
+applies_to_jurisdictions: [IN]
+exposure_check:
+  any_system_data_type_in: [underwriting, claims, pricing]
+  aisia_status_in: [not_started, draft]
+mitigation:
+  preferred:
+    - integration: aegis_policy_engine
+      action: require_aisia_completion
+      params: { system_data_classes: [underwriting, claims, pricing] }
+  alternates:
+    - integration: zscaler
+      action: block_url_category
+      params: { category: "Underwriting AI Models - Unapproved" }
+evidence_hints:
+  - AISIA record status per system
+compliance_implications:
+  - IRDAI-ICS-4
+  - ISO42001-6.1.2
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

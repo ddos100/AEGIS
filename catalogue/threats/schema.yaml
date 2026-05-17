@@ -1,0 +1,176 @@
+# JSON-schema-as-YAML for AEGIS threat records.
+# Every YAML under catalogue/threats/<source>/<id>.yaml validates against
+# this schema. The validator at catalogue/scripts/threats_validate.py runs
+# in CI and as a pre-commit hook; the digest at catalogue/scripts/threats_digest.py
+# pins the inventory state for reproducible builds (mirrors the contract
+# used by catalogue/compliance-frameworks/).
+#
+# Determinism contract: every threat MUST declare a non-empty `exposure_check`
+# block. Threats with no predicate (paper-only) are not allowed — the engine
+# would otherwise produce "unknown" verdicts indefinitely.
+#
+# Privacy by Design: no field in this schema accepts PII. The `evidence_hints`
+# and `mitigation` fields reference machine identifiers (system_id, device_id,
+# domain) only.
+
+$schema: "http://json-schema.org/draft-07/schema#"
+title:   AEGIS Threat
+type:    object
+required:
+  - threat_id
+  - title
+  - source_ref
+  - verbatim_description
+  - severity
+  - classes
+  - vectors
+  - exposure_check
+  - catalogue_version
+  - last_updated
+additionalProperties: false
+
+properties:
+
+  threat_id:
+    type:    string
+    pattern: "^AEGIS-T(-[A-Z]+)?-[0-9]{3,4}$"
+    maxLength: 64
+
+  title:
+    type:      string
+    minLength: 4
+    maxLength: 200
+
+  source_ref:
+    type:      string
+    minLength: 4
+    maxLength: 400
+    description: |
+      Verbatim authoritative citation — URL + accessed-at date for upstream
+      feeds, paragraph reference for standards. Stored as plaintext, shown
+      verbatim to auditors.
+
+  verbatim_description:
+    type:      string
+    minLength: 20
+    maxLength: 8000
+    description: |
+      Description quoted verbatim from the upstream source. No paraphrasing.
+
+  description:
+    type:      string
+    maxLength: 2000
+    description: |
+      AEGIS operational interpretation. Clearly distinguished from
+      verbatim_description in the UI.
+
+  severity:
+    type: string
+    enum: [critical, high, medium, low]
+
+  classes:
+    type:     array
+    minItems: 1
+    items:
+      type: string
+      enum:
+        - data_exfiltration
+        - cross_border_transfer
+        - direct_prompt_injection
+        - indirect_prompt_injection
+        - output_oversharing
+        - supply_chain
+        - insecure_install
+        - excess_agent_permissions
+        - autonomous_agent_loop_out
+        - model_integrity
+        - jailbreak
+        - deepfake
+        - regulated_secret_leak
+        - cost_availability_abuse
+
+  vectors:
+    type:     array
+    minItems: 1
+    items:
+      type: string
+      enum:
+        - browser_webapp
+        - browser_extension
+        - desktop_client
+        - coding_assistant
+        - cli_sdk
+        - mcp_agent
+        - embedded_saas
+        - cloud_ai_control_plane
+        - local_model
+
+  mitre_atlas_ids:
+    type:  array
+    items: { type: string, pattern: "^AML\\.T[0-9]{4}$" }
+
+  owasp_llm_ids:
+    type:  array
+    items: { type: string, pattern: "^LLM[0-9]{2}$" }
+
+  sector_amplifiers:
+    type:  array
+    items:
+      type: string
+      enum: [bfsi, insurance, capital_markets, healthcare, public, dev_heavy_orgs]
+
+  applies_to_jurisdictions:
+    type:  array
+    minItems: 1
+    items:
+      type: string
+      # ISO 3166-1 alpha-2 OR the literal "global".
+      pattern: "^([A-Z]{2}|global)$"
+
+  exposure_check:
+    type:                 object
+    minProperties:        1
+    additionalProperties: true
+    description: |
+      AND of predicates. Same vocabulary as compliance auto_check plus the
+      threat-engine additions documented in PHASE-7-PLAN.md §4.2.
+
+  mitigation:
+    type: object
+    additionalProperties: false
+    properties:
+      preferred:  { type: array, items: { $ref: "#/$defs/mitigationStep" } }
+      alternates: { type: array, items: { $ref: "#/$defs/mitigationStep" } }
+      rollback:   { type: array, items: { $ref: "#/$defs/mitigationStep" } }
+
+  evidence_hints:
+    type:  array
+    items: { type: string, maxLength: 200 }
+
+  compliance_implications:
+    type:  array
+    items:
+      type: string
+      description: |
+        Cross-links to compliance control_ids that fail when this threat is
+        exposed. Used by the executive PDF report.
+
+  catalogue_version:
+    type:    string
+    pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+
+  last_updated:
+    type:   string
+    format: date
+
+$defs:
+  mitigationStep:
+    type: object
+    required: [integration, action]
+    additionalProperties: false
+    properties:
+      integration: { type: string, maxLength: 64 }
+      action:      { type: string, maxLength: 120 }
+      params:      { type: object }
+      severity_min: { type: string, enum: [critical, high, medium, low] }
+      requires_module: { type: string, maxLength: 64 }

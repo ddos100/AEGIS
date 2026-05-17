@@ -51,6 +51,18 @@ catalogue-import: ## Validate + upsert every catalogue YAML into ai_services / a
 framework-import: ## Validate + upsert every compliance framework YAML into compliance_frameworks / compliance_controls
 	docker compose exec api python /workspace/catalogue/scripts/import_frameworks.py -v
 
+threats-validate: ## Validate every catalogue/threats/**/*.yaml against schema.yaml
+	python catalogue/scripts/threats_validate.py
+
+threats-digest: ## Compute the deterministic SHA-256 digest of the threat inventory
+	python catalogue/scripts/threats_digest.py
+
+threats-digest-check: ## CI gate — fail if the inventory drifts from the pinned digest
+	python catalogue/scripts/threats_digest.py --check
+
+threats-digest-update: ## Re-pin the digest after an intentional catalogue edit
+	python catalogue/scripts/threats_digest.py --update
+
 dev-login: ## Fetch a JWT from the dev Keycloak realm and print the browser snippet
 	@bash infra/scripts/dev-login.sh
 

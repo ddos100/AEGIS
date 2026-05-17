@@ -1,0 +1,37 @@
+threat_id: AEGIS-T-0013
+title: Autonomous AI agent executes destructive shell command derived from prompt
+source_ref: "AEGIS Research T-POSIX-004 (2026-05-18) — derived from MITRE ATLAS AML.T0050"
+verbatim_description: |
+  Agent-mode IDE assistants (Cursor Agent, Cline, Continue, Aider in
+  auto-apply) translate natural-language requests into shell commands and
+  may execute them without explicit per-command approval. Observed
+  incidents include wildcarded `rm -rf`, `find -delete`, `git clean -fdx`,
+  and `docker system prune` derived from ambiguous prompts.
+description: |
+  AEGIS-EA inspects the process tree under known agentic AI binaries and
+  flags execution of an enumerated set of destructive commands.
+severity: critical
+classes: [autonomous_agent_loop_out, insecure_install]
+vectors: [coding_assistant, mcp_agent]
+mitre_atlas_ids: [AML.T0050]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_destructive_cmd_by_ai_proc: true
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: destructive_cmd_block_under_ai_proc
+      params:
+        commands: ["rm -rf", "find -delete", "git clean -fdx", "docker system prune"]
+      requires_module: AEGIS-EA
+  alternates:
+    - integration: crowdstrike
+      action: ioa_rule
+      params: { ioa_id: "AEGIS-IOA-AI-AGENT-DESTRUCTIVE-CMD" }
+evidence_hints:
+  - process_exec under AI binary parent with command-line hash matching denylist
+compliance_implications:
+  - ISO42001-6.1.3
+  - EUAI-ART-14
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

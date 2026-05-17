@@ -1,0 +1,34 @@
+threat_id: AEGIS-T-0020
+title: AI provider HQ in jurisdiction not permitted for DPDPA-regulated personal data
+source_ref: "AEGIS Research T-CB-001 (2026-05-18) — derived from DPDP Act 2023 Section 16"
+verbatim_description: |
+  An AI system processing personal data of Indian Data Principals is
+  provided by a vendor headquartered in a jurisdiction not on the
+  permitted-transfer list. Section 16 of the DPDP Act permits the
+  Central Government to restrict cross-border transfer of personal data
+  to such territories.
+description: |
+  AEGIS resolves the system to its catalogue-matched AIProvider, reads
+  hq_country, and compares against the per-tenant permitted list (default
+  IN, EU, US, GB, JP, SG, AU, CA).
+severity: high
+classes: [cross_border_transfer, regulated_secret_leak]
+vectors: [browser_webapp, cli_sdk, embedded_saas, cloud_ai_control_plane]
+applies_to_jurisdictions: [IN]
+sector_amplifiers: [bfsi, insurance, capital_markets]
+exposure_check:
+  observed_provider_jurisdiction: ["CN", "RU", "IR", "KP"]
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: block_url_category_by_provider_country
+      params: { country_denylist: ["CN", "RU", "IR", "KP"] }
+    - integration: cisco_umbrella
+      action: domain_destination_list_by_country
+      params: { list_ref: "AEGIS-DL-NON-PERMITTED-AI-PROVIDERS" }
+evidence_hints:
+  - ai_provider.hq_country observed via integration metadata
+compliance_implications:
+  - DPDPA-S-16
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

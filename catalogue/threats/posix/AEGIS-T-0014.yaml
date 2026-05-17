@@ -1,0 +1,36 @@
+threat_id: AEGIS-T-0014
+title: Untrusted Hugging Face model file with pickle-based RCE loaded by local runtime
+source_ref: "AEGIS Research T-POSIX-005 (2026-05-18) — derived from Hugging Face Security Advisory HFSA-2024-001"
+verbatim_description: |
+  Model files in the pickle-based formats (.bin, .pt, .pkl, certain
+  .safetensors imports that fall back to pickle) execute arbitrary
+  Python code on load. An adversary uploads a poisoned model to a public
+  hub or compromises a popular checkpoint; a developer loads it locally
+  with transformers/PyTorch and gains code execution at user privilege.
+description: |
+  AEGIS-EA observes the local model runtime process opening the model
+  file and emits the file's sha256. The exposure engine cross-references
+  against the HF Security Advisories feed.
+severity: high
+classes: [model_integrity, supply_chain]
+vectors: [local_model, coding_assistant]
+applies_to_jurisdictions: [global]
+exposure_check:
+  huggingface_model_in_use: ["pickle-format-list"]
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: model_hash_allowlist_enforce
+      params: { allowlist_ref: "tenant:approved_model_hashes" }
+      requires_module: AEGIS-EA
+  alternates:
+    - integration: cloudflare_gateway
+      action: block_url
+      params: { url_pattern: "huggingface.co/*/resolve/*.bin" }
+evidence_hints:
+  - file_open event with model sha256 matching advisory feed
+compliance_implications:
+  - ISO42001-A.6.2.3
+  - NIST-MAP-1.1
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

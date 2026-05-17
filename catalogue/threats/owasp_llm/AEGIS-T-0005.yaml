@@ -1,0 +1,37 @@
+threat_id: AEGIS-T-0005
+title: Known jailbreak technique succeeds against in-tenant deployed model
+source_ref: "OWASP LLM Top 10 (2025) LLM07 — System Prompt Leakage / Jailbreak — accessed 2026-05-18"
+verbatim_description: |
+  Adversaries craft prompts that override system instructions, bypass
+  safety classifiers, or extract proprietary system prompts. Techniques
+  documented in the wild include DAN, Skeleton Key, Crescendo, Bad Likert
+  Judge, and Many-Shot Jailbreaking. Successful jailbreaks lead to policy
+  violations, sensitive disclosure, and unauthorised tool calls.
+description: |
+  AEGIS detects exposure by observing tenant-deployed models (Bedrock,
+  Azure OpenAI, Vertex AI custom deployments) without a guardrail layer
+  (Bedrock Guardrails, Azure Content Safety, Vertex Safety Filter, NeMo
+  Guardrails).
+severity: high
+classes: [jailbreak, output_oversharing]
+vectors: [cli_sdk, cloud_ai_control_plane]
+owasp_llm_ids: [LLM07]
+applies_to_jurisdictions: [global]
+exposure_check:
+  any_system_category_in: [llm]
+  cloud_ai_resource_without_guardrail: true
+mitigation:
+  preferred:
+    - integration: aws_bedrock
+      action: attach_guardrail
+      params: { guardrail_ref: "tenant:default_bedrock_guardrail" }
+    - integration: azure_openai
+      action: enable_content_safety
+      params: { filter_ref: "tenant:azure_content_safety_default" }
+evidence_hints:
+  - cloud_ai_resources row with no guardrail attached
+compliance_implications:
+  - EUAI-ART-9
+  - ISO42001-6.1.2
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

@@ -1,0 +1,43 @@
+threat_id: AEGIS-T-BFSI-001
+title: Unpublished Price-Sensitive Information pasted into public LLM by research analyst
+source_ref: "SEBI (Prohibition of Insider Trading) Regulations 2015 — Reg. 3(2) (accessed 2026-05-18)"
+verbatim_description: |
+  No insider shall communicate, provide, or allow access to any
+  unpublished price sensitive information, relating to a company or
+  securities listed or proposed to be listed, to any person including
+  other insiders except where such communication is in furtherance of
+  legitimate purposes.
+description: |
+  AEGIS detects exposure when (a) the tenant industry tag is
+  capital_markets, (b) at least one AI system in the registry is
+  category=llm AND used by a department flagged as research/trading/IB,
+  and (c) usage events to public LLM domains are observed.
+severity: critical
+classes: [regulated_secret_leak, data_exfiltration]
+vectors: [browser_webapp, desktop_client]
+sector_amplifiers: [capital_markets]
+applies_to_jurisdictions: [IN]
+exposure_check:
+  any_system_category_in: [llm]
+  observed_provider_domains:
+    - chat.openai.com
+    - chatgpt.com
+    - claude.ai
+    - gemini.google.com
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: block_url_category_for_department
+      params:
+        category: "Public AI Chatbots"
+        departments: [research, trading, investment_banking]
+    - integration: microsoft_purview_dlp
+      action: sensitive_info_type_policy
+      params: { policy_ref: "tenant:upsi_to_ai_block" }
+evidence_hints:
+  - ai_usage_events from research/trading/IB department users
+compliance_implications:
+  - SEBI-CSCRF-GV.2
+  - DPDPA-S-8(7)
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"
