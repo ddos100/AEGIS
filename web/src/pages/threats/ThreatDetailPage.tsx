@@ -52,6 +52,12 @@ export default function ThreatDetailPage() {
         </div>
         <h1 className="mt-2 text-2xl font-bold text-slate-800">{data.title}</h1>
         <div className="mt-1 text-sm italic text-slate-500">{data.source_ref}</div>
+        <div className="mt-2">
+          <Link to={`/exposures/${data.threat_id}`}
+                className="text-xs text-brand-600 hover:underline">
+            See this tenant's exposure verdict →
+          </Link>
+        </div>
       </div>
 
       <section className="rounded-lg border bg-white p-4">

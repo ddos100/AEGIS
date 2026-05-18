@@ -88,3 +88,72 @@ export function useLicence() {
     staleTime: 60_000,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Exposures (Phase 7.1)
+// ---------------------------------------------------------------------------
+
+export type ExposureStatus = 'exposed' | 'not_exposed' | 'unknown' | 'mitigated';
+
+export interface ExposureBrief {
+  id: string;
+  tenant_id: string;
+  threat_id: string;
+  status: ExposureStatus;
+  last_evaluated_at: string;
+  threat_external_id: string;
+  threat_title: string;
+  threat_severity: ThreatBrief['severity'];
+  threat_classes: string[];
+  threat_vectors: string[];
+}
+
+export interface ExposureDetail extends ExposureBrief {
+  reasons: string[];
+  evidence_refs: string[];
+  missing_telemetry: string[];
+  threat_source_ref: string;
+  threat_verbatim_description: string;
+  threat_exposure_check: Record<string, unknown>;
+  threat_mitigation: { preferred?: unknown[]; alternates?: unknown[] } | null;
+}
+
+export interface ExposureListResponse {
+  items: ExposureBrief[];
+  by_status: Record<ExposureStatus, number>;
+  total: number;
+}
+
+export function useExposures(opts: { status?: string[]; severity?: string[] } = {}) {
+  return useQuery({
+    queryKey: ['exposures', opts],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      opts.status?.forEach(s => params.append('status', s));
+      opts.severity?.forEach(s => params.append('severity', s));
+      const qs = params.toString();
+      return (await api.get<ExposureListResponse>(`/exposures${qs ? '?' + qs : ''}`)).data;
+    },
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useExposure(threatExternalId: string | undefined) {
+  return useQuery({
+    queryKey: ['exposures', threatExternalId],
+    enabled: !!threatExternalId,
+    queryFn: async () =>
+      (await api.get<ExposureDetail>(`/exposures/${threatExternalId}`)).data,
+  });
+}
+
+export async function recomputeExposures(): Promise<{
+  tenant_id: string;
+  threats_total: number;
+  exposed: number;
+  not_exposed: number;
+  unknown: number;
+  skipped_by_sector: number;
+}> {
+  return (await api.post('/exposures/recompute')).data;
+}
