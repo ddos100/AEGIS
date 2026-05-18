@@ -33,6 +33,8 @@ from app.models.mitigation_action import MitigationAction
 from app.models.module_entitlement import ModuleEntitlement
 from app.models.raw_threat_feed import RawThreatFeed
 from app.models.draft_threat import DraftThreat
+from app.models.endpoint_device import EndpointDevice
+from app.models.endpoint_agent_event import EndpointAgentEvent
 
 __all__ = [
     "Base", "Tenant", "User", "Department",
@@ -43,5 +45,5 @@ __all__ = [
     "ComplianceFramework", "ComplianceControl", "ComplianceMapping", "Report",
     "AuditLog",
     "Threat", "ThreatExposure", "MitigationAction", "ModuleEntitlement",
-    "RawThreatFeed", "DraftThreat",
+    "RawThreatFeed", "DraftThreat", "EndpointDevice", "EndpointAgentEvent",
 ]

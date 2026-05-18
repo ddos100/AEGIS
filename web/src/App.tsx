@@ -24,6 +24,7 @@ import ExposuresPage from '@/pages/threats/ExposuresPage';
 import ExposureDetailPage from '@/pages/threats/ExposureDetailPage';
 import MitigationsPage from '@/pages/threats/MitigationsPage';
 import ThreatFeedReviewPage from '@/pages/threats/ThreatFeedReviewPage';
+import EndpointAgentPage from '@/pages/threats/EndpointAgentPage';
 
 function Sidebar() {
   const link = (to: string, label: string, end = false) =>
@@ -57,6 +58,7 @@ function Sidebar() {
         {link('/threat-feed', 'Feed review')}
         {link('/exposures', 'Exposures')}
         {link('/mitigations', 'Mitigations')}
+        {link('/endpoint-agents', 'Endpoint agents')}
         {link('/reports', 'Reports')}
       </nav>
       <div className="mt-auto text-xs text-slate-400">v1.1.0-dev · Phase 7</div>
@@ -334,6 +336,7 @@ export default function App() {
             <Route path="/exposures/:threatId" element={<ExposureDetailPage />} />
             <Route path="/mitigations"    element={<MitigationsPage />} />
             <Route path="/threat-feed"    element={<ThreatFeedReviewPage />} />
+            <Route path="/endpoint-agents" element={<EndpointAgentPage />} />
             <Route path="/reports"     element={<ReportsPage />} />
           </Routes>
         </div>

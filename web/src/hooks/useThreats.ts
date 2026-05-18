@@ -350,3 +350,77 @@ export async function publishDraft(
 export async function rejectDraft(id: string, notes?: string): Promise<DraftDetail> {
   return (await api.post(`/threats/feed/drafts/${id}/reject`, { notes })).data;
 }
+
+// ---------------------------------------------------------------------------
+// AEGIS Endpoint Agent (Phase 7.6)
+// ---------------------------------------------------------------------------
+
+export interface EndpointDevice {
+  id: string;
+  hostname: string;
+  os: 'linux' | 'darwin' | 'windows';
+  arch: string;
+  agent_version: string;
+  last_heartbeat_at: string | null;
+  enrolled_at: string;
+  revoked_at: string | null;
+}
+
+export interface EndpointAgentEventOut {
+  id: string;
+  device_id: string;
+  kind: string;
+  occurred_at: string;
+  ingested_at: string;
+  payload: Record<string, unknown>;
+  hostname: string | null;
+}
+
+export interface DeviceListResponse {
+  items: EndpointDevice[];
+  total: number;
+  healthy: number;
+}
+
+export interface EAEventListResponse {
+  items: EndpointAgentEventOut[];
+  by_kind: Record<string, number>;
+  total: number;
+}
+
+export interface EnrollmentCode {
+  enrollment_code: string;
+  expires_at: string;
+  ingest_url: string;
+}
+
+export function useDevices() {
+  return useQuery({
+    queryKey: ['ea', 'devices'],
+    queryFn: async () => (await api.get<DeviceListResponse>('/endpoint-agent/devices')).data,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useEAEvents(opts: { kind?: string; device_id?: string; limit?: number } = {}) {
+  return useQuery({
+    queryKey: ['ea', 'events', opts],
+    queryFn: async () => {
+      const p = new URLSearchParams();
+      if (opts.kind) p.set('kind', opts.kind);
+      if (opts.device_id) p.set('device_id', opts.device_id);
+      if (opts.limit) p.set('limit', String(opts.limit));
+      const qs = p.toString();
+      return (await api.get<EAEventListResponse>(`/endpoint-agent/events${qs ? '?' + qs : ''}`)).data;
+    },
+    refetchInterval: 30_000,
+  });
+}
+
+export async function mintEnrollmentCode(): Promise<EnrollmentCode> {
+  return (await api.post('/endpoint-agent/enrollment-code')).data;
+}
+
+export async function revokeDevice(id: string): Promise<EndpointDevice> {
+  return (await api.post(`/endpoint-agent/devices/${id}/revoke`)).data;
+}

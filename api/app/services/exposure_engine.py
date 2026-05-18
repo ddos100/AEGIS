@@ -107,6 +107,12 @@ class _TenantSnapshot:
     cloud_ai_resources: list[dict[str, Any]] = field(default_factory=list)
     aisia_statuses: set[str] = field(default_factory=set)
     have_ea: bool = False
+    # Phase 7.6 — EA event counts by (kind, age-bucket). Populated by the
+    # snapshot loader so EA-dependent predicates can read pure-Python.
+    # Map: kind -> {"30d": <count>}. A 30-day window covers every
+    # `endpoint_agent_*_within_days` predicate currently shipped.
+    ea_event_counts: dict[str, int] = field(default_factory=dict)
+    ea_devices_enrolled: int = 0
 
 
 async def _load_snapshot(session, tenant_id: UUID) -> _TenantSnapshot:
@@ -159,6 +165,27 @@ async def _load_snapshot(session, tenant_id: UUID) -> _TenantSnapshot:
         if status == "active":
             snap.integrations_active.add(integ)
     snap.have_ea = "aegis_endpoint_agent" in snap.integrations_active
+
+    # ---- Phase 7.6: EA telemetry snapshot ----
+    # Devices that heartbeated in the last 15 minutes count as live.
+    from app.models.endpoint_agent_event import EndpointAgentEvent
+    from app.models.endpoint_device import EndpointDevice
+
+    enrolled = (await session.execute(
+        select(func.count(EndpointDevice.id)).where(EndpointDevice.revoked_at.is_(None))
+    )).scalar_one() or 0
+    snap.ea_devices_enrolled = int(enrolled)
+    if snap.ea_devices_enrolled > 0:
+        # Any live device with telemetry means EA telemetry is available
+        # even if there's no `aegis_endpoint_agent` connector row.
+        snap.have_ea = True
+        since = datetime.now(timezone.utc) - timedelta(days=30)
+        counts = (await session.execute(
+            select(EndpointAgentEvent.kind, func.count(EndpointAgentEvent.kind))
+            .where(EndpointAgentEvent.occurred_at >= since)
+            .group_by(EndpointAgentEvent.kind)
+        )).all()
+        snap.ea_event_counts = {k: int(n) for k, n in counts}
 
     # OAuth grants
     grant_rows = (await session.execute(
@@ -449,32 +476,44 @@ def _eval_predicate(key: str, value: Any, snap: _TenantSnapshot) -> _Predicate:
             detail="every system has a current_risk_score (cannot compute age from this query alone)",
         )
 
-    # ---- EA-dependent predicates: always UNKNOWN until Phase 7.6 EA ships ----
-    if key in {
-        "endpoint_agent_curl_pipe_sh_within_days",
-        "endpoint_agent_npm_postinstall_within_days",
-        "endpoint_agent_pip_setup_hook_within_days",
-        "endpoint_agent_world_writable_in_ai_path",
-        "endpoint_agent_suid_dropped",
-        "endpoint_agent_path_hijack_detected",
-        "endpoint_agent_secrets_read_by_ai_proc",
-        "endpoint_agent_destructive_cmd_by_ai_proc",
-        "endpoint_agent_git_push_by_ai_proc",
-        "endpoint_agent_privileged_container_by_ai_proc",
-        "mcp_server_with_scope",
-    }:
-        if snap.have_ea:
-            # EA integration configured but no events yet → predicate false
+    # ---- EA-dependent predicates (Phase 7.6 — live telemetry) ----
+    # Map predicate keys to the EA event kind that proves the condition.
+    ea_predicate_to_kind = {
+        "endpoint_agent_curl_pipe_sh_within_days":           "curl_pipe_sh_detected",
+        "endpoint_agent_npm_postinstall_within_days":        "package_install_pre_hook",
+        "endpoint_agent_pip_setup_hook_within_days":         "package_install_pre_hook",
+        "endpoint_agent_world_writable_in_ai_path":          "file_write_to_watched_path",
+        "endpoint_agent_suid_dropped":                       "file_write_to_watched_path",
+        "endpoint_agent_path_hijack_detected":               "path_shadow_detected",
+        "endpoint_agent_secrets_read_by_ai_proc":            "secret_read_by_ai_proc",
+        "endpoint_agent_destructive_cmd_by_ai_proc":         "process_exec",
+        "endpoint_agent_git_push_by_ai_proc":                "process_exec",
+        "endpoint_agent_privileged_container_by_ai_proc":    "process_exec",
+        "mcp_server_with_scope":                              "mcp_config_observed",
+    }
+    if key in ea_predicate_to_kind:
+        if not snap.have_ea and snap.ea_devices_enrolled == 0:
             return _Predicate(
                 name=f"{key}",
-                satisfied=False,
-                detail="AEGIS-EA configured but no matching event observed",
+                satisfied=None,
+                detail="No AEGIS-EA devices enrolled — predicate cannot be evaluated",
+                needs=TELEMETRY_EA,
+            )
+        kind = ea_predicate_to_kind[key]
+        count = snap.ea_event_counts.get(kind, 0)
+        if count > 0:
+            return _Predicate(
+                name=f"{key}",
+                satisfied=True,
+                detail=f"{count} {kind!r} events from AEGIS-EA in last 30 d "
+                        f"across {snap.ea_devices_enrolled} enrolled devices",
+                evidence=[f"ea_event_kind:{kind}:{count}"],
             )
         return _Predicate(
             name=f"{key}",
-            satisfied=None,
-            detail="AEGIS Endpoint Agent not deployed — predicate cannot be evaluated",
-            needs=TELEMETRY_EA,
+            satisfied=False,
+            detail=f"AEGIS-EA active ({snap.ea_devices_enrolled} devices) but no "
+                    f"{kind!r} events observed in last 30 d",
         )
 
     # ---- HuggingFace model usage — deferred to Phase 7.6 EA telemetry ----
