@@ -266,3 +266,98 @@ async def _recalc_one(tenant_id: UUID, system_id: UUID) -> dict[str, Any]:
                 system.aisia_status = "initiated"
 
     return {"ok": True, "total": score.total, "level": score.risk_level}
+
+
+# ============ Phase 7.5 — mitigation verification scheduler ============
+
+@celery_app.task(name="app.workers.tasks.verify_due_mitigations")
+def verify_due_mitigations() -> dict[str, Any]:
+    """Walk every `applied`/`verified`/`drifted` mitigation_actions row
+    whose `verification_due_at` is now-or-past and re-run the registered
+    adapter's verify(). Re-schedules per the locked severity cadence
+    (15 m critical / 1 h high / 6 h medium / 24 h low).
+
+    Runs every 15 min via Celery beat.
+    """
+    return asyncio.run(_verify_due())
+
+
+async def _verify_due() -> dict[str, Any]:
+    from datetime import datetime, timezone
+    from sqlalchemy import select
+    from app.core.database import session_scope, SessionLocal
+    from app.core.crypto import decrypt_credentials
+    from app.integrations.mitigations import get_adapter
+    from app.models.integration_credential import IntegrationCredential
+    from app.models.mitigation_action import MitigationAction
+    from app.models.threat import Threat
+    from app.services.verification_cadence import next_due
+
+    now = datetime.now(timezone.utc)
+
+    # Pull due rows + their tenant_ids without RLS (system-level beat).
+    async with SessionLocal() as session:
+        rows = (await session.execute(
+            select(MitigationAction.id, MitigationAction.tenant_id)
+            .where(
+                (MitigationAction.status.in_(("applied", "verified", "drifted"))) &
+                (MitigationAction.verification_due_at.is_not(None)) &
+                (MitigationAction.verification_due_at <= now)
+            )
+            .order_by(MitigationAction.verification_due_at)
+            .limit(500)
+        )).all()
+
+    totals: dict[str, int] = {"considered": len(rows), "verified": 0, "drifted": 0,
+                                "missing": 0, "errored": 0}
+    for mit_id, tenant_id in rows:
+        try:
+            async with session_scope(tenant_id=tenant_id) as session:
+                row = (await session.execute(
+                    select(MitigationAction).where(MitigationAction.id == mit_id)
+                )).scalar_one()
+                threat = (await session.execute(
+                    select(Threat).where(Threat.id == row.threat_id)
+                )).scalar_one()
+                try:
+                    adapter = get_adapter(row.integration, row.action)
+                except KeyError:
+                    row.last_error = f"Adapter ({row.integration},{row.action}) not registered"
+                    totals["errored"] += 1
+                    continue
+                # Look up credentials within tenant scope.
+                cred_row = (await session.execute(
+                    select(IntegrationCredential)
+                    .where((IntegrationCredential.integration == row.integration) &
+                           (IntegrationCredential.status == "active"))
+                    .limit(1)
+                )).scalar_one_or_none()
+                creds = None
+                if cred_row is not None:
+                    try:
+                        creds = decrypt_credentials(cred_row.credentials_ciphertext)
+                    except Exception:  # noqa: BLE001
+                        row.last_error = "credentials decryption failed"
+                        totals["errored"] += 1
+                        continue
+                result = await adapter.verify(
+                    credentials=creds, params=row.params or {}, state_blob=row.state_blob,
+                )
+                if result.verified and not result.drifted and not result.missing:
+                    row.status = "verified"
+                    row.verified_at = now
+                    row.last_error = None
+                    totals["verified"] += 1
+                elif result.drifted or result.missing:
+                    row.status = "drifted"
+                    row.last_error = result.detail or "drift detected"
+                    totals["drifted" if result.drifted else "missing"] += 1
+                elif result.error:
+                    row.last_error = result.error
+                    totals["errored"] += 1
+                row.verification_due_at = next_due(threat.severity)
+        except Exception as exc:  # noqa: BLE001
+            totals["errored"] += 1
+            log.error("aegis.mitigation.verify.error", id=str(mit_id), error=str(exc))
+    log.info("aegis.mitigation.verify.cycle", **totals)
+    return totals

@@ -24,8 +24,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 
-from app.core.deps import CurrentUser, DBSession, require_analyst
+from app.core.deps import CurrentUser, DBSession, require_admin, require_analyst
 from app.core.licence import requires_module
+from app.core.crypto import decrypt_credentials
+from app.integrations.mitigations import get_adapter, list_adapters
+from app.models.integration_credential import IntegrationCredential
 from app.models.mitigation_action import MitigationAction
 from app.models.threat import Threat
 from app.schemas.mitigations import (
@@ -34,6 +37,7 @@ from app.schemas.mitigations import (
     MitigationDetail,
     MitigationListResponse,
 )
+from app.services.verification_cadence import next_due
 
 
 router = APIRouter(
@@ -152,6 +156,9 @@ async def get_mitigation(
         idempotency_key=row.idempotency_key,
         last_error=row.last_error,
         threat_source_ref=threat.source_ref,
+        vendor_ref=row.vendor_ref,
+        state_blob=row.state_blob or {},
+        verification_due_at=row.verification_due_at,
     )
 
 
@@ -235,3 +242,232 @@ async def dismiss_mitigation(
         reason=payload.reason,
     )
     return await get_mitigation(row.id, db, user)
+
+
+# ---------------------------------------------------------------------------
+# Phase 7.5 — push / verify / rollback
+# ---------------------------------------------------------------------------
+
+@router.get("/_/adapters")
+async def list_adapters_route(user: CurrentUser):  # noqa: ARG001
+    """Inventory of every registered adapter. Used by the UI to know
+    which (integration, action) pairs are wired (dry-run vs real)."""
+    from app.schemas.mitigations import AdapterInfo
+    return [AdapterInfo(**a) for a in list_adapters()]
+
+
+async def _load_credentials(db, tenant_id: UUID, integration: str) -> dict | None:
+    """Look up the tenant's active integration credentials for a vendor.
+
+    Returns None when no credential row exists — adapters in dry-run mode
+    can still proceed without one; real-mode adapters must error out.
+    """
+    row = (await db.execute(
+        select(IntegrationCredential)
+        .where((IntegrationCredential.integration == integration) &
+               (IntegrationCredential.status == "active"))
+        .order_by(IntegrationCredential.created_at)
+        .limit(1)
+    )).scalar_one_or_none()
+    if row is None:
+        return None
+    try:
+        return decrypt_credentials(row.credentials_ciphertext)
+    except Exception:  # noqa: BLE001
+        # Decryption failure is operationally critical but must not leak
+        # detail to the API. Logged centrally; surface a 500 to the caller.
+        raise HTTPException(status_code=500, detail="Failed to decrypt integration credentials")
+
+
+@router.post("/{mitigation_id}/push")
+async def push_mitigation(
+    mitigation_id: UUID,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_admin)],
+):
+    """Push the mitigation to the vendor via the registered adapter.
+
+    State machine:
+        queued → applied   on success
+        queued → failed    on adapter error (rows in `failed` are NOT
+                           terminal for replay purposes — admin can flip
+                           back to `proposed` via /reject + /recompute)
+    Real apply is gated by the adapter's `dry_run` class attribute. In v1
+    every shipped adapter is dry-run=True; no vendor traffic is generated.
+    """
+    from app.schemas.mitigations import PushReceipt
+
+    row = (await db.execute(
+        select(MitigationAction).where(MitigationAction.id == mitigation_id)
+    )).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Mitigation not found")
+    if row.status != "queued":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot push from status={row.status!r}; must be 'queued'",
+        )
+
+    try:
+        adapter = get_adapter(row.integration, row.action)
+    except KeyError as exc:
+        # Adapter not registered → row goes to failed with the reason.
+        row.status = "failed"
+        row.last_error = f"No adapter registered for ({row.integration}, {row.action})"
+        row.status_reason = row.last_error
+        await db.flush()
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    creds = await _load_credentials(db, user.tenant_id, row.integration)
+    result = await adapter.apply(credentials=creds, params=row.params or {})
+
+    now = datetime.now(timezone.utc)
+    if result.ok:
+        threat_row = (await db.execute(
+            select(Threat).where(Threat.id == row.threat_id)
+        )).scalar_one()
+        row.status = "applied"
+        row.applied_at = now
+        row.vendor_ref = result.vendor_ref
+        row.state_blob = result.state_blob or {}
+        row.verification_due_at = next_due(threat_row.severity)
+        row.last_error = None
+        row.status_reason = (
+            f"DRY-RUN apply succeeded. " if result.dry_run else ""
+        ) + (result.detail or "")
+    else:
+        row.status = "failed"
+        row.last_error = result.error or "adapter reported failure"
+        row.status_reason = result.detail or None
+
+    await db.flush()
+    await db.refresh(row)
+    detail = await get_mitigation(row.id, db, user)
+    return PushReceipt(
+        ok=result.ok, dry_run=result.dry_run, vendor_ref=result.vendor_ref,
+        detail=result.detail, error=result.error, mitigation=detail,
+    )
+
+
+@router.post("/{mitigation_id}/verify")
+async def verify_mitigation(
+    mitigation_id: UUID,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_analyst)],
+):
+    """Re-check that the mitigation is still in place at the vendor.
+
+    State transitions:
+        applied → verified    on verify().verified
+        applied → drifted     on verify().drifted or verify().missing
+        applied → applied     on transient error (last_error stamped)
+    Re-schedules `verification_due_at` per the locked severity cadence
+    (15m / 1h / 6h / 24h).
+    """
+    from app.schemas.mitigations import VerifyReceipt
+
+    row = (await db.execute(
+        select(MitigationAction).where(MitigationAction.id == mitigation_id)
+    )).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Mitigation not found")
+    if row.status not in {"applied", "verified", "drifted"}:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot verify from status={row.status!r}",
+        )
+
+    try:
+        adapter = get_adapter(row.integration, row.action)
+    except KeyError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    creds = await _load_credentials(db, user.tenant_id, row.integration)
+    result = await adapter.verify(
+        credentials=creds, params=row.params or {}, state_blob=row.state_blob,
+    )
+
+    now = datetime.now(timezone.utc)
+    threat_row = (await db.execute(
+        select(Threat).where(Threat.id == row.threat_id)
+    )).scalar_one()
+
+    if result.verified and not result.drifted and not result.missing:
+        row.status = "verified"
+        row.verified_at = now
+        row.last_error = None
+    elif result.drifted or result.missing:
+        row.status = "drifted"
+        row.last_error = result.detail or "drift detected"
+    elif result.error:
+        row.last_error = result.error
+        # Keep current status; do not mask the previously-good apply.
+    row.verification_due_at = next_due(threat_row.severity)
+
+    await db.flush()
+    await db.refresh(row)
+    detail = await get_mitigation(row.id, db, user)
+    return VerifyReceipt(
+        verified=result.verified, drifted=result.drifted, missing=result.missing,
+        dry_run=result.dry_run, detail=result.detail, error=result.error,
+        mitigation=detail,
+    )
+
+
+@router.post("/{mitigation_id}/rollback")
+async def rollback_mitigation(
+    mitigation_id: UUID,
+    payload: MitigationDecisionRequest,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_admin)],
+):
+    """Roll back an applied / verified / drifted mitigation.
+
+    Final state: `rolled_back` (terminal). No further state transitions
+    are allowed; a fresh `proposed` row is generated by the next
+    exposure recompute cycle if the threat remains exposed.
+    """
+    from app.schemas.mitigations import PushReceipt
+
+    row = (await db.execute(
+        select(MitigationAction).where(MitigationAction.id == mitigation_id)
+    )).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Mitigation not found")
+    if row.status not in {"applied", "verified", "drifted", "failed"}:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot rollback from status={row.status!r}",
+        )
+
+    try:
+        adapter = get_adapter(row.integration, row.action)
+    except KeyError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    creds = await _load_credentials(db, user.tenant_id, row.integration)
+    result = await adapter.rollback(
+        credentials=creds, params=row.params or {}, state_blob=row.state_blob,
+    )
+
+    now = datetime.now(timezone.utc)
+    if result.ok:
+        row.status = "rolled_back"
+        row.rolled_back_at = now
+        row.verification_due_at = None
+        row.status_reason = (payload.reason + " · " if payload.reason else "") + (
+            "DRY-RUN rollback succeeded. " if result.dry_run else ""
+        ) + (result.detail or "")
+    else:
+        row.last_error = result.error or "rollback failed"
+        row.status_reason = (payload.reason + " · " if payload.reason else "") + (
+            result.detail or ""
+        )
+
+    await db.flush()
+    await db.refresh(row)
+    detail = await get_mitigation(row.id, db, user)
+    return PushReceipt(
+        ok=result.ok, dry_run=result.dry_run, vendor_ref=result.vendor_ref,
+        detail=result.detail, error=result.error, mitigation=detail,
+    )

@@ -20,3 +20,8 @@ async def test_mitigations_routes_registered(client: AsyncClient) -> None:
     assert "/v1/mitigations/{mitigation_id}/approve" in paths
     assert "/v1/mitigations/{mitigation_id}/reject" in paths
     assert "/v1/mitigations/{mitigation_id}/dismiss" in paths
+    # Phase 7.5 — push / verify / rollback
+    assert "/v1/mitigations/{mitigation_id}/push" in paths
+    assert "/v1/mitigations/{mitigation_id}/verify" in paths
+    assert "/v1/mitigations/{mitigation_id}/rollback" in paths
+    assert "/v1/mitigations/_/adapters" in paths

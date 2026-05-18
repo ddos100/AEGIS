@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import configure_logging, log
 from app.integrations.connectors import load_all_connectors
+from app.integrations.mitigations import load_all_adapters
 from app.integrations.network.base import load_all_normalizers
 from app.integrations.network.matcher import load_from_db, matcher_size
 from app.routes import (
@@ -27,6 +28,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         sentry_sdk.init(dsn=settings.sentry_dsn, traces_sample_rate=0.1, environment=settings.env)
     load_all_normalizers()
     load_all_connectors()
+    load_all_adapters()
     try:
         await load_from_db()
         log.info("aegis.matcher.loaded", **matcher_size())

@@ -228,3 +228,36 @@ export async function decideMitigation(
 ): Promise<MitigationDetail> {
   return (await api.post(`/mitigations/${id}/${decision}`, { reason })).data;
 }
+
+// Phase 7.5 — push / verify / rollback ----------------------------------
+
+export interface PushReceipt {
+  ok: boolean;
+  dry_run: boolean;
+  vendor_ref: string | null;
+  detail: string;
+  error: string | null;
+  mitigation: MitigationDetail;
+}
+
+export interface VerifyReceipt {
+  verified: boolean;
+  drifted: boolean;
+  missing: boolean;
+  dry_run: boolean;
+  detail: string;
+  error: string | null;
+  mitigation: MitigationDetail;
+}
+
+export async function pushMitigation(id: string): Promise<PushReceipt> {
+  return (await api.post(`/mitigations/${id}/push`)).data;
+}
+
+export async function verifyMitigation(id: string): Promise<VerifyReceipt> {
+  return (await api.post(`/mitigations/${id}/verify`)).data;
+}
+
+export async function rollbackMitigation(id: string, reason?: string): Promise<PushReceipt> {
+  return (await api.post(`/mitigations/${id}/rollback`, { reason })).data;
+}

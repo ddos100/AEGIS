@@ -51,6 +51,14 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.recalculate_all_risk",
         "schedule": crontab(minute="0", hour="3"),
     },
+    # Phase 7.5 — verification scheduler runs every 15 min and walks
+    # mitigation_actions where verification_due_at <= now(). Severity-
+    # tiered cadence (15m critical / 1h high / 6h medium / 24h low) is
+    # encoded on each row by `verification_cadence.next_due()`.
+    "mitigation-verify-due": {
+        "task": "app.workers.tasks.verify_due_mitigations",
+        "schedule": crontab(minute="*/15"),
+    },
 }
 
 

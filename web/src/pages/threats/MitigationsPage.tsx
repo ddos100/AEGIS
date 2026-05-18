@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   decideMitigation,
+  pushMitigation,
+  rollbackMitigation,
   useMitigations,
+  verifyMitigation,
   type MitigationBrief,
   type MitigationStatus,
 } from '@/hooks/useThreats';
@@ -51,6 +54,40 @@ export default function MitigationsPage() {
         ? (window.prompt(`Reason for ${decision}? (optional)`) || undefined)
         : undefined;
       await decideMitigation(id, decision, reason);
+      qc.invalidateQueries({ queryKey: ['mitigations'] });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const onPush = async (id: string) => {
+    setBusy(id);
+    try {
+      const r = await pushMitigation(id);
+      if (r.error) window.alert(`Push failed: ${r.error}`);
+      qc.invalidateQueries({ queryKey: ['mitigations'] });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const onVerify = async (id: string) => {
+    setBusy(id);
+    try {
+      const r = await verifyMitigation(id);
+      if (r.error) window.alert(`Verify error: ${r.error}`);
+      qc.invalidateQueries({ queryKey: ['mitigations'] });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const onRollback = async (id: string) => {
+    if (!window.confirm('Roll back this mitigation? This is irreversible at the vendor.')) return;
+    setBusy(id);
+    try {
+      const reason = window.prompt('Reason for rollback? (optional)') || undefined;
+      await rollbackMitigation(id, reason);
       qc.invalidateQueries({ queryKey: ['mitigations'] });
     } finally {
       setBusy(null);
@@ -166,6 +203,61 @@ export default function MitigationsPage() {
                               className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                             >
                               Dismiss
+                            </button>
+                          </div>
+                        )}
+                        {m.status === 'queued' && (
+                          <div className="mt-2 flex gap-1">
+                            <button
+                              disabled={busy === m.id}
+                              onClick={() => onPush(m.id)}
+                              className="rounded border border-blue-300 bg-white px-2 py-1 text-xs text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+                              title="Run adapter.apply() — DRY-RUN at the vendor in v1"
+                            >
+                              Push (dry-run)
+                            </button>
+                            <button
+                              disabled={busy === m.id}
+                              onClick={() => onDecide(m.id, 'reject')}
+                              className="rounded border border-red-300 bg-white px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                        {(m.status === 'applied' || m.status === 'verified' || m.status === 'drifted') && (
+                          <div className="mt-2 flex gap-1">
+                            <button
+                              disabled={busy === m.id}
+                              onClick={() => onVerify(m.id)}
+                              className="rounded border border-brand-500 bg-white px-2 py-1 text-xs text-brand-700 hover:bg-brand-50 disabled:opacity-50"
+                            >
+                              Verify now
+                            </button>
+                            <button
+                              disabled={busy === m.id}
+                              onClick={() => onRollback(m.id)}
+                              className="rounded border border-red-300 bg-white px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50"
+                            >
+                              Rollback
+                            </button>
+                          </div>
+                        )}
+                        {m.status === 'failed' && (
+                          <div className="mt-2 flex gap-1">
+                            <button
+                              disabled={busy === m.id}
+                              onClick={() => onPush(m.id)}
+                              className="rounded border border-blue-300 bg-white px-2 py-1 text-xs text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+                            >
+                              Retry push
+                            </button>
+                            <button
+                              disabled={busy === m.id}
+                              onClick={() => onRollback(m.id)}
+                              className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                            >
+                              Abandon
                             </button>
                           </div>
                         )}

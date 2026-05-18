@@ -38,6 +38,9 @@ class MitigationDetail(MitigationBrief):
     idempotency_key: str
     last_error:      str | None = None
     threat_source_ref: str
+    vendor_ref:      str | None = None
+    state_blob:      dict[str, Any] = Field(default_factory=dict)
+    verification_due_at: datetime | None = None
 
 
 class MitigationListResponse(BaseModel):
@@ -53,3 +56,31 @@ class MitigationDecisionRequest(BaseModel):
         max_length=1000,
         description="Optional free-text justification recorded on the row.",
     )
+
+
+class AdapterInfo(BaseModel):
+    integration: str
+    action:      str
+    cls:         str = Field(alias="class")
+    dry_run:     bool
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class PushReceipt(BaseModel):
+    ok:        bool
+    dry_run:   bool
+    vendor_ref: str | None = None
+    detail:    str = ""
+    error:     str | None = None
+    mitigation: MitigationDetail
+
+
+class VerifyReceipt(BaseModel):
+    verified:  bool
+    drifted:   bool = False
+    missing:   bool = False
+    dry_run:   bool = True
+    detail:    str = ""
+    error:     str | None = None
+    mitigation: MitigationDetail

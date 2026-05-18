@@ -64,5 +64,9 @@ class MitigationAction(Base):
     verified_at:  Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     rolled_back_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_error:   Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Phase 7.5 — push state + verification schedule
+    vendor_ref:   Mapped[str | None] = mapped_column(String(120), nullable=True)
+    state_blob:   Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    verification_due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at:   Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at:   Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
