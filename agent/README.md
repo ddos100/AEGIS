@@ -27,7 +27,10 @@ ingest response so an integrator notices immediately.
 
 ```sh
 # 1. Build for the host OS/arch.
+#    If Go 1.22+ is installed: native build (fast).
+#    If not: make build auto-falls-back to a Docker build, no Go needed.
 make build
+ls -lh build/
 
 # 2. Have an AEGIS admin generate a one-time enrolment code in the UI
 #    (POST /v1/endpoint-agent/enrollment-code).
@@ -37,6 +40,27 @@ make build
 
 # 4. Subsequent runs are daemonised.
 ./build/aegis-ea
+```
+
+### Building without Go installed on the host
+
+The AEGIS API container already ships Go via its build stage; you do
+not need a separate toolchain on the host:
+
+```sh
+make build-docker    # produces ./build/aegis-ea via docker buildx
+```
+
+### Installing Go 1.22+ (for native builds)
+
+```sh
+# Ubuntu/Debian — apt's golang-go is usually too old. Use the tarball.
+curl -fsSLO https://go.dev/dl/go1.22.6.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.22.6.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee /etc/profile.d/go.sh
+export PATH=$PATH:/usr/local/go/bin
+go version           # go version go1.22.6 linux/amd64
 ```
 
 ## OS-native back-ends (post-GA)
