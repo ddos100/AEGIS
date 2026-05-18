@@ -1,0 +1,32 @@
+{
+  "_source": "OSV.dev — AEGIS dev/test fixture (sample AI ecosystem advisories)",
+  "vulns": [
+    {
+      "id": "GHSA-aegis-dev-langchain-9999",
+      "summary": "Sample advisory: arbitrary code execution in a hypothetical langchain helper",
+      "details": "A malicious version of @aegis-dev/langchain-helper was published that exfiltrates the developer's environment at install time via a postinstall script. Update to a patched version or remove the package.",
+      "affected": [
+        { "package": { "name": "langchain", "ecosystem": "PyPI" } }
+      ],
+      "database_specific": { "severity": "HIGH" }
+    },
+    {
+      "id": "GHSA-aegis-dev-openai-sdk-001",
+      "summary": "Sample advisory: prototype-pollution in openai client",
+      "details": "The openai npm SDK shipped a transitive dependency that allowed prototype pollution. Patched in 5.x.",
+      "affected": [
+        { "package": { "name": "openai", "ecosystem": "npm" } }
+      ],
+      "database_specific": { "severity": "MEDIUM" }
+    },
+    {
+      "id": "GHSA-non-ai-9999",
+      "summary": "Unrelated CVE — must be filtered out by AI-package allow-list",
+      "details": "Affects requests; not an AI package.",
+      "affected": [
+        { "package": { "name": "requests", "ecosystem": "PyPI" } }
+      ],
+      "database_specific": { "severity": "MEDIUM" }
+    }
+  ]
+}

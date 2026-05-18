@@ -31,6 +31,8 @@ from app.models.threat import Threat
 from app.models.threat_exposure import ThreatExposure
 from app.models.mitigation_action import MitigationAction
 from app.models.module_entitlement import ModuleEntitlement
+from app.models.raw_threat_feed import RawThreatFeed
+from app.models.draft_threat import DraftThreat
 
 __all__ = [
     "Base", "Tenant", "User", "Department",
@@ -41,4 +43,5 @@ __all__ = [
     "ComplianceFramework", "ComplianceControl", "ComplianceMapping", "Report",
     "AuditLog",
     "Threat", "ThreatExposure", "MitigationAction", "ModuleEntitlement",
+    "RawThreatFeed", "DraftThreat",
 ]

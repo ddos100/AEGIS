@@ -261,3 +261,92 @@ export async function verifyMitigation(id: string): Promise<VerifyReceipt> {
 export async function rollbackMitigation(id: string, reason?: string): Promise<PushReceipt> {
   return (await api.post(`/mitigations/${id}/rollback`, { reason })).data;
 }
+
+// ---------------------------------------------------------------------------
+// Threat-Feed review queue (Phase 7.2)
+// ---------------------------------------------------------------------------
+
+export type DraftReviewStatus = 'pending_review' | 'published' | 'rejected' | 'superseded';
+
+export interface DraftBrief {
+  id: string;
+  source: string;
+  upstream_id: string;
+  review_status: DraftReviewStatus;
+  ingested_at: string;
+  reviewed_at: string | null;
+  threat_id: string;
+  title: string;
+  severity: ThreatBrief['severity'];
+  classes: string[];
+  vectors: string[];
+}
+
+export interface DraftDetail extends DraftBrief {
+  draft: Record<string, unknown>;
+  review_notes: string | null;
+  source_fingerprint: string;
+  published_threat_id: string | null;
+}
+
+export interface DraftListResponse {
+  items: DraftBrief[];
+  by_status: Record<string, number>;
+  total: number;
+}
+
+export interface FeedSourceInfo {
+  source: string;
+  class: string;
+  default_jurisdictions: string[];
+}
+
+export interface IngestRunResult {
+  source: string;
+  ok: boolean;
+  seen: number;
+  drafted: number;
+  duplicates: number;
+  skipped: number;
+  errored: number;
+  error: string | null;
+}
+
+export function usePendingDrafts() {
+  return useQuery({
+    queryKey: ['threat-feed', 'pending'],
+    queryFn: async () => (await api.get<DraftListResponse>('/threats/feed/pending-review')).data,
+    staleTime: 30_000,
+  });
+}
+
+export function useDraft(id: string | undefined) {
+  return useQuery({
+    queryKey: ['threat-feed', 'draft', id],
+    enabled: !!id,
+    queryFn: async () => (await api.get<DraftDetail>(`/threats/feed/drafts/${id}`)).data,
+  });
+}
+
+export function useFeedSources() {
+  return useQuery({
+    queryKey: ['threat-feed', 'sources'],
+    queryFn: async () => (await api.get<FeedSourceInfo[]>('/threats/feed/sources')).data,
+    staleTime: 5 * 60_000,
+  });
+}
+
+export async function refreshFeeds(): Promise<IngestRunResult[]> {
+  return (await api.post('/threats/feed/refresh')).data;
+}
+
+export async function publishDraft(
+  id: string,
+  body: { edited_draft?: Record<string, unknown>; notes?: string; write_yaml?: boolean } = {},
+): Promise<DraftDetail> {
+  return (await api.post(`/threats/feed/drafts/${id}/publish`, body)).data;
+}
+
+export async function rejectDraft(id: string, notes?: string): Promise<DraftDetail> {
+  return (await api.post(`/threats/feed/drafts/${id}/reject`, { notes })).data;
+}

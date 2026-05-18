@@ -1,0 +1,36 @@
+{
+  "_source": "MITRE ATLAS techniques.json snapshot for AEGIS dev/test",
+  "techniques": [
+    {
+      "id": "AML.T0051",
+      "name": "LLM Prompt Injection",
+      "description": "An adversary may craft malicious prompts to a large language model to manipulate it to perform actions outside of its safety guardrails, including indirect prompt injection where the malicious instructions arrive via untrusted retrieved content.",
+      "tactics": ["AML.TA0007"],
+      "kill_chain_phases": ["initial-access", "execution"],
+      "version": "1.1",
+      "deprecated": false
+    },
+    {
+      "id": "AML.T0044",
+      "name": "Full ML Model Access",
+      "description": "An adversary with full access to a deployed ML model can probe it to extract information, generate adversarial examples, or otherwise interact with the model in ways the developer did not intend.",
+      "tactics": ["AML.TA0001"],
+      "version": "1.0",
+      "deprecated": false
+    },
+    {
+      "id": "AML.T0042",
+      "name": "Spoof ML Output",
+      "description": "An adversary may attempt to spoof the output of a deployed ML model by manipulating downstream UI or generation pipelines so that a benign model output is replaced with attacker-controlled content. This includes deepfake generation for impersonation in voice or video channels.",
+      "tactics": ["AML.TA0011"],
+      "version": "1.0",
+      "deprecated": false
+    },
+    {
+      "id": "AML.T9999",
+      "name": "Deprecated technique example",
+      "description": "Sample to verify deprecated entries are skipped.",
+      "deprecated": true
+    }
+  ]
+}

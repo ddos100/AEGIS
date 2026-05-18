@@ -59,6 +59,13 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.verify_due_mitigations",
         "schedule": crontab(minute="*/15"),
     },
+    # Phase 7.2 — threat feed ingest runs hourly at HH:05. Pulls each
+    # registered normalizer (MITRE ATLAS, OSV, AIID, ...) and writes
+    # drafts to the admin review queue. Re-ingest is idempotent.
+    "threat-feed-ingest": {
+        "task": "app.workers.tasks.ingest_threat_feeds",
+        "schedule": crontab(minute="5"),
+    },
 }
 
 

@@ -361,3 +361,24 @@ async def _verify_due() -> dict[str, Any]:
             log.error("aegis.mitigation.verify.error", id=str(mit_id), error=str(exc))
     log.info("aegis.mitigation.verify.cycle", **totals)
     return totals
+
+
+# ============ Phase 7.2 — threat feed ingest ============
+
+@celery_app.task(name="app.workers.tasks.ingest_threat_feeds")
+def ingest_threat_feeds() -> dict[str, Any]:
+    """Hourly: walk every registered feed normalizer, write drafts to
+    the admin review queue."""
+    return asyncio.run(_ingest_feeds())
+
+
+async def _ingest_feeds() -> dict[str, Any]:
+    from app.core.database import SessionLocal
+    from app.services.threat_feed_ingest import ingest_all_sources
+
+    async with SessionLocal() as session:
+        # No tenant_id — threats catalogue + drafts are global.
+        results = await ingest_all_sources(session=session)
+        await session.commit()
+    log.info("aegis.feed.ingest.cycle", results=results)
+    return {"results": results}

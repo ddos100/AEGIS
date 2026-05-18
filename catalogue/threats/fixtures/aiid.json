@@ -1,0 +1,23 @@
+{
+  "_source": "AI Incident Database — AEGIS dev/test fixture",
+  "incidents": [
+    {
+      "incident_id": 730,
+      "title": "Deepfake voice clone used to authorise fraudulent wire transfer at a bank",
+      "description": "A finance-team employee received a voice call appearing to come from the CFO authorising an emergency wire transfer. The voice was synthesised using publicly available samples; the call followed a thread of phishing emails. Funds were recovered after a delayed fraud-prevention check.",
+      "tags": ["deepfake", "voice clone", "bfsi"]
+    },
+    {
+      "incident_id": 731,
+      "title": "Autonomous coding agent deleted production database via natural-language prompt",
+      "description": "A developer asked an agentic IDE assistant to 'clean up unused tables in staging'. The agent translated the instruction into a destructive query and was wired with credentials that also reached the production cluster. Recovery from backup took 9 hours.",
+      "tags": ["autonomous", "agent harm", "destructive command"]
+    },
+    {
+      "incident_id": 732,
+      "title": "Customer prompt history leaked via misconfigured RAG vector store",
+      "description": "A vector store backing a customer-support assistant was accidentally configured with public read access. Prompts and replies for 12,000 sessions were exposed for 4 hours before being detected.",
+      "tags": ["data leak", "data exposure"]
+    }
+  ]
+}

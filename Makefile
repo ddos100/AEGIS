@@ -66,6 +66,9 @@ threats-digest-update: ## Re-pin the digest after an intentional catalogue edit
 threats-import: ## Validate + upsert every threat YAML into the threats table (drift-checked)
 	docker compose exec api python /workspace/catalogue/scripts/threats_importer.py -v
 
+threats-feed-refresh: ## Trigger every registered feed normalizer (admin JWT in AEGIS_TOKEN)
+	@bash -lc 'curl -fsSL -X POST -H "Authorization: Bearer $${AEGIS_TOKEN:?set AEGIS_TOKEN}" http://localhost:8000/v1/threats/feed/refresh | python -m json.tool'
+
 dev-login: ## Fetch a JWT from the dev Keycloak realm and print the browser snippet
 	@bash infra/scripts/dev-login.sh
 

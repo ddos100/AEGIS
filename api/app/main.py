@@ -13,11 +13,12 @@ from app.core.logging import configure_logging, log
 from app.integrations.connectors import load_all_connectors
 from app.integrations.mitigations import load_all_adapters
 from app.integrations.network.base import load_all_normalizers
+from app.integrations.threat_feeds import load_all_feed_normalizers
 from app.integrations.network.matcher import load_from_db, matcher_size
 from app.routes import (
     aisia, auth, catalogue, compliance, dashboard, discovery, eramba, exposures,
     extension, health, ingest, integrations, me, mitigations, policies, registry,
-    reports, risk, threats,
+    reports, risk, threat_feed, threats,
 )
 
 
@@ -29,6 +30,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     load_all_normalizers()
     load_all_connectors()
     load_all_adapters()
+    load_all_feed_normalizers()
     try:
         await load_from_db()
         log.info("aegis.matcher.loaded", **matcher_size())
@@ -77,6 +79,7 @@ def create_app() -> FastAPI:
     app.include_router(threats.licence_router,  prefix=p)
     app.include_router(exposures.router,        prefix=p)
     app.include_router(mitigations.router,      prefix=p)
+    app.include_router(threat_feed.router,      prefix=p)
     return app
 
 
