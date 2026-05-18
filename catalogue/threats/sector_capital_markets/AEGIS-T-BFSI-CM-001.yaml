@@ -1,0 +1,33 @@
+threat_id: AEGIS-T-BFSI-CM-001
+title: Algo-trading model drift not assessed periodically
+source_ref: "SEBI CSCRF 2024, Para GV.2 (accessed 2026-05-18)"
+verbatim_description: |
+  Where an AI or statistical model materially influences trade
+  generation, execution, or routing, the regulated entity shall
+  periodically assess model performance and detect drift. Failure to
+  monitor drift may result in unintended market impact and breach the
+  CSCRF risk-based authorisation requirement.
+description: |
+  AEGIS flags exposure when an AI system tagged for trading workloads
+  has no current_risk_score, or the score was computed more than 30
+  days ago.
+severity: high
+classes: [autonomous_agent_loop_out, regulated_secret_leak]
+vectors: [cloud_ai_control_plane, cli_sdk]
+sector_amplifiers: [capital_markets]
+applies_to_jurisdictions: [IN]
+exposure_check:
+  any_system_data_type_in: [trading, execution]
+  risk_score_age_days_gt: 30
+mitigation:
+  preferred:
+    - integration: aegis_policy_engine
+      action: require_risk_recompute
+      params: { interval_days: 7, system_classes: [trading, execution] }
+evidence_hints:
+  - ai_systems with data_types_processed touching trading + last assessed > 30d
+compliance_implications:
+  - SEBI-CSCRF-GV.2
+  - NIST-MANAGE-4.1
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

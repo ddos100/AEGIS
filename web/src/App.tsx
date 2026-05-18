@@ -18,6 +18,8 @@ import AISIAWizardPage from '@/pages/aisia/AISIAWizardPage';
 import PoliciesPage from '@/pages/policies/PoliciesPage';
 import CompliancePage from '@/pages/compliance/CompliancePage';
 import ReportsPage from '@/pages/reports/ReportsPage';
+import ThreatsBrowsePage from '@/pages/threats/ThreatsBrowsePage';
+import ThreatDetailPage from '@/pages/threats/ThreatDetailPage';
 
 function Sidebar() {
   const link = (to: string, label: string, end = false) =>
@@ -47,9 +49,10 @@ function Sidebar() {
         {link('/aisia', 'AISIA')}
         {link('/policy', 'Policies')}
         {link('/compliance', 'Compliance')}
+        {link('/threats', 'Threats')}
         {link('/reports', 'Reports')}
       </nav>
-      <div className="mt-auto text-xs text-slate-400">v1.0.0 · Production</div>
+      <div className="mt-auto text-xs text-slate-400">v1.1.0-dev · Phase 7</div>
     </aside>
   );
 }
@@ -318,6 +321,8 @@ export default function App() {
             <Route path="/aisia/:id"   element={<AISIAWizardPage />} />
             <Route path="/policy"      element={<PoliciesPage />} />
             <Route path="/compliance"  element={<CompliancePage />} />
+            <Route path="/threats"        element={<ThreatsBrowsePage />} />
+            <Route path="/threats/:threatId" element={<ThreatDetailPage />} />
             <Route path="/reports"     element={<ReportsPage />} />
           </Routes>
         </div>

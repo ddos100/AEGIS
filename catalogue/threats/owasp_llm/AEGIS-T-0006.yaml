@@ -1,0 +1,40 @@
+threat_id: AEGIS-T-0006
+title: Excessive output disclosure by M365 Copilot beyond need-to-know
+source_ref: "OWASP LLM Top 10 (2025) LLM02 — Sensitive Information Disclosure — accessed 2026-05-18"
+verbatim_description: |
+  When an LLM has retrieval access to a corpus that is not consistently
+  permissioned, the model may surface content to users who would not
+  otherwise have direct access. The disclosure can violate data
+  classification policies even when the underlying access control list
+  technically permits the retrieval.
+description: |
+  M365 Copilot is the most common observed instance — over-permissive
+  SharePoint sites surface HR / finance / legal content to general staff.
+  AEGIS detects exposure when the tenant has an active M365 Copilot
+  integration AND any AI system in registry is category=llm AND
+  observed_provider_domains include copilot.microsoft.com.
+severity: high
+classes: [output_oversharing, data_exfiltration]
+vectors: [embedded_saas]
+owasp_llm_ids: [LLM02]
+sector_amplifiers: [bfsi, insurance, capital_markets]
+applies_to_jurisdictions: [global]
+exposure_check:
+  m365_copilot_enabled: true
+  any_system_category_in: [llm]
+mitigation:
+  preferred:
+    - integration: microsoft_purview_dlp
+      action: sensitive_info_type_policy
+      params: { policy_ref: "tenant:copilot_oversharing_block" }
+    - integration: m365_copilot
+      action: restrict_via_sensitivity_labels
+      params: { labels: ["Confidential", "Restricted"] }
+evidence_hints:
+  - M365 Copilot integration active
+  - copilot.microsoft.com domain observed
+compliance_implications:
+  - ISO42001-A.4.3
+  - DPDPA-S-8(7)
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

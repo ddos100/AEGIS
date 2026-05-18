@@ -1,0 +1,30 @@
+threat_id: AEGIS-T-0019
+title: Docker container run with --privileged or host filesystem mount by AI assistant
+source_ref: "AEGIS Research T-POSIX-010 (2026-05-18) — derived from CIS Docker Benchmark §5.4"
+verbatim_description: |
+  AI coding assistants asked to "run this container" or "test this image"
+  routinely suggest `docker run --privileged` or `-v /:/host` to bypass
+  the legitimate constraints of the container runtime. The resulting
+  container has unrestricted access to host devices, kernel capabilities,
+  and the entire host filesystem.
+description: |
+  AEGIS-EA observes docker / podman / containerd invocations with these
+  flags and an AI binary in the parent process chain.
+severity: high
+classes: [insecure_install, excess_agent_permissions]
+vectors: [coding_assistant, mcp_agent]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_privileged_container_by_ai_proc: true
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: docker_privileged_block_under_ai_proc
+      params: { denied_flags: ["--privileged", "-v /:/host", "--net=host"] }
+      requires_module: AEGIS-EA
+evidence_hints:
+  - process_exec under AI binary with docker run + dangerous flags
+compliance_implications:
+  - ISO42001-A.6.2.6
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

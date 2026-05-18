@@ -1,0 +1,33 @@
+threat_id: AEGIS-T-0023
+title: Shadow IdP OAuth grant to unsanctioned AI app
+source_ref: "MITRE ATLAS AML.T0049 — Exploit Public-Facing AI Service (accessed 2026-05-18)"
+verbatim_description: |
+  End users grant OAuth permissions to AI apps via the corporate IdP
+  without going through the sanctioned-app review process. The grant
+  persists across sessions and grants the AI app read scope on mail,
+  calendar, files, or directory data of the granting user.
+description: |
+  AEGIS detects via the Entra ID / Okta connector reporting an
+  oauth_grants row to an AI app_id not on the tenant-approved list.
+severity: high
+classes: [data_exfiltration, excess_agent_permissions]
+vectors: [embedded_saas]
+mitre_atlas_ids: [AML.T0049]
+applies_to_jurisdictions: [global]
+exposure_check:
+  idp_oauth_grant_present_unsanctioned: true
+mitigation:
+  preferred:
+    - integration: entra_id
+      action: oauth_grant_revoke
+      params: { app_filter: "unsanctioned_ai" }
+    - integration: okta
+      action: oauth_app_deactivate
+      params: { app_filter: "unsanctioned_ai" }
+evidence_hints:
+  - oauth_grants entry naming app_id
+compliance_implications:
+  - ISO42001-A.10.2
+  - NIST-GOVERN-6.1
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

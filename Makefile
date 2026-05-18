@@ -63,6 +63,9 @@ threats-digest-check: ## CI gate — fail if the inventory drifts from the pinne
 threats-digest-update: ## Re-pin the digest after an intentional catalogue edit
 	python catalogue/scripts/threats_digest.py --update
 
+threats-import: ## Validate + upsert every threat YAML into the threats table (drift-checked)
+	docker compose exec api python /workspace/catalogue/scripts/threats_importer.py -v
+
 dev-login: ## Fetch a JWT from the dev Keycloak realm and print the browser snippet
 	@bash infra/scripts/dev-login.sh
 

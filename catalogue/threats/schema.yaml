@@ -33,7 +33,7 @@ properties:
 
   threat_id:
     type:    string
-    pattern: "^AEGIS-T(-[A-Z]+)?-[0-9]{3,4}$"
+    pattern: "^AEGIS-T(-[A-Z]+)*-[0-9]{3,4}$"
     maxLength: 64
 
   title:

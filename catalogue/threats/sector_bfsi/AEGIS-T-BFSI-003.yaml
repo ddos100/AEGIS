@@ -1,0 +1,33 @@
+threat_id: AEGIS-T-BFSI-003
+title: Customer call recordings sent to overseas AI transcription provider
+source_ref: "RBI Master Direction on IT Governance 2023, Para 15 (accessed 2026-05-18)"
+verbatim_description: |
+  Customer call recordings, when processed by an AI transcription or
+  conversation-analytics provider whose data residency is outside India,
+  may breach RBI data-localisation and outsourcing requirements, even
+  where consent has been obtained from the customer.
+description: |
+  AEGIS flags exposure when (a) the tenant has an AI system in the
+  registry of category=speech (Otter, Fireflies, Gong, Fathom) and
+  (b) provider hq_country is offshore.
+severity: high
+classes: [cross_border_transfer, regulated_secret_leak]
+vectors: [embedded_saas, browser_webapp]
+sector_amplifiers: [bfsi]
+applies_to_jurisdictions: [IN]
+exposure_check:
+  any_system_category_in: [speech]
+  observed_provider_jurisdiction: ["US", "GB", "EU", "SG", "JP", "AU", "CA"]
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: block_url_category
+      params: { category: "Offshore AI Transcription" }
+evidence_hints:
+  - ai_systems entry with category speech
+  - provider.hq_country offshore
+compliance_implications:
+  - RBI-ITG-15
+  - DPDPA-S-16
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

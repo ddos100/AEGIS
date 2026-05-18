@@ -27,6 +27,8 @@ from app.models.compliance_control import ComplianceControl
 from app.models.compliance_mapping import ComplianceMapping
 from app.models.report import Report
 from app.models.audit_log import AuditLog
+from app.models.threat import Threat
+from app.models.module_entitlement import ModuleEntitlement
 
 __all__ = [
     "Base", "Tenant", "User", "Department",
@@ -36,4 +38,5 @@ __all__ = [
     "RiskAssessment", "AISIARecord", "Policy", "PolicyViolation",
     "ComplianceFramework", "ComplianceControl", "ComplianceMapping", "Report",
     "AuditLog",
+    "Threat", "ModuleEntitlement",
 ]

@@ -1,0 +1,29 @@
+threat_id: AEGIS-T-0017
+title: AI tool secrets file world-writable or world-readable
+source_ref: "AEGIS Research T-POSIX-008 (2026-05-18) — derived from CIS Benchmark §6.2.7"
+verbatim_description: |
+  Several AI tools write configuration files containing API keys to
+  ~/.config/<tool>/config.json or ~/.<tool>rc without setting the file
+  mode to 0600. Any other user on the system, or any process running
+  under the same user account, can read the credentials.
+description: |
+  AEGIS-EA scans the canonical config-file paths and emits an event when
+  mode bits permit group or other read/write access.
+severity: medium
+classes: [insecure_install, data_exfiltration]
+vectors: [coding_assistant, cli_sdk, mcp_agent, local_model]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_world_writable_in_ai_path: true
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: chmod_secret_files
+      params: { target_mode: "0600" }
+      requires_module: AEGIS-EA
+evidence_hints:
+  - file_write_to_watched_path event with mode != 0600
+compliance_implications:
+  - ISO42001-A.6.2.6
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

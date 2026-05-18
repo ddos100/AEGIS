@@ -1,0 +1,35 @@
+threat_id: AEGIS-T-0007
+title: Cloud AI control plane with overbroad IAM role grants
+source_ref: "OWASP LLM Top 10 (2025) LLM06 — Excessive Agency — accessed 2026-05-18"
+verbatim_description: |
+  Agents and integrations granted excessive permissions can act far
+  beyond their intended scope. When an AI control plane (Bedrock,
+  Azure OpenAI, Vertex AI) is wired with broad IAM roles, a successful
+  jailbreak or prompt injection can pivot into the rest of the cloud
+  account.
+description: |
+  Detected by the AWS / Azure / GCP connector reporting an AI-resource
+  IAM/role attachment with `*` resource or `*` action.
+severity: critical
+classes: [excess_agent_permissions, data_exfiltration]
+vectors: [cloud_ai_control_plane]
+owasp_llm_ids: [LLM06]
+sector_amplifiers: [bfsi, insurance]
+applies_to_jurisdictions: [global]
+exposure_check:
+  cloud_ai_role_wildcard_detected: true
+mitigation:
+  preferred:
+    - integration: aws
+      action: scope_iam_role_to_least_privilege
+      params: { policy_ref: "tenant:bedrock_least_priv" }
+    - integration: azure
+      action: scope_role_to_least_privilege
+      params: { policy_ref: "tenant:azure_openai_least_priv" }
+evidence_hints:
+  - cloud_ai_resources entry with role attachment metadata
+compliance_implications:
+  - ISO42001-A.10.2
+  - NIST-GOVERN-2.1
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

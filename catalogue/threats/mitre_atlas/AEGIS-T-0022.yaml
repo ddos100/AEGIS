@@ -1,0 +1,38 @@
+threat_id: AEGIS-T-0022
+title: Deepfake voice / video used for executive impersonation (vishing)
+source_ref: "MITRE ATLAS AML.T0042 — Spoof ML Output (accessed 2026-05-18)"
+verbatim_description: |
+  Adversaries use voice-cloning and lip-sync deepfake tools to impersonate
+  executives in synchronous channels (phone calls, video meetings). The
+  resulting fraudulent payment instructions or credential resets succeed
+  because the recipient trusts the apparent identity.
+description: |
+  AEGIS detects the presence of deepfake-capable services in the tenant's
+  catalogue and observed usage; it does not block the upstream attack,
+  but flags exposure so the tenant can implement out-of-band verification.
+severity: high
+classes: [deepfake]
+vectors: [browser_webapp, desktop_client]
+mitre_atlas_ids: [AML.T0042]
+applies_to_jurisdictions: [global]
+exposure_check:
+  observed_provider_domains:
+    - d-id.com
+    - studio.d-id.com
+    - heygen.com
+    - elevenlabs.io
+    - synthesia.io
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: block_url_category
+      params: { category: "AI Deepfake Studios" }
+    - integration: chrome_enterprise
+      action: extension_install_blocklist
+      params: { extensions: ["voice_cloning_extensions"] }
+evidence_hints:
+  - ai_usage_events to deepfake provider domains
+compliance_implications:
+  - ISO42001-A.9.4
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

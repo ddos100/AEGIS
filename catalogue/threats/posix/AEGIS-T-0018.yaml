@@ -1,0 +1,30 @@
+threat_id: AEGIS-T-0018
+title: AI agent commits and pushes secrets-bearing working tree to git
+source_ref: "AEGIS Research T-POSIX-009 (2026-05-18) — derived from MITRE ATT&CK T1552.004"
+verbatim_description: |
+  Agent-mode coding assistants and MCP servers wired with git scope can
+  commit and push working-tree changes without the user reviewing what
+  is staged. Observed real-world incidents include committed .env,
+  AWS credentials, and Kubernetes kubeconfigs.
+description: |
+  AEGIS-EA observes process-exec of `git commit` and `git push` whose
+  parent process is in the known AI-binary list and emits the staged
+  paths (path patterns only, never file contents).
+severity: high
+classes: [data_exfiltration, excess_agent_permissions]
+vectors: [coding_assistant, mcp_agent]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_git_push_by_ai_proc: true
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: git_push_pre_hook_block
+      params: { denied_paths: [".env", "*.pem", "*credentials*", "kubeconfig"] }
+      requires_module: AEGIS-EA
+evidence_hints:
+  - process_exec event under AI binary parent with `git push` command
+compliance_implications:
+  - ISO42001-A.10.2
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

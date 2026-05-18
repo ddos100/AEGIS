@@ -1,0 +1,30 @@
+threat_id: AEGIS-T-0015
+title: npm postinstall script in AI helper package exfiltrates environment
+source_ref: "AEGIS Research T-POSIX-006 (2026-05-18) — derived from npm Security Advisory CVE-2024-46342"
+verbatim_description: |
+  npm package post-install lifecycle scripts execute arbitrary code at
+  install time. Several typosquatted and compromised packages targeting
+  AI developers (openai-helper, claude-utils variants) embed exfiltration
+  of process.env, ~/.npmrc, ~/.aws/credentials, and ~/.git-credentials.
+description: |
+  AEGIS-EA wraps `npm install` and inspects post-install hooks before
+  letting them execute. The exposure engine cross-references package
+  hashes against OSV.dev advisories.
+severity: high
+classes: [supply_chain, insecure_install, data_exfiltration]
+vectors: [coding_assistant, cli_sdk]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_npm_postinstall_within_days: 30
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: npm_postinstall_block
+      params: { allowlist_ref: "tenant:approved_npm_packages" }
+      requires_module: AEGIS-EA
+evidence_hints:
+  - package_install_pre_hook event from AEGIS-EA with package name + hash
+compliance_implications:
+  - ISO42001-A.10.2
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

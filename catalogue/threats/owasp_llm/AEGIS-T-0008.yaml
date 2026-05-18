@@ -1,0 +1,34 @@
+threat_id: AEGIS-T-0008
+title: Denial-of-wallet via runaway agent or leaked API key
+source_ref: "OWASP LLM Top 10 (2025) LLM10 — Unbounded Consumption — accessed 2026-05-18"
+verbatim_description: |
+  An adversary or a misconfigured automation causes unbounded token
+  consumption against a paid AI provider. Costs accumulate before the
+  operator notices, and in extreme cases denial-of-wallet attacks
+  exhaust the budget such that legitimate workloads cannot proceed.
+description: |
+  AEGIS detects exposure via a usage-volume burst predicate on
+  ai_usage_events (event count > N in M minutes for a single provider).
+severity: medium
+classes: [cost_availability_abuse]
+vectors: [cli_sdk, cloud_ai_control_plane, mcp_agent]
+owasp_llm_ids: [LLM10]
+applies_to_jurisdictions: [global]
+exposure_check:
+  aiusage_high_volume_burst:
+    events: 10000
+    window_minutes: 60
+mitigation:
+  preferred:
+    - integration: zscaler
+      action: rate_limit_url
+      params: { domain: "api.openai.com", limit_rpm: 1000 }
+    - integration: aws_bedrock
+      action: provisioned_throughput_cap
+      params: { cap_ref: "tenant:bedrock_monthly_cap" }
+evidence_hints:
+  - ai_usage_events count in window
+compliance_implications:
+  - NIST-MANAGE-4.1
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

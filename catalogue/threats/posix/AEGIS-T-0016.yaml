@@ -1,0 +1,30 @@
+threat_id: AEGIS-T-0016
+title: AI tool installer drops SUID binary under user-writable path
+source_ref: "AEGIS Research T-POSIX-007 (2026-05-18) — derived from CIS Benchmark §6.1.10"
+verbatim_description: |
+  Installer scripts that chmod 4755 a binary they drop under
+  ~/.local/bin, /usr/local/bin, or /opt create a SUID escalation
+  primitive. A subsequent compromise of the package update channel
+  delivers root code execution on every machine where the binary is
+  invoked.
+description: |
+  AEGIS-EA watches chmod events for the SUID/SGID bits on AI-tool
+  installer paths.
+severity: high
+classes: [insecure_install]
+vectors: [coding_assistant, local_model, cli_sdk]
+applies_to_jurisdictions: [global]
+exposure_check:
+  endpoint_agent_suid_dropped: true
+mitigation:
+  preferred:
+    - integration: aegis_endpoint_agent
+      action: suid_bit_strip
+      params: { paths: ["~/.local/bin/", "/usr/local/bin/", "/opt/"] }
+      requires_module: AEGIS-EA
+evidence_hints:
+  - file_write_to_watched_path event with new_mode bits showing SUID/SGID
+compliance_implications:
+  - ISO42001-A.6.2.6
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"

@@ -1,0 +1,31 @@
+threat_id: AEGIS-T-0009
+title: Vector store / RAG corpus poisoning via untrusted document ingest
+source_ref: "OWASP LLM Top 10 (2025) LLM08 — Vector and Embedding Weaknesses — accessed 2026-05-18"
+verbatim_description: |
+  Embedding stores and retrieval-augmented generation pipelines that
+  ingest documents from untrusted sources (shared mailboxes, public
+  uploads, scraped web content) can be poisoned with adversarial text.
+  At query time the poisoned content is retrieved and steers the LLM
+  output toward attacker-controlled responses.
+description: |
+  AEGIS detects exposure when an AI system in the registry is tagged as
+  RAG-enabled and at least one ingestion source observed includes an
+  externally-accessible mailbox or shared drive.
+severity: high
+classes: [indirect_prompt_injection, supply_chain]
+vectors: [cloud_ai_control_plane, embedded_saas]
+owasp_llm_ids: [LLM08]
+applies_to_jurisdictions: [global]
+exposure_check:
+  any_system_capability_in: [rag, retrieval_augmented]
+mitigation:
+  preferred:
+    - integration: microsoft_purview_dlp
+      action: scan_ingest_sources
+      params: { policy_ref: "tenant:rag_ingest_dlp" }
+evidence_hints:
+  - ai_systems entry with rag/retrieval capability
+compliance_implications:
+  - ISO42001-A.4.3
+catalogue_version: "1.0.0"
+last_updated: "2026-05-18"
