@@ -15,8 +15,8 @@ from app.integrations.network.base import load_all_normalizers
 from app.integrations.network.matcher import load_from_db, matcher_size
 from app.routes import (
     aisia, auth, catalogue, compliance, dashboard, discovery, eramba, exposures,
-    extension, health, ingest, integrations, me, policies, registry, reports,
-    risk, threats,
+    extension, health, ingest, integrations, me, mitigations, policies, registry,
+    reports, risk, threats,
 )
 
 
@@ -74,6 +74,7 @@ def create_app() -> FastAPI:
     app.include_router(threats.router,          prefix=p)
     app.include_router(threats.licence_router,  prefix=p)
     app.include_router(exposures.router,        prefix=p)
+    app.include_router(mitigations.router,      prefix=p)
     return app
 
 

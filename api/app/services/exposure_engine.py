@@ -633,8 +633,18 @@ async def recompute_all(*, session, tenant_id: UUID) -> dict[str, Any]:
             )
         )
         await session.execute(stmt)
+
+    # After exposures are committed in-session, run the propose-only
+    # mitigation orchestrator so every `exposed` verdict yields one or
+    # more `proposed` mitigation_actions rows in the same DB
+    # transaction. The orchestrator is idempotent — repeat calls don't
+    # duplicate.
+    from app.services.mitigation_orchestrator import propose_all  # local import
+    mit_totals = await propose_all(session=session, tenant_id=tenant_id)
+
     return {
         "tenant_id": str(tenant_id),
         "threats_total": len(threats),
+        "mitigations": mit_totals,
         **counts,
     }

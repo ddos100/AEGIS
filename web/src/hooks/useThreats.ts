@@ -154,6 +154,77 @@ export async function recomputeExposures(): Promise<{
   not_exposed: number;
   unknown: number;
   skipped_by_sector: number;
+  mitigations?: { exposures_seen: number; created: number; refreshed: number; skipped_terminal: number };
 }> {
   return (await api.post('/exposures/recompute')).data;
+}
+
+// ---------------------------------------------------------------------------
+// Mitigations (Phase 7.4 — propose-only)
+// ---------------------------------------------------------------------------
+
+export type MitigationStatus =
+  | 'proposed' | 'queued' | 'rejected' | 'dismissed'
+  | 'applied'  | 'verified' | 'drifted' | 'rolled_back' | 'failed';
+
+export interface MitigationBrief {
+  id: string;
+  tenant_id: string;
+  threat_id: string;
+  exposure_id: string | null;
+  integration: string;
+  action: string;
+  preference: 'preferred' | 'alternate';
+  requires_module: string | null;
+  severity_min: string | null;
+  status: MitigationStatus;
+  status_reason: string | null;
+  proposed_at: string;
+  approved_at: string | null;
+  applied_at: string | null;
+  verified_at: string | null;
+  rolled_back_at: string | null;
+  threat_external_id: string;
+  threat_title: string;
+  threat_severity: ThreatBrief['severity'];
+}
+
+export interface MitigationDetail extends MitigationBrief {
+  params: Record<string, unknown>;
+  idempotency_key: string;
+  last_error: string | null;
+  threat_source_ref: string;
+}
+
+export interface MitigationListResponse {
+  items: MitigationBrief[];
+  by_status: Record<MitigationStatus, number>;
+  total: number;
+}
+
+export function useMitigations(opts: {
+  status?: MitigationStatus[];
+  severity?: string[];
+  integration?: string[];
+} = {}) {
+  return useQuery({
+    queryKey: ['mitigations', opts],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      opts.status?.forEach(s => params.append('status', s));
+      opts.severity?.forEach(s => params.append('severity', s));
+      opts.integration?.forEach(s => params.append('integration', s));
+      const qs = params.toString();
+      return (await api.get<MitigationListResponse>(`/mitigations${qs ? '?' + qs : ''}`)).data;
+    },
+    placeholderData: (prev) => prev,
+  });
+}
+
+export async function decideMitigation(
+  id: string,
+  decision: 'approve' | 'reject' | 'dismiss',
+  reason?: string,
+): Promise<MitigationDetail> {
+  return (await api.post(`/mitigations/${id}/${decision}`, { reason })).data;
 }
