@@ -64,9 +64,12 @@ export default function DiscoveryPage() {
 
       {!connected && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-          <b>Live feed not connected.</b> Common causes — no JWT in <code>sessionStorage.aegis.token</code>,
-          Vite proxy missing <code>ws:true</code>, or the API not reachable on
-          <code> /v1/ws/discovery</code>. Recent events are still shown below via REST polling.
+          <b>Live feed not connected.</b> Common causes — not signed in
+          (the rotating session token in <code>localStorage.aegis.session.v1</code> is empty),
+          Vite proxy missing <code>ws:true</code> for <code>/v1/ws</code>, or the API not reachable on
+          <code> /v1/ws/discovery</code>. The hook retries with exponential backoff (1s → 30s)
+          and reconnects automatically on every silent session rotation. Recent events are still
+          shown below via REST polling.
         </div>
       )}
 

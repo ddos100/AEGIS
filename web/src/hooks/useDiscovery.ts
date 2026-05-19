@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { sessionStore } from '@/lib/session';
 import type { DiscoveryFeedItem, DiscoveryVectorRow, TopSystem, WSMessage } from '@/types/discovery';
 
 export function useTestBroadcast() {
@@ -64,8 +65,13 @@ export function buildWsUrl(token: string): string {
  * Subscribe to the live discovery WebSocket feed.
  *
  * Returns the most recent N messages, newest first. Auto-reconnects with
- * exponential backoff (1s → 30s) on close. Token is read from sessionStorage
- * to match the API client's auth flow.
+ * exponential backoff (1s → 30s) on close.
+ *
+ * Token sourcing: reads from the v1.0 session store (rotating access
+ * token in `localStorage.aegis.session.v1`). When the session rotates
+ * silently (every ~10 minutes by sessionStore.refresh()), this hook
+ * tears down the current socket and reconnects with the fresh token,
+ * so the live feed survives token rotation without operator action.
  */
 export function useDiscoveryStream(maxMessages = 50) {
   const [messages, setMessages] = useState<WSMessage[]>([]);
@@ -76,14 +82,17 @@ export function useDiscoveryStream(maxMessages = 50) {
     let backoff = 1000;
     let cancelled = false;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    let currentToken: string | null = null;
 
     const connect = () => {
-      const token = sessionStorage.getItem('aegis.token');
+      const token = sessionStore.accessToken;
       if (!token) {
-        // No JWT yet — keep retrying in case login lands later.
+        // No session yet (login screen still showing) — keep retrying
+        // so the feed snaps online the moment login lands.
         reconnectTimer = setTimeout(connect, 5_000);
         return;
       }
+      currentToken = token;
       const url = buildWsUrl(token);
       try {
         const ws = new WebSocket(url);
@@ -110,10 +119,23 @@ export function useDiscoveryStream(maxMessages = 50) {
       }
     };
 
+    // Subscribe to session changes so a silent token rotation (every
+    // ~10 minutes) tears down the old socket and reconnects with the
+    // fresh access token. Without this, the live feed would die when
+    // the access token expired and reconnect attempts would all 401.
+    const unsubscribe = sessionStore.subscribe((s) => {
+      const next = s?.access_token ?? null;
+      if (next !== currentToken) {
+        // Drop the existing socket; the onclose handler triggers
+        // connect() which picks up the new token.
+        ref.current?.close();
+      }
+    });
 
     connect();
     return () => {
       cancelled = true;
+      unsubscribe();
       if (reconnectTimer) clearTimeout(reconnectTimer);
       ref.current?.close();
     };
