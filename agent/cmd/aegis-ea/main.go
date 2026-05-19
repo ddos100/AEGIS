@@ -57,6 +57,10 @@ func run() error {
 	enrollFlag := flag.String("enroll", "", "Enrollment code (one-shot).")
 	apiURL := flag.String("api-url", "", "AEGIS API base URL (https://aegis.example.com)")
 	versionFlag := flag.Bool("version", false, "Print version and exit.")
+	diagnose := flag.Bool("diagnose", false,
+		"Run end-to-end diagnostic: enumerate watched paths, send one "+
+			"synthetic heartbeat + one synthetic file_write_to_watched_path "+
+			"event to prove the pipeline, then exit.")
 	flag.Parse()
 
 	if *versionFlag {
@@ -102,6 +106,41 @@ func run() error {
 		return errors.New("agent not enrolled; run with --enroll <code>")
 	}
 
+	// Diagnostic mode: prove the pipeline end-to-end without waiting
+	// for an AI tool to do something interesting. Sends one
+	// synthetic event of each major kind + the heartbeat and exits.
+	if *diagnose {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		client := ingest.NewClient(cfg.IngestURL, cfg.AgentToken, cfg.DeviceID)
+		log.Printf("aegis-ea diagnose: device=%s ingest=%s", cfg.DeviceID, cfg.IngestURL)
+		// Enumerate watched paths (the fsmon start path also logs
+		// these, but printing them here makes --diagnose a complete
+		// one-shot diagnostic).
+		mon := fsmon.New()
+		log.Printf("aegis-ea diagnose: fsmon back-end = %s", mon.Name())
+		// Build one of each event so the operator sees them in the
+		// UI. These are clearly synthetic (vendor_ref = "DIAGNOSE")
+		// so an analyst can filter them out.
+		synth := []events.Event{
+			events.Heartbeat(AgentVersion),
+			events.FileWriteToWatchedPath(
+				"~/.aegis-ea-diagnose.marker", "created", 0o600,
+				"diagnose-placeholder-sha256",
+			),
+			events.ProcessExec(
+				"aegis-ea", "diagnose-binary-sha", "shell",
+				"shell-sha", "diagnose-command-sha",
+			),
+		}
+		if err := client.Flush(ctx, synth); err != nil {
+			return fmt.Errorf("diagnose flush: %w", err)
+		}
+		log.Printf("aegis-ea diagnose: sent %d synthetic events — "+
+			"check the Endpoint agents -> Recent events panel", len(synth))
+		return nil
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -137,6 +176,12 @@ func run() error {
 
 	log.Printf("aegis-ea: running as device %s, version %s, fsmon=%s",
 		cfg.DeviceID, AgentVersion, mon.Name())
+	log.Printf("aegis-ea: ingest=%s heartbeat=%ds batch=%d",
+		cfg.IngestURL, cfg.HeartbeatSeconds, cfg.BatchSize)
+	log.Print("aegis-ea: detection events fire when watched AI-tool files appear or change. " +
+		"If you've just installed the agent on a host with no AI tools yet, only " +
+		"heartbeats will be visible until something writes to one of the watched paths. " +
+		"Run with --diagnose to send a synthetic test event right now.")
 
 	for {
 		select {

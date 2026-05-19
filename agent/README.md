@@ -40,7 +40,25 @@ ls -lh build/
 
 # 4. Subsequent runs are daemonised.
 ./build/aegis-ea
+
+# 5. Verify the pipeline end-to-end (sends one synthetic event and exits):
+./build/aegis-ea --diagnose
 ```
+
+## What you'll see in the UI
+
+The agent emits detection events only when AI tools modify files in the
+watched set (Cursor / Claude Desktop / VS Code MCP configs, shell rc
+files, etc.). On a freshly-installed host with no AI tools yet, only
+the 60-second heartbeats are visible — that's correct behaviour, not a
+bug. Use `--diagnose` to confirm the pipeline works without needing a
+real AI tool present.
+
+The portable poller emits an event the moment a watched file *appears*
+post-install (not only when it's modified), so dropping a new
+`mcp.json` triggers a `created` detection on the next 15 s tick. The
+first 5 minutes after agent start use the 15 s fast cadence; after
+that it backs off to 60 s.
 
 ### Building without Go installed on the host
 
