@@ -46,12 +46,16 @@ log = logging.getLogger(__name__)
 # (compose) OR the repo's catalogue/ when running locally. Resolve at
 # call time so test fixtures + production both work.
 def _catalogue_root() -> Path:
-    for candidate in (
-        Path(os.environ.get("AEGIS_CATALOGUE_DIR", "")),
+    env = os.environ.get("AEGIS_CATALOGUE_DIR", "").strip()
+    candidates: list[Path] = []
+    if env:
+        candidates.append(Path(env))
+    candidates += [
         Path("/workspace/catalogue"),
         Path(__file__).resolve().parents[3] / "catalogue",
-    ):
-        if candidate and candidate.exists():
+    ]
+    for candidate in candidates:
+        if candidate.is_dir():
             return candidate
     return Path("catalogue")
 
@@ -68,6 +72,7 @@ def _run_importer(script_path: Path, label: str) -> dict[str, Any]:
 
     Returns {ok, stdout_tail, stderr_tail, returncode}.
     """
+    script_path = script_path.resolve()
     if not script_path.exists():
         log.warning("aegis.seed.importer_missing",
                     extra={"label": label, "path": str(script_path)})
@@ -75,12 +80,15 @@ def _run_importer(script_path: Path, label: str) -> dict[str, Any]:
     try:
         # The importers expect to be run from the repo root so their
         # path resolution + sys.path manipulation works.
+        # catalogue/scripts/importer.py → parents: [scripts, catalogue, repo_root]
+        repo_root = script_path.parents[2]
         result = subprocess.run(
             [sys.executable, str(script_path), "-v"],
-            cwd=script_path.parents[1].parent,    # repo root
+            cwd=str(repo_root),
             capture_output=True,
             text=True,
             timeout=120,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
         ok = result.returncode == 0
         if not ok:
