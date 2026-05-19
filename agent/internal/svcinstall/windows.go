@@ -31,12 +31,17 @@ func Install(configPath string) error {
 	_, _ = exec.Command("sc.exe", "stop", ServiceName).CombinedOutput()
 	_, _ = exec.Command("sc.exe", "delete", ServiceName).CombinedOutput()
 
+	// sc.exe uses a quirky syntax: each option is TWO argv tokens where
+	// the first token ends with '=' and the second is the value.
+	//   sc create svc binPath= "C:\foo.exe" start= auto obj= "NT AUTHORITY\LocalService"
+	// Go's exec.Command passes each element as a discrete argv entry,
+	// which is exactly what sc.exe expects.
 	args := []string{
 		"create", ServiceName,
-		fmt.Sprintf("binPath= %s", binPath),
-		fmt.Sprintf("DisplayName= %s", DisplayName),
-		"start= auto",
-		"obj= NT AUTHORITY\\LocalService",
+		"binPath=", binPath,
+		"DisplayName=", DisplayName,
+		"start=", "auto",
+		"obj=", "NT AUTHORITY\\LocalService",
 	}
 	out, err := exec.Command("sc.exe", args...).CombinedOutput()
 	if err != nil {
@@ -48,8 +53,8 @@ func Install(configPath string) error {
 
 	// Configure auto-restart on failure (restart after 10s, up to 3 times).
 	_, _ = exec.Command("sc.exe", "failure", ServiceName,
-		"reset= 86400",
-		"actions= restart/10000/restart/10000/restart/10000",
+		"reset=", "86400",
+		"actions=", "restart/10000/restart/10000/restart/10000",
 	).CombinedOutput()
 
 	// Start the service.
