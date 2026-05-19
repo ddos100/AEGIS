@@ -26,30 +26,25 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
-# This script supports three invocation contexts:
-#   1. Inside the api container (catalogue mounted at /workspace/catalogue,
-#      `app` package already installed via pip install -e .)
-#   2. Repo root on host: `python -m catalogue.scripts.importer`
-#      (we add repo_root/api to sys.path so `app` resolves)
-#   3. Direct execution from the scripts dir
-HERE = Path(__file__).resolve()
+_SCRIPT = Path(__file__).resolve()
+# This script lives at  catalogue/scripts/importer.py
+# so the catalogue dir is always _SCRIPT.parent.parent.
+_SCRIPTS_DIR = _SCRIPT.parent
 
 
 def _find_paths() -> tuple[Path, Path]:
-    """Locate (catalogue_dir, schema_path), being tolerant of mount layouts."""
-    # Repo-root layout: HERE = .../catalogue/scripts/importer.py → parents[2] = repo root
-    candidate_root = HERE.parents[2]
-    cat = candidate_root / "catalogue"
-    if cat.exists():
-        # If the api sibling exists on disk, add it to sys.path (host invocation case).
-        api_sibling = candidate_root / "api"
-        if api_sibling.exists():
-            sys.path.insert(0, str(api_sibling))
-        return cat, cat / "schemas" / "service.schema.yaml"
+    """Locate (catalogue_dir, schema_path).
 
-    # Container layout: HERE = /workspace/catalogue/scripts/importer.py
-    # parents[1] is /workspace/catalogue itself.
-    cat = HERE.parents[1]
+    Works in three contexts:
+      1. Repo root on host   — _SCRIPTS_DIR = repo/catalogue/scripts
+      2. Docker container     — _SCRIPTS_DIR = /workspace/catalogue/scripts
+      3. Subprocess from API  — absolute script_path, same as (1) or (2)
+    """
+    cat = _SCRIPTS_DIR.parent          # catalogue/
+    repo_root = cat.parent
+    api_sibling = repo_root / "api"
+    if api_sibling.is_dir():
+        sys.path.insert(0, str(api_sibling))
     return cat, cat / "schemas" / "service.schema.yaml"
 
 

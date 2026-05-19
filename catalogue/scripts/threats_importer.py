@@ -30,18 +30,27 @@ from typing import Any
 import yaml
 from jsonschema import Draft7Validator
 
-HERE = Path(__file__).resolve().parent
+_SCRIPT = Path(__file__).resolve()
+# This script lives at  catalogue/scripts/threats_importer.py
+# so the catalogue dir is always _SCRIPT.parent.parent.
+_SCRIPTS_DIR = _SCRIPT.parent
 
 
 def _find_paths() -> tuple[Path, Path]:
-    root = HERE.parents[2]
-    cat = root / "catalogue"
-    if cat.exists():
-        api_sibling = root / "api"
-        if api_sibling.exists():
-            sys.path.insert(0, str(api_sibling))
-        return cat, cat / "threats" / "schema.yaml"
-    cat = HERE.parents[1]
+    """Locate (catalogue_dir, schema_path).
+
+    Works in three contexts:
+      1. Repo root on host   — _SCRIPTS_DIR = repo/catalogue/scripts
+      2. Docker container     — _SCRIPTS_DIR = /workspace/catalogue/scripts
+      3. Subprocess from API  — absolute script_path, same as (1) or (2)
+    """
+    cat = _SCRIPTS_DIR.parent          # catalogue/
+    # Ensure the api/ sibling is on sys.path so `from app.models...` works
+    # when invoked from the host (context 1/3).
+    repo_root = cat.parent
+    api_sibling = repo_root / "api"
+    if api_sibling.is_dir():
+        sys.path.insert(0, str(api_sibling))
     return cat, cat / "threats" / "schema.yaml"
 
 
