@@ -66,6 +66,18 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.ingest_threat_feeds",
         "schedule": crontab(minute="5"),
     },
+    # Phase 7.3 — exposure recompute every 10 min. Without this the
+    # /exposures and /mitigations panels stay empty until an admin
+    # clicks "Recompute exposures" by hand — new Registry rows from
+    # network ingest / EA discovery would never propagate.
+    # recompute_all() is idempotent (UPSERT keyed on
+    # (tenant_id, threat_id)) and the orchestrator-propose path is
+    # idempotent too (idempotency_key on mitigation_actions). Cheap
+    # to run frequently.
+    "exposure-recompute": {
+        "task": "app.workers.tasks.recompute_all_exposures",
+        "schedule": crontab(minute="*/10"),
+    },
 }
 
 

@@ -382,3 +382,46 @@ async def _ingest_feeds() -> dict[str, Any]:
         await session.commit()
     log.info("aegis.feed.ingest.cycle", results=results)
     return {"results": results}
+
+
+# ============ Phase 7.3 — periodic exposure + mitigation recompute ============
+
+@celery_app.task(name="app.workers.tasks.recompute_all_exposures")
+def recompute_all_exposures() -> dict[str, Any]:
+    """Every 10 min: walk every tenant, run the exposure engine,
+    let it cascade into mitigation proposals.
+
+    Idempotent — exposure rows upsert on (tenant_id, threat_id) and
+    mitigation_actions upsert on (tenant_id, idempotency_key).
+    """
+    return asyncio.run(_recompute_exposures())
+
+
+async def _recompute_exposures() -> dict[str, Any]:
+    from sqlalchemy import select
+    from app.core.database import SessionLocal, session_scope
+    from app.models.tenant import Tenant
+    from app.services.exposure_engine import recompute_all
+
+    # List tenants outside RLS (system-level beat).
+    async with SessionLocal() as session:
+        tenant_ids = [
+            row[0]
+            for row in (
+                await session.execute(select(Tenant.id).where(Tenant.is_active.is_(True)))
+            ).all()
+        ]
+
+    results: list[dict[str, Any]] = []
+    for tid in tenant_ids:
+        try:
+            async with session_scope(tenant_id=tid) as session:
+                r = await recompute_all(session=session, tenant_id=tid)
+                results.append(r)
+        except Exception as exc:  # noqa: BLE001
+            log.error("aegis.exposure.recompute.error", tenant_id=str(tid), error=str(exc))
+            results.append({"tenant_id": str(tid), "ok": False, "error": str(exc)})
+
+    log.info("aegis.exposure.recompute.cycle",
+             tenants=len(tenant_ids), results=results)
+    return {"tenants": len(tenant_ids), "results": results}

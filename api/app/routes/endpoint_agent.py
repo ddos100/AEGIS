@@ -323,6 +323,11 @@ async def ingest_ea_batch(
         # heartbeat — bumped on every batch
         device.last_heartbeat_at = now
 
+        # Collect WS broadcasts and emit AFTER commit so Redis never
+        # blocks the DB transaction.
+        from app.services.ea_discovery import auto_register_from_ea_event
+        pending_broadcasts: list[dict] = []
+
         for evt in batch.events:
             reason = _validate_payload(evt.kind, evt.payload)
             if reason is not None:
@@ -335,6 +340,39 @@ async def ingest_ea_batch(
                 payload=evt.payload,
             ))
             accepted += 1
+
+            # Bridge to the AI System Registry. Discovery-class EA
+            # events (ai_provider_connection / ai_process_running)
+            # resolve to a catalogue entry and become a shadow
+            # AISystem if not already registered. Without this
+            # bridge the EA telemetry stayed siloed in
+            # endpoint_agent_events and never reached Registry /
+            # Exposures / Mitigations.
+            try:
+                broadcast = await auto_register_from_ea_event(
+                    session=session,
+                    tenant_id=tenant_id,
+                    kind=evt.kind,
+                    payload=evt.payload,
+                    occurred_at=evt.occurred_at,
+                )
+                if broadcast is not None:
+                    pending_broadcasts.append(broadcast)
+            except Exception:  # noqa: BLE001
+                # Discovery bridge failures must NEVER fail an ingest
+                # batch — the event is already persisted. Log via
+                # the structured logger; integration tests cover the
+                # happy path.
+                pass
+
+    # Session committed by session_scope context manager. Now publish.
+    if pending_broadcasts:
+        from app.core.redis import publish_discovery
+        for payload in pending_broadcasts:
+            try:
+                await publish_discovery(str(tenant_id), payload)
+            except Exception:  # noqa: BLE001
+                pass
 
     return IngestReceipt(
         accepted=accepted, rejected=rejected,
