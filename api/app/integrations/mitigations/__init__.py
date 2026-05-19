@@ -31,9 +31,38 @@ from app.integrations.mitigations.base import (
     register,
     load_all_adapters,
 )
-from app.integrations.mitigations import zscaler  # noqa: F401  registration side-effect
+# --- Import every adapter package for @register side-effects ----------
+# Network / proxy / DNS
+from app.integrations.mitigations import zscaler  # noqa: F401
 from app.integrations.mitigations import cisco_umbrella  # noqa: F401
 from app.integrations.mitigations import cloudflare_gateway  # noqa: F401
+
+# NGFW / XDR / EDR
+from app.integrations.mitigations import palo_alto  # noqa: F401
+from app.integrations.mitigations import crowdstrike  # noqa: F401
+from app.integrations.mitigations import sentinelone  # noqa: F401
+from app.integrations.mitigations import sophos_xdr  # noqa: F401
+
+# Browser / endpoint management
+from app.integrations.mitigations import chrome_enterprise  # noqa: F401
+
+# Microsoft 365 / Purview
+from app.integrations.mitigations import microsoft_purview_dlp  # noqa: F401
+from app.integrations.mitigations import m365_copilot  # noqa: F401
+
+# Identity providers
+from app.integrations.mitigations import entra_id  # noqa: F401
+from app.integrations.mitigations import okta  # noqa: F401
+
+# Cloud platforms
+from app.integrations.mitigations import aws  # noqa: F401
+from app.integrations.mitigations import aws_bedrock  # noqa: F401
+from app.integrations.mitigations import azure  # noqa: F401
+from app.integrations.mitigations import azure_openai  # noqa: F401
+
+# AEGIS-native
+from app.integrations.mitigations import aegis_endpoint_agent  # noqa: F401
+from app.integrations.mitigations import aegis_policy_engine  # noqa: F401
 
 __all__ = [
     "BaseMitigationAdapter", "MitigationApplyResult", "MitigationVerifyResult",
