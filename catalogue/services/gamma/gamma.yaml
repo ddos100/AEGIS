@@ -1,0 +1,29 @@
+id: gamma-app
+name: Gamma
+provider_slug: gamma
+category: llm
+subcategory: presentation_ai
+description: >-
+  AI-powered presentation, document, and webpage builder. Users paste
+  text or a topic and Gamma generates slide decks, one-pagers, and
+  micro-sites with layout, imagery, and copy — all driven by an LLM
+  backbone (GPT-4o / Claude). Popular with sales, marketing, and
+  consulting teams for rapid deck creation.
+website: https://gamma.app
+api_endpoint_patterns:
+  - api.gamma.app
+browser_domains:
+  - gamma.app
+hq_country: "US"
+gdpr_applicable: true
+eu_ai_act_category: limited_risk
+capabilities: [text_generation, summarization, image_generation]
+input_data_types: [text]
+output_data_types: [text, image, document]
+default_risk_indicators:
+  data_sensitivity_hint: medium
+  capability_level: medium
+  provider_trust_score: 50
+tags: [presentation, generative_ai, saas, shadow_ai_common]
+catalogue_version: "1.0.0"
+last_updated: "2026-05-20"

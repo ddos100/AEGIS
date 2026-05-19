@@ -78,6 +78,7 @@ DEFAULT_PROVIDERS = {
     "monica":      {"name": "Monica",                 "hq_country": "US", "trust_score": 45},
     "merlin":      {"name": "Foyer / Merlin AI",      "hq_country": "US", "trust_score": 45},
     "sider":       {"name": "Sider AI",               "hq_country": "US", "trust_score": 45},
+    "gamma":       {"name": "Gamma",                  "hq_country": "US", "trust_score": 50},
     "jasper":      {"name": "Jasper AI",              "hq_country": "US", "trust_score": 55},
     "writesonic":  {"name": "Writesonic",             "hq_country": "US", "trust_score": 50},
     "salesforce":  {"name": "Salesforce",             "hq_country": "US", "trust_score": 85, "soc2_certified": True, "iso27001_cert": True, "gdpr_dpa": True},

@@ -1,4 +1,11 @@
-"""Policy management + violations endpoints."""
+"""Policy management + violations endpoints.
+
+IMPORTANT: Route ordering matters. FastAPI matches routes in definition
+order. All static-path routes (/policies/templates, /policies/evaluate,
+/policies/reorder) MUST be defined BEFORE any /policies/{policy_id}
+route — otherwise the path parameter swallows the literal segment and
+the request fails with a 422 (UUID parse error on "templates").
+"""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -36,7 +43,121 @@ _TEMPLATE_DIRS = (
 )
 
 
-# ---------- policies ----------
+def _load_template_files() -> list[dict]:
+    for d in _TEMPLATE_DIRS:
+        if d.is_dir():
+            return [yaml.safe_load(p.read_text(encoding="utf-8"))
+                    for p in sorted(d.glob("*.yaml"))]
+    return []
+
+
+# ── Templates (MUST be before {policy_id} routes) ──────────────────
+
+@router.get("/policies/templates", response_model=list[PolicyTemplateBrief])
+async def list_templates(user: CurrentUser):  # noqa: ARG001
+    out: list[PolicyTemplateBrief] = []
+    for t in _load_template_files():
+        out.append(PolicyTemplateBrief(
+            id=t["id"], name=t["name"], description=t.get("description", ""),
+            rule_count=len(t.get("rules", [])),
+        ))
+    return out
+
+
+@router.post("/policies/templates/{template_id}/import", response_model=list[PolicyDetail])
+async def import_template(
+    template_id: str,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_admin)],
+) -> list[PolicyDetail]:
+    target = None
+    for t in _load_template_files():
+        if t["id"] == template_id:
+            target = t
+            break
+    if target is None:
+        raise HTTPException(status_code=404, detail=f"Template {template_id!r} not found")
+
+    # Place imported rules ABOVE any existing tenant policies at the highest
+    # priority (lowest numeric). Find current min priority.
+    current_min = (await db.execute(
+        select(Policy.priority).order_by(Policy.priority.asc()).limit(1)
+    )).scalar_one_or_none()
+    base = (current_min or 1) - len(target.get("rules", []))
+    if base < 1:
+        base = 1
+
+    created: list[Policy] = []
+    for i, rule in enumerate(target.get("rules", [])):
+        row = Policy(
+            tenant_id=user.tenant_id,
+            name=rule.get("name"),
+            description=rule.get("description"),
+            priority=base + i,
+            conditions=rule.get("conditions") or {},
+            action=rule.get("action"),
+            action_config=rule.get("action_config") or {},
+            is_active=True,
+            template_id=template_id,
+            created_by=None,
+        )
+        db.add(row)
+        created.append(row)
+    await db.flush()
+    for r in created:
+        await db.refresh(r)
+    return [PolicyDetail.model_validate(r) for r in created]
+
+
+# ── Static-path actions (MUST be before {policy_id}) ───────────────
+
+@router.post("/policies/evaluate", response_model=PolicyTestResponse)
+async def evaluate_for_system(
+    payload: PolicyTestRequest,
+    db: DBSession,
+    user: CurrentUser,  # noqa: ARG001
+) -> PolicyTestResponse:
+    """Run the FULL policy chain against a system (priority order, first match wins)."""
+    system = (await db.execute(
+        select(AISystem).where(AISystem.id == payload.ai_system_id)
+    )).scalar_one_or_none()
+    if system is None:
+        raise HTTPException(status_code=404, detail="AI system not found")
+    decision = await evaluate(session=db, system=system, user_groups=payload.user_groups)
+    return PolicyTestResponse(
+        action=decision.action, policy_id=decision.policy_id,
+        policy_name=decision.policy_name,
+        matched_conditions=decision.matched_conditions,
+        config=decision.config,
+    )
+
+
+@router.post("/policies/reorder", response_model=list[PolicyDetail])
+async def reorder_policies(
+    payload: PolicyReorderRequest,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_admin)],  # noqa: ARG001
+) -> list[PolicyDetail]:
+    """Atomically re-prioritise policies. The supplied order is the new priority
+    order (first = priority 1)."""
+    for offset, pid in enumerate(payload.ordered_ids, start=10_000):
+        row = (await db.execute(select(Policy).where(Policy.id == pid))).scalar_one_or_none()
+        if row is None:
+            raise HTTPException(status_code=404, detail=f"Policy {pid} not found")
+        row.priority = offset
+    await db.flush()
+    for new_priority, pid in enumerate(payload.ordered_ids, start=1):
+        row = (await db.execute(select(Policy).where(Policy.id == pid))).scalar_one_or_none()
+        if row is not None:
+            row.priority = new_priority
+    await db.flush()
+    rows = (await db.execute(
+        select(Policy).order_by(Policy.priority.asc())
+    )).scalars().all()
+    return [PolicyDetail.model_validate(r) for r in rows]
+
+
+# ── Policies CRUD ──────────────────────────────────────────────────
 
 @router.get("/policies", response_model=list[PolicyDetail])
 async def list_policies(db: DBSession, user: CurrentUser):  # noqa: ARG001
@@ -139,121 +260,7 @@ async def test_policy(
     )
 
 
-@router.post("/policies/evaluate", response_model=PolicyTestResponse)
-async def evaluate_for_system(
-    payload: PolicyTestRequest,
-    db: DBSession,
-    user: CurrentUser,  # noqa: ARG001
-) -> PolicyTestResponse:
-    """Run the FULL policy chain against a system (priority order, first match wins)."""
-    system = (await db.execute(
-        select(AISystem).where(AISystem.id == payload.ai_system_id)
-    )).scalar_one_or_none()
-    if system is None:
-        raise HTTPException(status_code=404, detail="AI system not found")
-    decision = await evaluate(session=db, system=system, user_groups=payload.user_groups)
-    return PolicyTestResponse(
-        action=decision.action, policy_id=decision.policy_id,
-        policy_name=decision.policy_name,
-        matched_conditions=decision.matched_conditions,
-        config=decision.config,
-    )
-
-
-@router.post("/policies/reorder", response_model=list[PolicyDetail])
-async def reorder_policies(
-    payload: PolicyReorderRequest,
-    db: DBSession,
-    user: Annotated[CurrentUser, Depends(require_admin)],  # noqa: ARG001
-) -> list[PolicyDetail]:
-    """Atomically re-prioritise policies. The supplied order is the new priority
-    order (first = priority 1)."""
-    # Two-pass to avoid violating the (tenant_id, priority) unique constraint:
-    # pass 1 — shift everything into a high range; pass 2 — assign final values.
-    for offset, pid in enumerate(payload.ordered_ids, start=10_000):
-        row = (await db.execute(select(Policy).where(Policy.id == pid))).scalar_one_or_none()
-        if row is None:
-            raise HTTPException(status_code=404, detail=f"Policy {pid} not found")
-        row.priority = offset
-    await db.flush()
-    for new_priority, pid in enumerate(payload.ordered_ids, start=1):
-        row = (await db.execute(select(Policy).where(Policy.id == pid))).scalar_one_or_none()
-        if row is not None:
-            row.priority = new_priority
-    await db.flush()
-    rows = (await db.execute(
-        select(Policy).order_by(Policy.priority.asc())
-    )).scalars().all()
-    return [PolicyDetail.model_validate(r) for r in rows]
-
-
-# ---------- templates ----------
-
-def _load_template_files() -> list[dict]:
-    for d in _TEMPLATE_DIRS:
-        if d.exists():
-            return [yaml.safe_load(p.read_text(encoding="utf-8"))
-                    for p in sorted(d.glob("*.yaml"))]
-    return []
-
-
-@router.get("/policies/templates", response_model=list[PolicyTemplateBrief])
-async def list_templates(user: CurrentUser):  # noqa: ARG001
-    out: list[PolicyTemplateBrief] = []
-    for t in _load_template_files():
-        out.append(PolicyTemplateBrief(
-            id=t["id"], name=t["name"], description=t.get("description", ""),
-            rule_count=len(t.get("rules", [])),
-        ))
-    return out
-
-
-@router.post("/policies/templates/{template_id}/import", response_model=list[PolicyDetail])
-async def import_template(
-    template_id: str,
-    db: DBSession,
-    user: Annotated[CurrentUser, Depends(require_admin)],
-) -> list[PolicyDetail]:
-    target = None
-    for t in _load_template_files():
-        if t["id"] == template_id:
-            target = t
-            break
-    if target is None:
-        raise HTTPException(status_code=404, detail=f"Template {template_id!r} not found")
-
-    # Place imported rules ABOVE any existing tenant policies at the highest
-    # priority (lowest numeric). Find current min priority.
-    current_min = (await db.execute(
-        select(Policy.priority).order_by(Policy.priority.asc()).limit(1)
-    )).scalar_one_or_none()
-    base = (current_min or 1) - len(target.get("rules", []))
-    if base < 1:
-        base = 1
-
-    created: list[Policy] = []
-    for i, rule in enumerate(target.get("rules", [])):
-        row = Policy(
-            tenant_id=user.tenant_id,
-            name=rule.get("name"),
-            description=rule.get("description"),
-            priority=base + i,
-            conditions=rule.get("conditions") or {},
-            action=rule.get("action"),
-            action_config=rule.get("action_config") or {},
-            is_active=True,
-            template_id=template_id,
-            created_by=None,
-        )
-        db.add(row)
-        created.append(row)
-    await db.flush()
-    for r in created:
-        await db.refresh(r)
-    return [PolicyDetail.model_validate(r) for r in created]
-
-
-# ---------- violations ----------
+# ── Violations ─────────────────────────────────────────────────────
 
 @router.get("/violations", response_model=list[ViolationRow])
 async def list_violations(

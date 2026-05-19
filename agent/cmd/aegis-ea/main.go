@@ -43,6 +43,7 @@ import (
 	"github.com/securisti/aegis-endpoint-agent/internal/ingest"
 	"github.com/securisti/aegis-endpoint-agent/internal/netmon"
 	"github.com/securisti/aegis-endpoint-agent/internal/procmon"
+	"github.com/securisti/aegis-endpoint-agent/internal/svcinstall"
 )
 
 // AgentVersion is stamped into every event + enrolment request.
@@ -68,6 +69,11 @@ func run() error {
 		"Delete the saved config (token + device_id + api_url) and exit. "+
 			"Use before re-enrolling against a different AEGIS instance, or "+
 			"after the previous device was revoked in the UI.")
+	installSvc := flag.Bool("install-service", false,
+		"Install the agent as an OS service (systemd / launchd / Windows Service) "+
+			"and start it immediately. Requires elevated privileges (sudo / Administrator).")
+	uninstallSvc := flag.Bool("uninstall-service", false,
+		"Stop and uninstall the OS service. Requires elevated privileges.")
 	flag.Parse()
 
 	if *versionFlag {
@@ -81,6 +87,16 @@ func run() error {
 		}
 		log.Printf("aegis-ea: removed %s — re-enrol with --enroll <fresh-code>", *cfgPath)
 		return nil
+	}
+
+	// Service install/uninstall — must run before config load because
+	// the agent may not be enrolled yet when installing as a service
+	// on a freshly provisioned host (install first, enroll later).
+	if *installSvc {
+		return svcinstall.Install(*cfgPath)
+	}
+	if *uninstallSvc {
+		return svcinstall.Uninstall()
 	}
 
 	cfg, err := config.Load(*cfgPath)

@@ -55,47 +55,89 @@ func Snapshot() ([]Conn, map[int]string, error) {
 	return platformSnapshot()
 }
 
-// AI provider domain inventory. Same family as the catalogue
-// `observed_provider_domains` predicate values.
+// AI provider domain inventory. Kept in sync with catalogue
+// browser_domains + api_endpoint_patterns. Expand this list whenever
+// a new catalogue entry is added; the build-time check
+// `scripts/check_netmon_coverage.sh` flags missing domains in CI.
 var aiProviderDomains = []string{
-	// OpenAI / ChatGPT
+	// ── OpenAI / ChatGPT ──
 	"api.openai.com", "chat.openai.com", "chatgpt.com",
-	"oaistatic.com",
-	// Anthropic
+	"oaistatic.com", "sora.openai.com",
+	// ── Anthropic ──
 	"api.anthropic.com", "claude.ai", "console.anthropic.com",
-	// Google
+	// ── Google ──
 	"generativelanguage.googleapis.com", "gemini.google.com",
 	"aistudio.google.com", "bard.google.com",
-	// Microsoft
-	"copilot.microsoft.com", "bing.com/chat", "api.cognitive.microsoft.com",
-	"openai.azure.com",
-	// Meta / Mistral / xAI / Perplexity / Cohere
-	"api.mistral.ai", "console.mistral.ai",
-	"api.x.ai", "grok.com",
-	"www.perplexity.ai", "api.perplexity.ai",
+	"docs.google.com", "mail.google.com", // Workspace Gemini features
+	// ── Microsoft ──
+	"copilot.microsoft.com", "api.cognitive.microsoft.com",
+	"openai.azure.com", "m365.cloud.microsoft",
+	// ── DeepSeek ──
+	"chat.deepseek.com",
+	// ── Mistral ──
+	"api.mistral.ai", "console.mistral.ai", "chat.mistral.ai",
+	// ── xAI / Grok ──
+	"api.x.ai", "grok.com", "x.com",
+	// ── Perplexity ──
+	"www.perplexity.ai", "perplexity.ai", "api.perplexity.ai",
+	// ── DuckDuckGo AI ──
+	"duck.ai", "duckduckgo.com",
+	// ── Cohere ──
 	"api.cohere.ai", "api.cohere.com",
-	// Cursor / Claude Desktop / Cline / Continue / Codeium / Tabnine
+	// ── Cursor / Claude Desktop / Cline / Continue / Codeium / Tabnine ──
 	"api.cursor.sh", "api.cursor.com",
 	"api.cline.bot",
 	"api.continue.dev",
 	"server.codeium.com", "inference.codeium.com",
 	"api.tabnine.com",
-	// HuggingFace / Replicate / Together / Fireworks / Groq
+	// ── HuggingFace / Replicate / Together / Fireworks / Groq ──
 	"huggingface.co", "api-inference.huggingface.co",
 	"api.replicate.com", "replicate.delivery",
 	"api.together.xyz",
 	"api.fireworks.ai",
-	"api.groq.com",
-	// Browser AI extensions
+	"api.groq.com", "groq.com",
+	// ── Browser AI extensions ──
 	"monica.im", "sider.ai", "getmerlin.in", "maxai.me", "harpa.ai",
-	// AI deepfake / image / video studios
+	"merlin.foyer.work", "glasp.co", "wiseone.io",
+	// ── AI search / research ──
+	"you.com", "phind.com", "consensus.app", "elicit.com",
+	"kagi.com", "scite.ai",
+	// ── AI presentation / productivity ──
+	"gamma.app",
+	"notion.so", "www.notion.so",
+	"linear.app", "asana.com", "clickup.com", "monday.com",
+	"airtable.com", "tana.inc", "mem.ai", "reflect.app",
+	// ── SaaS with embedded AI ──
+	"app.hubspot.com", "intercom.com", "zendesk.com",
+	"figma.com", "www.canva.com", "loom.com",
+	"app.jasper.ai", "jasper.ai", "app.writer.com",
+	"saner.ai", "dash.dropbox.com",
+	// ── AI image / video / audio studios ──
 	"d-id.com", "studio.d-id.com",
 	"heygen.com", "elevenlabs.io",
 	"synthesia.io",
-	"runwayml.com", "pika.art", "lumalabs.ai",
-	// Otter / Fireflies / Fathom / Gong
+	"runwayml.com", "app.runwayml.com", "pika.art", "lumalabs.ai",
+	"dream.lumalabs.ai",
+	"midjourney.com", "www.midjourney.com",
+	"leonardo.ai", "ideogram.ai", "playground.com",
+	"krea.ai", "clipdrop.co", "recraft.ai",
+	// ── AI audio / music ──
+	"suno.com", "udio.com", "descript.com",
+	// ── AI meeting / revenue ──
 	"otter.ai", "fireflies.ai", "fathom.video", "gong.io",
-	// Local model proxies that might be reached over network
+	// ── Browser AI (Brave / Arc / Opera) ──
+	"brave.com", "arc.net", "opera.com",
+	// ── Character / companion AI ──
+	"character.ai", "beta.character.ai", "pi.ai",
+	// ── Code hosting (Copilot) ──
+	"github.com",
+	// ── Grammarly ──
+	"grammarly.com", "app.grammarly.com",
+	// ── Adobe Firefly ──
+	"firefly.adobe.com",
+	// ── Dropbox Dash ──
+	"dash.dropbox.com",
+	// ── Local model proxies ──
 	"ollama.ai",
 }
 
