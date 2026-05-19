@@ -64,10 +64,22 @@ func run() error {
 		"Run end-to-end diagnostic: enumerate watched paths, send one "+
 			"synthetic heartbeat + one synthetic file_write_to_watched_path "+
 			"event to prove the pipeline, then exit.")
+	resetFlag := flag.Bool("reset", false,
+		"Delete the saved config (token + device_id + api_url) and exit. "+
+			"Use before re-enrolling against a different AEGIS instance, or "+
+			"after the previous device was revoked in the UI.")
 	flag.Parse()
 
 	if *versionFlag {
 		fmt.Printf("aegis-ea %s (%s/%s)\n", AgentVersion, runtime.GOOS, runtime.GOARCH)
+		return nil
+	}
+
+	if *resetFlag {
+		if err := os.Remove(*cfgPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("reset: %w", err)
+		}
+		log.Printf("aegis-ea: removed %s — re-enrol with --enroll <fresh-code>", *cfgPath)
 		return nil
 	}
 
@@ -261,6 +273,33 @@ func run() error {
 		"and npm/pip/brew package installs. " +
 		"Privacy: command lines hashed at source; never sent in plaintext.")
 
+	// handleFlushErr returns a non-nil error when the agent should
+	// exit (fatal auth failure). Transient + schema errors are logged
+	// and swallowed so the daemon stays up.
+	handleFlushErr := func(err error, label string) error {
+		if err == nil {
+			return nil
+		}
+		if errors.Is(err, ingest.ErrFatalAuth) {
+			log.Print("aegis-ea: ============================================================")
+			log.Printf("aegis-ea: %s: %v", label, err)
+			log.Print("aegis-ea: device-side credentials are no longer valid.")
+			log.Print("aegis-ea: most likely cause: an admin clicked Revoke on this device")
+			log.Print("aegis-ea: in the UI, OR a fresh enrolment created a new device row")
+			log.Print("aegis-ea: leaving this token stale.")
+			log.Print("aegis-ea:")
+			log.Print("aegis-ea: to recover:")
+			log.Print("aegis-ea:   1. generate a fresh enrolment code in the UI")
+			log.Printf("aegis-ea:   2. aegis-ea --reset")
+			log.Print("aegis-ea:   3. aegis-ea --api-url <url> --enroll <CODE>")
+			log.Print("aegis-ea:   4. aegis-ea")
+			log.Print("aegis-ea: ============================================================")
+			return err
+		}
+		log.Printf("aegis-ea: %s: %v", label, err)
+		return nil
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -272,8 +311,8 @@ func run() error {
 			}
 			eventBuf.Append(evt)
 			if eventBuf.Len() >= cfg.BatchSize {
-				if err := client.Flush(ctx, eventBuf.Drain()); err != nil {
-					log.Printf("aegis-ea: flush error: %v", err)
+				if err := handleFlushErr(client.Flush(ctx, eventBuf.Drain()), "flush error"); err != nil {
+					return err
 				}
 			}
 		case evt, ok := <-procEvents:
@@ -282,8 +321,8 @@ func run() error {
 			}
 			eventBuf.Append(evt)
 			if eventBuf.Len() >= cfg.BatchSize {
-				if err := client.Flush(ctx, eventBuf.Drain()); err != nil {
-					log.Printf("aegis-ea: flush error: %v", err)
+				if err := handleFlushErr(client.Flush(ctx, eventBuf.Drain()), "flush error"); err != nil {
+					return err
 				}
 			}
 		case evt, ok := <-netEvents:
@@ -292,20 +331,21 @@ func run() error {
 			}
 			eventBuf.Append(evt)
 			if eventBuf.Len() >= cfg.BatchSize {
-				if err := client.Flush(ctx, eventBuf.Drain()); err != nil {
-					log.Printf("aegis-ea: flush error: %v", err)
+				if err := handleFlushErr(client.Flush(ctx, eventBuf.Drain()), "flush error"); err != nil {
+					return err
 				}
 			}
 		case <-flush.C:
 			if eventBuf.Len() > 0 {
-				if err := client.Flush(ctx, eventBuf.Drain()); err != nil {
-					log.Printf("aegis-ea: flush error: %v", err)
+				if err := handleFlushErr(client.Flush(ctx, eventBuf.Drain()), "flush error"); err != nil {
+					return err
 				}
 			}
 		case <-heartbeat.C:
 			eventBuf.Append(events.Heartbeat(AgentVersion))
-			if err := client.Flush(ctx, eventBuf.Drain()); err != nil {
-				log.Printf("aegis-ea: heartbeat flush error: %v", err)
+			if err := handleFlushErr(client.Flush(ctx, eventBuf.Drain()),
+				"heartbeat flush error"); err != nil {
+				return err
 			}
 		}
 	}
