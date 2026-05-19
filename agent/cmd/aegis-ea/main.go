@@ -41,6 +41,8 @@ import (
 	"github.com/securisti/aegis-endpoint-agent/internal/events"
 	"github.com/securisti/aegis-endpoint-agent/internal/fsmon"
 	"github.com/securisti/aegis-endpoint-agent/internal/ingest"
+	"github.com/securisti/aegis-endpoint-agent/internal/netmon"
+	"github.com/securisti/aegis-endpoint-agent/internal/procmon"
 )
 
 // AgentVersion is stamped into every event + enrolment request.
@@ -218,6 +220,26 @@ func run() error {
 	}
 	defer mon.Stop()
 
+	// Process monitor — polls the OS process table to detect AI binaries
+	// running, curl|sh patterns, destructive commands while AI is
+	// active, and package install activity. v0.2.0 addition.
+	pm := procmon.New()
+	procEvents, err := pm.Start(ctx)
+	if err != nil {
+		return fmt.Errorf("procmon start: %w", err)
+	}
+	defer pm.Stop()
+
+	// Network monitor — resolves AI provider domains to current IPs and
+	// polls active TCP connections to emit (process, domain) pairs.
+	// Catches API calls that fsmon alone can't see. v0.2.0 addition.
+	nm := netmon.New()
+	netEvents, err := nm.Start(ctx)
+	if err != nil {
+		return fmt.Errorf("netmon start: %w", err)
+	}
+	defer nm.Stop()
+
 	// Heartbeat ticker (60 s — matches /enroll response default).
 	heartbeat := time.NewTicker(time.Duration(cfg.HeartbeatSeconds) * time.Second)
 	defer heartbeat.Stop()
@@ -226,14 +248,18 @@ func run() error {
 	flush := time.NewTicker(10 * time.Second)
 	defer flush.Stop()
 
-	log.Printf("aegis-ea: running as device %s, version %s, fsmon=%s",
-		cfg.DeviceID, AgentVersion, mon.Name())
+	log.Printf("aegis-ea: running as device %s, version %s",
+		cfg.DeviceID, AgentVersion)
+	log.Printf("aegis-ea: fsmon=%s procmon=%s netmon=%s",
+		mon.Name(), pm.Name(), nm.Name())
 	log.Printf("aegis-ea: ingest=%s heartbeat=%ds batch=%d",
 		cfg.IngestURL, cfg.HeartbeatSeconds, cfg.BatchSize)
-	log.Print("aegis-ea: detection events fire when watched AI-tool files appear or change. " +
-		"If you've just installed the agent on a host with no AI tools yet, only " +
-		"heartbeats will be visible until something writes to one of the watched paths. " +
-		"Run with --diagnose to send a synthetic test event right now.")
+	log.Print("aegis-ea: capturing — file-system events on watched AI-tool paths, " +
+		"AI-tool process starts (cursor / claude / ollama / python+openai SDK ...), " +
+		"AI provider connections (api.openai.com, api.anthropic.com, api.cursor.sh ...), " +
+		"destructive shell commands while AI is active, curl|sh installer patterns, " +
+		"and npm/pip/brew package installs. " +
+		"Privacy: command lines hashed at source; never sent in plaintext.")
 
 	for {
 		select {
@@ -243,6 +269,26 @@ func run() error {
 		case evt, ok := <-monEvents:
 			if !ok {
 				return errors.New("fsmon channel closed unexpectedly")
+			}
+			eventBuf.Append(evt)
+			if eventBuf.Len() >= cfg.BatchSize {
+				if err := client.Flush(ctx, eventBuf.Drain()); err != nil {
+					log.Printf("aegis-ea: flush error: %v", err)
+				}
+			}
+		case evt, ok := <-procEvents:
+			if !ok {
+				return errors.New("procmon channel closed unexpectedly")
+			}
+			eventBuf.Append(evt)
+			if eventBuf.Len() >= cfg.BatchSize {
+				if err := client.Flush(ctx, eventBuf.Drain()); err != nil {
+					log.Printf("aegis-ea: flush error: %v", err)
+				}
+			}
+		case evt, ok := <-netEvents:
+			if !ok {
+				return errors.New("netmon channel closed unexpectedly")
 			}
 			eventBuf.Append(evt)
 			if eventBuf.Len() >= cfg.BatchSize {

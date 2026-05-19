@@ -171,4 +171,83 @@ func Heartbeat(agentVersion string) Event {
 	}
 }
 
+// AIProcessRunning fires once per AI-tool process start.
+// `reason` is a short label like "ai_binary:cursor" or
+// "interpreter+sdk:python+openai".
+func AIProcessRunning(processName, reason, cmdLineSHA string) Event {
+	return Event{
+		Kind:       "ai_process_running",
+		OccurredAt: time.Now().UTC(),
+		Payload: map[string]any{
+			"process_name":        processName,
+			"detection_reason":    reason,
+			"command_line_sha256": cmdLineSHA,
+		},
+	}
+}
+
+// AIProviderConnection fires once per (process, AI-provider-domain)
+// pair per 5-minute dedup window. Carries the domain string but
+// NEVER the remote IP, port, URL path, or any payload bytes.
+func AIProviderConnection(processName, providerDomain string) Event {
+	return Event{
+		Kind:       "ai_provider_connection",
+		OccurredAt: time.Now().UTC(),
+		Payload: map[string]any{
+			"process_name":    processName,
+			"provider_domain": providerDomain,
+		},
+	}
+}
+
+// DestructiveCmdCorrelation fires when a destructive command (rm -rf,
+// del /q /s, etc.) is observed while any AI binary is also active on
+// the host. Loose correlation — without parent PID we can't prove
+// causation, but the co-occurrence is operationally interesting.
+func DestructiveCmdCorrelation(processName, signature, cmdLineSHA string) Event {
+	return Event{
+		Kind:       "destructive_cmd_correlation",
+		OccurredAt: time.Now().UTC(),
+		Payload: map[string]any{
+			"process_name":        processName,
+			"matched_signature":   signature,
+			"command_line_sha256": cmdLineSHA,
+		},
+	}
+}
+
+// CurlPipeShellSuspected fires when a shell starts while curl/wget is
+// also live in the process table. Conservative — not all such
+// co-occurrences are malicious, but the pattern matches the install
+// vector documented in PHASE-7-PLAN.md §B.3 / T-0010.
+func CurlPipeShellSuspected(shellName, cmdLineSHA string) Event {
+	_ = shellName
+	_ = cmdLineSHA
+	return Event{
+		Kind:       "curl_pipe_sh_detected",
+		OccurredAt: time.Now().UTC(),
+		Payload: map[string]any{
+			"parent_process_name": "curl-or-wget",
+			"originating_domain":  "unknown",
+			"process_tree_depth":  0,
+		},
+	}
+}
+
+// PackageInstallObserved fires for each npm/pip/brew/etc. install
+// command we see in the process table. Backend cross-references the
+// package name against OSV.dev advisories.
+func PackageInstallObserved(ecosystem, packageName, cmdLineSHA string) Event {
+	return Event{
+		Kind:       "package_install_pre_hook",
+		OccurredAt: time.Now().UTC(),
+		Payload: map[string]any{
+			"package_name":     packageName,
+			"package_version":  "unknown",
+			"ecosystem":        ecosystem,
+			"installer_sha256": cmdLineSHA,
+		},
+	}
+}
+
 var startedAt = time.Now()

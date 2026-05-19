@@ -244,6 +244,16 @@ _PAYLOAD_ALLOWLIST: dict[str, set[str]] = {
     "heartbeat": {
         "uptime_seconds", "agent_version",
     },
+    # ---- Phase 7.6 v0.2.0: procmon + netmon ----
+    "ai_process_running": {
+        "process_name", "detection_reason", "command_line_sha256",
+    },
+    "ai_provider_connection": {
+        "process_name", "provider_domain",
+    },
+    "destructive_cmd_correlation": {
+        "process_name", "matched_signature", "command_line_sha256",
+    },
 }
 
 # Keys that, if present in any payload, indicate a likely PII leak.

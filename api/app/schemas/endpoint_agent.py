@@ -18,6 +18,10 @@ ALLOWED_KINDS = Literal[
     "path_shadow_detected",
     "autostart_artifact",
     "heartbeat",
+    # Phase 7.6 v0.2.0 — procmon + netmon
+    "ai_process_running",
+    "ai_provider_connection",
+    "destructive_cmd_correlation",
 ]
 
 

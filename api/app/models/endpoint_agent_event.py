@@ -20,7 +20,9 @@ class EndpointAgentEvent(Base):
             "kind IN ('process_exec','file_write_to_watched_path',"
             "'secret_read_by_ai_proc','curl_pipe_sh_detected',"
             "'mcp_config_observed','package_install_pre_hook',"
-            "'path_shadow_detected','autostart_artifact','heartbeat')",
+            "'path_shadow_detected','autostart_artifact','heartbeat',"
+            "'ai_process_running','ai_provider_connection',"
+            "'destructive_cmd_correlation')",
             name="ck_endpoint_agent_events_kind",
         ),
     )
