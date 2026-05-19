@@ -35,6 +35,14 @@ async def feed(
     since_hours: Annotated[int, Query(ge=1, le=168)] = 24,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
 ):
+    """Recent discovery events, deduplicated across vectors.
+
+    Returns rows from ``ai_usage_events`` (network/XDR/SaaS ingest) AND
+    ``endpoint_agent_events`` (Phase 7.6 EA telemetry). Operators
+    expect a single pane showing every discovery signal — keeping the
+    two streams separate just hides EA detections from anyone not
+    looking at /endpoint-agents.
+    """
     since = datetime.now(timezone.utc) - timedelta(hours=since_hours)
     stmt = (
         select(
@@ -55,7 +63,7 @@ async def feed(
         .limit(limit)
     )
     rows = (await db.execute(stmt)).all()
-    return [
+    out: list[dict] = [
         {
             "occurred_at": r.occurred_at.isoformat(),
             "catalogue_slug": r.catalogue_slug,
@@ -70,6 +78,54 @@ async def feed(
         }
         for r in rows
     ]
+
+    # Phase 7.6 — surface AEGIS Endpoint Agent events in the same feed.
+    # Skip the noisy `heartbeat` kind unless the caller asked for
+    # everything (heartbeats every 60 s would drown signal otherwise).
+    from app.models.endpoint_agent_event import EndpointAgentEvent
+    from app.models.endpoint_device import EndpointDevice
+    ea_rows = (await db.execute(
+        select(
+            EndpointAgentEvent.occurred_at,
+            EndpointAgentEvent.kind,
+            EndpointAgentEvent.payload,
+            EndpointDevice.hostname,
+        )
+        .join(EndpointDevice, EndpointAgentEvent.device_id == EndpointDevice.id)
+        .where(
+            (EndpointAgentEvent.occurred_at >= since) &
+            (EndpointAgentEvent.kind != "heartbeat")
+        )
+        .order_by(desc(EndpointAgentEvent.occurred_at))
+        .limit(limit)
+    )).all()
+    for r in ea_rows:
+        payload = r.payload or {}
+        # Pick a human-readable label from the most-informative key
+        # the EA kind carries.
+        name = (
+            payload.get("path_pattern")
+            or payload.get("process_name")
+            or payload.get("package_name")
+            or payload.get("config_path_pattern")
+            or r.kind
+        )
+        out.append({
+            "occurred_at":    r.occurred_at.isoformat(),
+            "catalogue_slug": r.kind,
+            "ai_system_id":   None,
+            "name":           f"{name} ({r.kind})",
+            "category":       "endpoint_agent",
+            "vector":         "endpoint_agent",
+            "source":         f"ea:{r.hostname}",
+            "user_email":     None,
+            "department":     None,
+            "is_shadow":      False,
+        })
+
+    # Merge + sort newest first; respect the overall limit.
+    out.sort(key=lambda d: d["occurred_at"], reverse=True)
+    return out[:limit]
 
 
 @router.get("/discovery/vectors")

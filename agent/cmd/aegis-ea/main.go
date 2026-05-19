@@ -32,6 +32,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -113,31 +114,82 @@ func run() error {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		client := ingest.NewClient(cfg.IngestURL, cfg.AgentToken, cfg.DeviceID)
-		log.Printf("aegis-ea diagnose: device=%s ingest=%s", cfg.DeviceID, cfg.IngestURL)
-		// Enumerate watched paths (the fsmon start path also logs
-		// these, but printing them here makes --diagnose a complete
-		// one-shot diagnostic).
+		log.Print("==================================================================")
+		log.Print("aegis-ea diagnose: end-to-end pipeline verification")
+		log.Print("==================================================================")
+		log.Printf("  device_id   : %s", cfg.DeviceID)
+		log.Printf("  api_url     : %s", cfg.APIURL)
+		log.Printf("  ingest_url  : %s", cfg.IngestURL)
+		log.Printf("  token (len) : %d chars", len(cfg.AgentToken))
+		log.Printf("  os/arch     : %s/%s", runtime.GOOS, runtime.GOARCH)
 		mon := fsmon.New()
-		log.Printf("aegis-ea diagnose: fsmon back-end = %s", mon.Name())
-		// Build one of each event so the operator sees them in the
-		// UI. These are clearly synthetic (vendor_ref = "DIAGNOSE")
-		// so an analyst can filter them out.
-		synth := []events.Event{
-			events.Heartbeat(AgentVersion),
-			events.FileWriteToWatchedPath(
-				"~/.aegis-ea-diagnose.marker", "created", 0o600,
-				"diagnose-placeholder-sha256",
-			),
-			events.ProcessExec(
-				"aegis-ea", "diagnose-binary-sha", "shell",
-				"shell-sha", "diagnose-command-sha",
-			),
+		log.Printf("  fsmon back-end : %s", mon.Name())
+		log.Print("------------------------------------------------------------------")
+
+		// Sanity check: ingest URL must be absolute. A common failure
+		// mode is a relative ingest_url surviving in config.json, which
+		// the Go http.Client cannot reach.
+		if !(strings.HasPrefix(cfg.IngestURL, "http://") ||
+			strings.HasPrefix(cfg.IngestURL, "https://")) {
+			return fmt.Errorf(
+				"ingest_url is not absolute: %q — re-enrol with "+
+					"--api-url http://your-aegis-host to fix",
+				cfg.IngestURL,
+			)
 		}
-		if err := client.Flush(ctx, synth); err != nil {
-			return fmt.Errorf("diagnose flush: %w", err)
+
+		// Send each event individually so the operator sees per-event
+		// success/failure rather than a single all-or-nothing result.
+		type step struct {
+			name string
+			evt  events.Event
 		}
-		log.Printf("aegis-ea diagnose: sent %d synthetic events — "+
-			"check the Endpoint agents -> Recent events panel", len(synth))
+		steps := []step{
+			{"heartbeat", events.Heartbeat(AgentVersion)},
+			{"file_write_to_watched_path (synthetic)",
+				events.FileWriteToWatchedPath(
+					"~/.aegis-ea-diagnose.marker", "created", 0o600,
+					"diagnose-placeholder-sha256",
+				)},
+			{"process_exec (synthetic)",
+				events.ProcessExec(
+					"aegis-ea", "diagnose-binary-sha", "shell",
+					"shell-sha", "diagnose-command-sha",
+				)},
+		}
+		sent := 0
+		for i, s := range steps {
+			err := client.Flush(ctx, []events.Event{s.evt})
+			if err != nil {
+				log.Printf("  [%d/%d] %-44s FAIL: %v",
+					i+1, len(steps), s.name, err)
+				log.Print("------------------------------------------------------------------")
+				log.Printf("  diagnose stopped after %d/%d events.", sent, len(steps))
+				log.Print("  Common causes:")
+				log.Print("    * Backend unreachable (curl/Test-NetConnection it manually)")
+				log.Print("    * Wrong API URL or token (re-run --enroll)")
+				log.Print("    * Device revoked (check Endpoint agents page)")
+				log.Print("    * Reverse-proxy / firewall blocking /v1/ingest/endpoint-agent")
+				return fmt.Errorf("diagnose flush failed: %w", err)
+			}
+			log.Printf("  [%d/%d] %-44s OK",
+				i+1, len(steps), s.name)
+			sent++
+		}
+
+		log.Print("------------------------------------------------------------------")
+		log.Printf("  SUCCESS — %d synthetic events accepted by the backend.", sent)
+		// Build a clickable URL pointing at the Endpoint Agents page.
+		uiBase := strings.TrimSuffix(cfg.APIURL, "/v1")
+		uiBase = strings.TrimSuffix(uiBase, "/")
+		log.Printf("  Open: %s/endpoint-agents", uiBase)
+		log.Print("  Scroll to the 'Recent events (last 100)' panel — the three")
+		log.Print("  events above should appear within seconds.")
+		log.Print("==================================================================")
+		log.Print("NOTE: --diagnose events do NOT appear on the Discovery page.")
+		log.Print("      Discovery shows the Shadow AI Radar (WS) + ai_usage_events")
+		log.Print("      (network/XDR ingest). EA events live under /endpoint-agents.")
+		log.Print("==================================================================")
 		return nil
 	}
 
