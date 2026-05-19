@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   useDiscoveryFeed,
@@ -6,6 +7,35 @@ import {
   useTestBroadcast,
   useTopSystems,
 } from '@/hooks/useDiscovery';
+import type { DiscoveryFeedItem, WSMessage } from '@/types/discovery';
+
+/**
+ * Project a WS `new_system` event into the shape REST returns.
+ *
+ * REST `/v1/discovery/feed` reads `ai_usage_events JOIN ai_systems`, so it
+ * surfaces *individual telemetry events*. The WS stream emits one
+ * notification per *newly auto-registered shadow system*. These are
+ * semantically distinct sources, but operators reasonably expect the
+ * "Recent events" panel to show everything that just happened — so we
+ * merge the live notifications into the same render and tag them as
+ * `source: 'live-ws'` for visibility.
+ */
+function wsToFeedItem(m: WSMessage): DiscoveryFeedItem | null {
+  if (m.type !== 'new_system') return null;
+  const p = m.payload;
+  return {
+    occurred_at:   p.first_discovered_at,
+    catalogue_slug: p.catalogue_slug,
+    ai_system_id:  p.id,
+    name:          p.name,
+    category:      p.category,
+    vector:        p.vector,
+    source:        'live-ws',
+    user_email:    p.detected_by_user ?? null,
+    department:    p.department ?? null,
+    is_shadow:     true,
+  };
+}
 
 function vectorIcon(vector: string) {
   // Compact ASCII glyphs (no emojis per house style).
@@ -36,6 +66,28 @@ export default function DiscoveryPage() {
   const { data: top } = useTopSystems(168, 10);
   const { data: vectors } = useDiscoveryVectors();
   const testBroadcast = useTestBroadcast();
+
+  // Merge the REST feed with synthesized rows from the live WS stream so
+  // the "Recent events" panel never looks empty while the radar is
+  // actively receiving messages. De-dupe by ai_system_id so an event
+  // that was first seen live and later landed in the REST poll appears
+  // once.
+  const mergedFeed: DiscoveryFeedItem[] = useMemo(() => {
+    const fromWs = messages
+      .map(wsToFeedItem)
+      .filter((x): x is DiscoveryFeedItem => x !== null);
+    const all = [...fromWs, ...(feed ?? [])];
+    const seen = new Set<string>();
+    const out: DiscoveryFeedItem[] = [];
+    for (const row of all) {
+      const key = `${row.ai_system_id ?? row.catalogue_slug ?? ''}|${row.occurred_at}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(row);
+    }
+    out.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at));
+    return out;
+  }, [messages, feed]);
 
   return (
     <div className="space-y-6">
@@ -111,23 +163,38 @@ export default function DiscoveryPage() {
       </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Recent feed (REST) */}
+        {/* Recent feed (REST + live merge) */}
         <section className="rounded-lg border bg-white">
           <header className="flex items-center justify-between border-b px-4 py-2">
             <h2 className="font-semibold text-brand-700">Recent events (24h)</h2>
-            <span className="text-xs text-slate-500">{feed?.length ?? 0}</span>
+            <span
+              className="text-xs text-slate-500"
+              title="Combined: REST poll of ai_usage_events + live WS notifications of newly-registered shadow systems"
+            >
+              {mergedFeed.length} · {feed?.length ?? 0} REST + {messages.length} live
+            </span>
           </header>
           <ul className="divide-y divide-slate-100 max-h-96 overflow-auto">
-            {feed?.length === 0 && (
+            {mergedFeed.length === 0 && (
               <li className="px-4 py-6 text-center text-sm text-slate-500">
-                No events ingested in the last 24h.
+                {connected
+                  ? 'Live feed connected, but nothing observed yet — neither in the ' +
+                    'last 24h REST window nor on the WS stream. Try the test-broadcast ' +
+                    'button or send a real ingest event.'
+                  : 'No events ingested in the last 24h.'}
               </li>
             )}
-            {feed?.map((row, idx) => (
-              <li key={idx} className="px-4 py-2 text-sm">
+            {mergedFeed.map((row, idx) => (
+              <li key={`${row.ai_system_id ?? idx}|${row.occurred_at}`}
+                  className="px-4 py-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-slate-800">
                     {row.name || row.catalogue_slug || '(unknown)'}
+                    {row.source === 'live-ws' && (
+                      <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800">
+                        live
+                      </span>
+                    )}
                   </span>
                   <span className="text-xs text-slate-500">{timeAgo(row.occurred_at)}</span>
                 </div>
