@@ -1,0 +1,135 @@
+name: agent-release
+
+# Builds the AEGIS Endpoint Agent for every supported OS/arch and
+# publishes a GitHub Release with the binaries attached. Triggered by:
+#   - pushing a tag matching `agent-v*` (the canonical release path)
+#   - workflow_dispatch on the GitHub UI (manual one-off)
+#
+# Output URL pattern (per release):
+#   https://github.com/ddos100/AEGIS/releases/download/<TAG>/aegis-ea_windows_amd64.exe
+#   https://github.com/ddos100/AEGIS/releases/download/<TAG>/aegis-ea_linux_amd64
+#   ... etc.
+
+on:
+  push:
+    tags:
+      - 'agent-v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag to publish under (must start with agent-v)'
+        required: true
+        default: 'agent-v0.1.0-dev'
+
+permissions:
+  contents: write       # needed to upload to a GitHub Release
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}/${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: linux,   arch: amd64, ext: ''     }
+          - { os: linux,   arch: arm64, ext: ''     }
+          - { os: darwin,  arch: amd64, ext: ''     }
+          - { os: darwin,  arch: arm64, ext: ''     }
+          - { os: windows, arch: amd64, ext: '.exe' }
+          - { os: windows, arch: arm64, ext: '.exe' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+          cache-dependency-path: agent/go.sum
+        continue-on-error: true        # go.sum is empty in v1; cache is best-effort
+      - name: Compute version
+        id: ver
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build
+        working-directory: agent
+        env:
+          GOOS:        ${{ matrix.os }}
+          GOARCH:      ${{ matrix.arch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p build
+          go build \
+            -ldflags "-s -w -X main.AgentVersion=${{ steps.ver.outputs.version }}" \
+            -o "build/aegis-ea_${GOOS}_${GOARCH}${{ matrix.ext }}" \
+            ./cmd/aegis-ea
+          ls -lh build/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aegis-ea_${{ matrix.os }}_${{ matrix.arch }}
+          path: agent/build/aegis-ea_${{ matrix.os }}_${{ matrix.arch }}${{ matrix.ext }}
+          retention-days: 30
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Flatten artifact tree
+        run: |
+          mkdir -p release
+          find dist -type f -exec cp {} release/ \;
+          (cd release && sha256sum * > SHA256SUMS)
+          ls -lh release/
+      - name: Compute version
+        id: ver
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.version }}
+          name: "AEGIS Endpoint Agent ${{ steps.ver.outputs.version }}"
+          body: |
+            **AEGIS Endpoint Agent** — cross-platform observe-only daemon for the
+            AEGIS AI Threat Intelligence module (Phase 7.6).
+
+            ## Downloads
+
+            | OS / Arch         | File |
+            |-------------------|------|
+            | Windows x64       | `aegis-ea_windows_amd64.exe` |
+            | Windows arm64     | `aegis-ea_windows_arm64.exe` |
+            | macOS Apple silicon | `aegis-ea_darwin_arm64` |
+            | macOS Intel       | `aegis-ea_darwin_amd64` |
+            | Linux x64         | `aegis-ea_linux_amd64` |
+            | Linux arm64       | `aegis-ea_linux_arm64` |
+
+            `SHA256SUMS` is included; verify before running.
+
+            ## Quick start (any OS)
+
+            1. In the AEGIS UI, open **Endpoint agents → Generate enrolment code**.
+            2. Copy the resulting one-liner and run it on your endpoint.
+
+            See `agent/README.md` in this repo for the full privacy contract +
+            OS-native back-end roadmap.
+          generate_release_notes: false
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-dev') || contains(github.ref_name, '-rc') }}
+          files: |
+            release/aegis-ea_*
+            release/SHA256SUMS
