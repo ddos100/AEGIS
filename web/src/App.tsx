@@ -6,6 +6,7 @@ import { sessionStore, useSession } from '@/lib/session';
 import { useDashboardOverview } from '@/hooks/useCompliance';
 import EcosystemMap from '@/components/EcosystemMap';
 import LoginPage from '@/pages/auth/LoginPage';
+import SeedHealthBanner from '@/components/SeedHealthBanner';
 import RegistryListPage from '@/pages/registry/RegistryListPage';
 import RegistryDetailPage from '@/pages/registry/RegistryDetailPage';
 import RegistryEditPage from '@/pages/registry/RegistryEditPage';
@@ -171,6 +172,8 @@ function Overview() {
           </p>
         </div>
       </div>
+
+      <SeedHealthBanner />
 
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard label="AI systems"      value={data?.total_systems ?? '—'} hint="Registry total" />

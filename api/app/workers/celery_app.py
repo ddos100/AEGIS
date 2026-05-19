@@ -46,10 +46,23 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.sync_all_integrations",
         "schedule": crontab(minute="0", hour="2"),
     },
-    # Phase 4 — daily risk recalc 03:00 UTC (after integration sync settles)
+    # Phase 4 — daily risk recalc 03:00 UTC (after integration sync settles).
+    # The deep daily recalc walks every system, refreshes the Claude
+    # narrative on Critical/High, auto-creates AISIA records when none
+    # exist.
     "recalculate-risk": {
         "task": "app.workers.tasks.recalculate_all_risk",
         "schedule": crontab(minute="0", hour="3"),
+    },
+    # Phase 7.6+ — hourly lightweight risk recalc at HH:25 so newly
+    # auto-registered shadow systems (from network ingest, EA discovery,
+    # or browser extension) get a risk score + AISIA trigger within
+    # one hour instead of waiting for the daily 03:00 deep pass.
+    # The same task is used; AISIA auto-creation is idempotent (insert-
+    # if-missing).
+    "recalculate-risk-hourly": {
+        "task": "app.workers.tasks.recalculate_all_risk",
+        "schedule": crontab(minute="25"),
     },
     # Phase 7.5 — verification scheduler runs every 15 min and walks
     # mitigation_actions where verification_due_at <= now(). Severity-

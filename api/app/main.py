@@ -16,9 +16,9 @@ from app.integrations.network.base import load_all_normalizers
 from app.integrations.threat_feeds import load_all_feed_normalizers
 from app.integrations.network.matcher import load_from_db, matcher_size
 from app.routes import (
-    aisia, auth, catalogue, compliance, dashboard, discovery, endpoint_agent,
-    eramba, exposures, extension, health, ingest, integrations, me, mitigations,
-    policies, registry, reports, risk, threat_feed, threats,
+    admin, aisia, auth, catalogue, compliance, dashboard, discovery,
+    endpoint_agent, eramba, exposures, extension, health, ingest, integrations,
+    me, mitigations, policies, registry, reports, risk, threat_feed, threats,
 )
 
 
@@ -31,6 +31,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     load_all_connectors()
     load_all_adapters()
     load_all_feed_normalizers()
+
+    # Auto-seed the catalogue, threats, and frameworks if their tables
+    # are empty. Single biggest cause of "everything is blank" on a
+    # fresh install — see services.auto_seed for the rationale.
+    try:
+        from app.services.auto_seed import auto_seed_if_empty
+        seeded = await auto_seed_if_empty()
+        log.info("aegis.seed.startup", **{"seeded": seeded})
+    except Exception as exc:  # noqa: BLE001
+        log.warning("aegis.seed.startup_failed", error=str(exc))
+
     try:
         await load_from_db()
         log.info("aegis.matcher.loaded", **matcher_size())
@@ -83,6 +94,7 @@ def create_app() -> FastAPI:
     app.include_router(endpoint_agent.admin_router,  prefix=p)
     app.include_router(endpoint_agent.agent_router,  prefix=p)
     app.include_router(endpoint_agent.ingest_router, prefix=p)
+    app.include_router(admin.router,                 prefix=p)
     return app
 
 
