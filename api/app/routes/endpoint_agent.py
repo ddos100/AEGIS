@@ -379,3 +379,67 @@ async def ingest_ea_batch(
         rejected_reasons=reasons[:25],   # cap to keep response bounded
         heartbeat_seconds=60,
     )
+
+
+# ---------------------------------------------------------------------------
+# Bulk device operations (Phase 7.6+ UX)
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel as _BM, Field as _Field
+
+
+class _BulkDeviceIds(_BM):
+    ids: list[UUID] = _Field(..., min_length=1, max_length=500)
+
+
+class _BulkDeviceResult(_BM):
+    affected: int
+    skipped:  int = 0
+
+
+@admin_router.post("/devices/_/bulk-revoke", response_model=_BulkDeviceResult)
+async def bulk_revoke_devices(
+    payload: _BulkDeviceIds,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_admin)],  # noqa: ARG001
+):
+    """Mark every device's revoked_at to now() (skipping already-revoked).
+    Used to clean up old test devices or after an organisation-wide
+    re-enrolment."""
+    rows = (await db.execute(
+        select(EndpointDevice).where(EndpointDevice.id.in_(payload.ids))
+    )).scalars().all()
+    now = datetime.now(timezone.utc)
+    affected = 0
+    for r in rows:
+        if r.revoked_at is None:
+            r.revoked_at = now
+            affected += 1
+    await db.flush()
+    return _BulkDeviceResult(affected=affected,
+                              skipped=len(payload.ids) - affected)
+
+
+@admin_router.post("/devices/_/bulk-delete", response_model=_BulkDeviceResult)
+async def bulk_delete_revoked_devices(
+    payload: _BulkDeviceIds,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_admin)],  # noqa: ARG001
+):
+    """Hard-delete devices that are ALREADY revoked. Refuses to delete
+    a non-revoked device — operators must revoke first so the
+    sequence of revoke -> delete is auditable and reversible up to
+    the delete step."""
+    rows = (await db.execute(
+        select(EndpointDevice).where(EndpointDevice.id.in_(payload.ids))
+    )).scalars().all()
+    affected = skipped = 0
+    for r in rows:
+        if r.revoked_at is None:
+            skipped += 1
+            continue
+        await db.delete(r)
+        affected += 1
+    await db.flush()
+    return _BulkDeviceResult(affected=affected,
+                              skipped=skipped + (len(payload.ids) - len(rows)))

@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 import { useSystems } from '@/hooks/useRegistry';
 import { CompletenessBar, RiskBadge } from '@/components/RiskBadge';
+import BulkActionsBar from '@/components/BulkActionsBar';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
 
 export default function RegistryListPage() {
   const [q, setQ] = useState('');
   const [shadowOnly, setShadowOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const sel = useBulkSelection<string>();
+  const qc = useQueryClient();
 
   const { data, isLoading, isError } = useSystems({
     q: q || undefined,
@@ -15,11 +21,46 @@ export default function RegistryListPage() {
     per_page: 25,
   });
 
+  const allVisibleIds = (data?.items ?? []).map(s => s.id);
+  const allSelected = allVisibleIds.length > 0 && allVisibleIds.every(id => sel.has(id));
+  const someSelected = !allSelected && allVisibleIds.some(id => sel.has(id));
+
+  const onBulkArchive = async () => {
+    const r = await api.post<{ affected: number; skipped: number }>(
+      '/registry/systems/bulk-archive', { ids: sel.ids },
+    );
+    sel.clear();
+    qc.invalidateQueries({ queryKey: ['systems'] });
+    window.alert(`Archived ${r.data.affected} systems (${r.data.skipped} skipped).`);
+  };
+
+  const onExportCSV = () => {
+    // Open in a new tab; the axios client auto-attaches the bearer token,
+    // but the browser fetch via window.open doesn't — so we use the api
+    // client and trigger a download from the response blob instead.
+    api.get('/registry/systems/_/export.csv', { responseType: 'blob' })
+      .then(resp => {
+        const url = URL.createObjectURL(new Blob([resp.data], { type: 'text/csv' }));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'aegis-registry.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-brand-700">AI System Registry</h1>
         <div className="flex gap-2">
+          <button
+            onClick={onExportCSV}
+            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            title="Export the entire registry as CSV for offline review or audit evidence"
+          >
+            Export CSV
+          </button>
           <Link
             to="/catalogue"
             className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -77,6 +118,15 @@ export default function RegistryListPage() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
               <tr>
+                <th className="px-3 py-2 w-10">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => { if (el) el.indeterminate = someSelected; }}
+                    onChange={(e) => sel.setMany(e.target.checked ? allVisibleIds : [])}
+                    aria-label="Select all on this page"
+                  />
+                </th>
                 <th className="px-4 py-2">Name</th>
                 <th className="px-4 py-2">Category</th>
                 <th className="px-4 py-2">Risk</th>
@@ -88,7 +138,15 @@ export default function RegistryListPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {data.items.map((s) => (
-                <tr key={s.id} className="hover:bg-slate-50">
+                <tr key={s.id}
+                    className={`hover:bg-slate-50 ${sel.has(s.id) ? 'bg-brand-50' : ''}`}>
+                  <td className="px-3 py-2">
+                    <input
+                      type="checkbox"
+                      checked={sel.has(s.id)}
+                      onChange={() => sel.toggle(s.id)}
+                    />
+                  </td>
                   <td className="px-4 py-2">
                     <Link to={`/registry/${s.id}`} className="font-medium text-brand-700 hover:underline">
                       {s.name}
@@ -133,6 +191,19 @@ export default function RegistryListPage() {
           )}
         </div>
       )}
+
+      <BulkActionsBar
+        count={sel.count}
+        onClear={sel.clear}
+        actions={[
+          {
+            label: 'Archive selected',
+            variant: 'danger',
+            confirm: `Archive ${sel.count} systems? This is a soft-delete — status becomes "decommissioned".`,
+            onClick: onBulkArchive,
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import BulkActionsBar from '@/components/BulkActionsBar';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
 import {
   mintEnrollmentCode,
   revokeDevice,
@@ -41,8 +44,30 @@ export default function EndpointAgentPage() {
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
   const [latestCode, setLatestCode] = useState<EnrollmentCode | null>(null);
+  const sel = useBulkSelection<string>();
 
   const notLicensed = (error as { response?: { status?: number } })?.response?.status === 402;
+
+  const onBulkRevoke = async () => {
+    const r = await api.post<{ affected: number; skipped: number }>(
+      '/endpoint-agent/devices/_/bulk-revoke', { ids: sel.ids },
+    );
+    sel.clear();
+    qc.invalidateQueries({ queryKey: ['ea'] });
+    window.alert(`Revoked ${r.data.affected} devices (${r.data.skipped} already revoked).`);
+  };
+
+  const onBulkDeleteRevoked = async () => {
+    const r = await api.post<{ affected: number; skipped: number }>(
+      '/endpoint-agent/devices/_/bulk-delete', { ids: sel.ids },
+    );
+    sel.clear();
+    qc.invalidateQueries({ queryKey: ['ea'] });
+    window.alert(
+      `Deleted ${r.data.affected} revoked devices (${r.data.skipped} skipped — ` +
+      `selection contained non-revoked devices, which the backend refuses to hard-delete).`
+    );
+  };
 
   const onMint = async () => {
     setBusy('mint');
@@ -139,6 +164,22 @@ export default function EndpointAgentPage() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
               <tr>
+                <th className="px-3 py-2 w-10">
+                  <input
+                    type="checkbox"
+                    checked={devices.items.length > 0 && devices.items.every(d => sel.has(d.id))}
+                    ref={(el) => {
+                      if (el) {
+                        const some = devices.items.some(d => sel.has(d.id));
+                        const all = devices.items.every(d => sel.has(d.id));
+                        el.indeterminate = some && !all;
+                      }
+                    }}
+                    onChange={(e) =>
+                      sel.setMany(e.target.checked ? devices.items.map(d => d.id) : [])}
+                    aria-label="Select all devices"
+                  />
+                </th>
                 <th className="px-4 py-2">Hostname</th>
                 <th className="px-4 py-2 w-24">OS</th>
                 <th className="px-4 py-2 w-32">Version</th>
@@ -155,7 +196,15 @@ export default function EndpointAgentPage() {
                             : h === 'revoked' ? 'badge-critical'
                             : 'badge bg-slate-100 text-slate-600';
                 return (
-                  <tr key={d.id} className="hover:bg-slate-50">
+                  <tr key={d.id}
+                      className={`hover:bg-slate-50 ${sel.has(d.id) ? 'bg-brand-50' : ''}`}>
+                    <td className="px-3 py-2 align-top">
+                      <input
+                        type="checkbox"
+                        checked={sel.has(d.id)}
+                        onChange={() => sel.toggle(d.id)}
+                      />
+                    </td>
                     <td className="px-4 py-2 align-top font-medium text-slate-800">{d.hostname}</td>
                     <td className="px-4 py-2 align-top">{osBadge(d.os)} <span className="ml-1 text-xs text-slate-500">{d.arch}</span></td>
                     <td className="px-4 py-2 align-top font-mono text-xs">{d.agent_version}</td>
@@ -230,6 +279,25 @@ export default function EndpointAgentPage() {
           Failed to load endpoint agents: {(error as Error).message}
         </div>
       )}
+
+      <BulkActionsBar
+        count={sel.count}
+        onClear={sel.clear}
+        actions={[
+          {
+            label: 'Revoke selected',
+            variant: 'danger',
+            confirm: `Revoke ${sel.count} devices? Agents will be rejected on next ingest.`,
+            onClick: onBulkRevoke,
+          },
+          {
+            label: 'Delete revoked',
+            variant: 'neutral',
+            confirm: `Hard-delete revoked devices in selection? Non-revoked devices are skipped by the backend.`,
+            onClick: onBulkDeleteRevoked,
+          },
+        ]}
+      />
     </div>
   );
 }

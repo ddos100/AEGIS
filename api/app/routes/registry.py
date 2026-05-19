@@ -6,6 +6,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
+from pydantic import BaseModel, Field
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession  # noqa: F401
 
@@ -152,6 +153,82 @@ async def archive_system(
         raise HTTPException(status_code=404, detail="AI system not found")
     row.status = "decommissioned"
     await db.flush()
+
+
+# ---------- bulk operations ----------
+
+class _BulkIds(BaseModel):  # type: ignore[name-defined]  # imported below
+    ids: list[UUID] = Field(..., min_length=1, max_length=500)
+
+
+class _BulkResult(BaseModel):  # type: ignore[name-defined]
+    affected: int
+    skipped:  int = 0
+    reason:   str | None = None
+
+
+@router.post("/systems/bulk-archive", response_model=_BulkResult)
+async def bulk_archive_systems(
+    payload: "_BulkIds",
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_analyst)],  # noqa: ARG001
+) -> "_BulkResult":
+    """Soft-archive a batch of AI systems in one transaction. Same
+    semantics as the per-row DELETE — status flips to decommissioned;
+    no row is hard-deleted. Bounded to 500 IDs per call so a runaway
+    selection can't load the whole tenant into memory."""
+    affected = skipped = 0
+    rows = (await db.execute(
+        select(AISystem).where(AISystem.id.in_(payload.ids))
+    )).scalars().all()
+    seen = {r.id for r in rows}
+    for r in rows:
+        r.status = "decommissioned"
+        affected += 1
+    skipped = len(payload.ids) - len(seen)
+    await db.flush()
+    return _BulkResult(affected=affected, skipped=skipped)
+
+
+@router.get("/systems/_/export.csv")
+async def export_systems_csv(
+    db: DBSession,
+    user: CurrentUser,  # noqa: ARG001
+):
+    """Stream the tenant's AI Registry as a CSV for offline review +
+    auditor evidence packs. Same fields as the JSON list endpoint."""
+    from fastapi.responses import StreamingResponse
+    import csv, io
+    rows = (await db.execute(
+        select(AISystem).order_by(AISystem.first_discovered_at.desc())
+    )).scalars().all()
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow([
+        "id", "name", "category", "subcategory", "intended_purpose",
+        "owner_user_id", "department_id", "current_risk_score",
+        "risk_level", "completeness_score", "is_shadow", "status",
+        "policy_status", "aisia_status", "eu_ai_act_category",
+        "first_discovered_at", "last_seen_at",
+        "discovery_sources", "tags",
+    ])
+    for r in rows:
+        w.writerow([
+            r.id, r.name, r.category, r.subcategory, r.intended_purpose,
+            r.owner_user_id, r.department_id, r.current_risk_score,
+            r.risk_level, r.completeness_score, r.is_shadow, r.status,
+            r.policy_status, r.aisia_status, r.eu_ai_act_category,
+            r.first_discovered_at, r.last_seen_at,
+            ";".join(r.discovery_sources or []),
+            ";".join(r.tags or []),
+        ])
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="aegis-registry.csv"'},
+    )
 
 
 # ---------- from-catalogue quick-add ----------

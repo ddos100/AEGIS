@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import BulkActionsBar from '@/components/BulkActionsBar';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
 import {
   publishDraft,
   refreshFeeds,
@@ -27,6 +29,17 @@ export default function ThreatFeedReviewPage() {
   const [running, setRunning] = useState(false);
   const [lastRun, setLastRun] = useState<IngestRunResult[] | null>(null);
   const [editor, setEditor] = useState<{ id: string; body: string } | null>(null);
+  const sel = useBulkSelection<string>();
+
+  const onBulkReject = async () => {
+    const notes = window.prompt('Reason for bulk reject? (recorded on every draft)') || undefined;
+    const r = await api.post<{ affected: number; skipped: number }>(
+      '/threats/feed/drafts/_/bulk-reject', { ids: sel.ids, notes },
+    );
+    sel.clear();
+    qc.invalidateQueries({ queryKey: ['threat-feed'] });
+    window.alert(`Rejected ${r.data.affected} drafts (${r.data.skipped} skipped — already terminal).`);
+  };
 
   const notLicensed = (error as { response?: { status?: number } })?.response?.status === 402;
 
@@ -175,6 +188,22 @@ export default function ThreatFeedReviewPage() {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                   <tr>
+                    <th className="px-3 py-2 w-10">
+                      <input
+                        type="checkbox"
+                        checked={data.items.length > 0 && data.items.every(d => sel.has(d.id))}
+                        ref={(el) => {
+                          if (el) {
+                            const some = data.items.some(d => sel.has(d.id));
+                            const all = data.items.every(d => sel.has(d.id));
+                            el.indeterminate = some && !all;
+                          }
+                        }}
+                        onChange={(e) =>
+                          sel.setMany(e.target.checked ? data.items.map(d => d.id) : [])}
+                        aria-label="Select all drafts on this page"
+                      />
+                    </th>
                     <th className="px-4 py-2 w-32">Source</th>
                     <th className="px-4 py-2 w-44">Threat ID</th>
                     <th className="px-4 py-2">Title</th>
@@ -185,7 +214,15 @@ export default function ThreatFeedReviewPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {data.items.map((d) => (
-                    <tr key={d.id} className="hover:bg-slate-50">
+                    <tr key={d.id}
+                        className={`hover:bg-slate-50 ${sel.has(d.id) ? 'bg-brand-50' : ''}`}>
+                      <td className="px-3 py-2 align-top">
+                        <input
+                          type="checkbox"
+                          checked={sel.has(d.id)}
+                          onChange={() => sel.toggle(d.id)}
+                        />
+                      </td>
                       <td className="px-4 py-2 align-top">
                         <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-brand-700">
                           {d.source}
@@ -281,6 +318,19 @@ export default function ThreatFeedReviewPage() {
           Failed to load drafts: {(error as Error).message}
         </div>
       )}
+
+      <BulkActionsBar
+        count={sel.count}
+        onClear={sel.clear}
+        actions={[
+          {
+            label: 'Reject selected',
+            variant: 'danger',
+            confirm: `Reject ${sel.count} drafts? They become terminal — re-ingest won't re-promote unless the upstream payload changes.`,
+            onClick: onBulkReject,
+          },
+        ]}
+      />
     </div>
   );
 }

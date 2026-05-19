@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import BulkActionsBar from '@/components/BulkActionsBar';
+import { useBulkSelection } from '@/hooks/useBulkSelection';
 import {
   decideMitigation,
   pushMitigation,
@@ -44,8 +47,26 @@ export default function MitigationsPage() {
   const { data, isLoading, isError, error } = useMitigations();
   const qc = useQueryClient();
   const [busy, setBusy] = useState<string | null>(null);
+  const sel = useBulkSelection<string>();
 
   const notLicensed = (error as { response?: { status?: number } })?.response?.status === 402;
+
+  const onBulkDecide = async (decision: 'approve' | 'reject' | 'dismiss') => {
+    if (sel.count === 0) return;
+    const reason = decision !== 'approve'
+      ? (window.prompt(`Reason for bulk ${decision}? (optional)`) || undefined)
+      : undefined;
+    const r = await api.post<{ affected: number; skipped: number; conflicts: string[] }>(
+      '/mitigations/_/bulk-decide',
+      { ids: sel.ids, decision, reason },
+    );
+    sel.clear();
+    qc.invalidateQueries({ queryKey: ['mitigations'] });
+    const msg = `${decision}: affected ${r.data.affected}` +
+                (r.data.skipped ? `, skipped ${r.data.skipped}` : '') +
+                (r.data.conflicts.length ? ` — conflicts: ${r.data.conflicts.join(', ')}` : '');
+    window.alert(msg);
+  };
 
   const onDecide = async (id: string, decision: 'approve' | 'reject' | 'dismiss') => {
     setBusy(id);
@@ -154,12 +175,23 @@ export default function MitigationsPage() {
                   </header>
                   <div className="space-y-2">
                     {byCol[col.status].map((m) => (
-                      <article key={m.id} className="rounded-md border bg-white p-3 text-sm shadow-sm">
+                      <article key={m.id}
+                               className={`rounded-md border bg-white p-3 text-sm shadow-sm ${
+                                 sel.has(m.id) ? 'ring-2 ring-brand-500' : ''
+                               }`}>
                         <div className="flex items-center justify-between gap-2">
-                          <Link to={`/threats/${m.threat_external_id}`}
-                                className="font-mono text-xs text-brand-700 hover:underline">
-                            {m.threat_external_id}
-                          </Link>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={sel.has(m.id)}
+                              onChange={() => sel.toggle(m.id)}
+                              aria-label="Select mitigation for bulk action"
+                            />
+                            <Link to={`/threats/${m.threat_external_id}`}
+                                  className="font-mono text-xs text-brand-700 hover:underline">
+                              {m.threat_external_id}
+                            </Link>
+                          </label>
                           <span className={sevBadge(m.threat_severity)}>{m.threat_severity}</span>
                         </div>
                         <div className="mt-1 font-medium text-slate-800">{m.threat_title}</div>
@@ -284,6 +316,29 @@ export default function MitigationsPage() {
           Failed to load mitigations: {(error as Error).message}
         </div>
       )}
+
+      <BulkActionsBar
+        count={sel.count}
+        onClear={sel.clear}
+        actions={[
+          {
+            label: 'Approve selected',
+            variant: 'emerald',
+            confirm: `Approve ${sel.count} mitigations? They move to "queued" — no vendor push yet.`,
+            onClick: () => onBulkDecide('approve'),
+          },
+          {
+            label: 'Reject selected',
+            variant: 'danger',
+            onClick: () => onBulkDecide('reject'),
+          },
+          {
+            label: 'Dismiss selected',
+            variant: 'neutral',
+            onClick: () => onBulkDecide('dismiss'),
+          },
+        ]}
+      />
     </div>
   );
 }

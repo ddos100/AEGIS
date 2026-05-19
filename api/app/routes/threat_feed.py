@@ -314,3 +314,46 @@ async def reject_draft(
         source_fingerprint=row.source_fingerprint,
         published_threat_id=row.published_threat_id,
     )
+
+
+# ---------------------------------------------------------------------------
+# Bulk reject (Phase 7.6+ UX)
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel as _BM, Field as _Field
+
+
+class _BulkDraftIds(_BM):
+    ids:   list[UUID] = _Field(..., min_length=1, max_length=500)
+    notes: str | None = _Field(default=None, max_length=2000)
+
+
+class _BulkDraftResult(_BM):
+    affected: int
+    skipped:  int = 0
+
+
+@router.post("/drafts/_/bulk-reject", response_model=_BulkDraftResult)
+async def bulk_reject_drafts(
+    payload: _BulkDraftIds,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_admin)],
+):
+    """Reject many drafts at once. Drafts already in a terminal state
+    (published / rejected) are skipped, not failed."""
+    rows = (await db.execute(
+        select(DraftThreatRow).where(DraftThreatRow.id.in_(payload.ids))
+    )).scalars().all()
+    now = datetime.now(timezone.utc)
+    uid = _safe_uuid(user.sub)
+    affected = 0
+    for r in rows:
+        if r.review_status not in ("pending_review", "superseded"):
+            continue
+        r.review_status = "rejected"
+        r.review_notes  = payload.notes
+        r.reviewed_by   = uid
+        r.reviewed_at   = now
+        affected += 1
+    await db.flush()
+    return _BulkDraftResult(affected=affected, skipped=len(payload.ids) - affected)

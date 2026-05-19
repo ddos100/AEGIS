@@ -471,3 +471,67 @@ async def rollback_mitigation(
         ok=result.ok, dry_run=result.dry_run, vendor_ref=result.vendor_ref,
         detail=result.detail, error=result.error, mitigation=detail,
     )
+
+
+# ---------------------------------------------------------------------------
+# Bulk decisions (Phase 7.6+ UX)
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel, Field
+from typing import Literal as _Literal
+
+
+class _BulkMitigationDecision(BaseModel):
+    ids:      list[UUID] = Field(..., min_length=1, max_length=200)
+    decision: _Literal["approve", "reject", "dismiss"]
+    reason:   str | None = Field(default=None, max_length=1000)
+
+
+class _BulkMitigationResult(BaseModel):
+    affected:    int
+    skipped:     int = 0
+    conflicts:   list[str] = Field(default_factory=list)
+
+
+@router.post("/_/bulk-decide", response_model=_BulkMitigationResult)
+async def bulk_decide_mitigations(
+    payload: _BulkMitigationDecision,
+    db: DBSession,
+    user: Annotated[CurrentUser, Depends(require_analyst)],
+):
+    """Apply approve / reject / dismiss to many proposals in one
+    transaction. Per-row state-machine guards still apply: rows in a
+    terminal state are skipped (counted in `conflicts`) rather than
+    failing the whole batch."""
+    user_uuid = _safe_uuid(user.sub)
+    # Map decision to (next_status, allowed_from) — same rules as the
+    # single-row endpoints.
+    rules = {
+        "approve": ("queued",    {"proposed"}),
+        "reject":  ("rejected",  {"proposed", "queued"}),
+        "dismiss": ("dismissed", {"proposed"}),
+    }
+    next_status, allowed_from = rules[payload.decision]
+    rows = (await db.execute(
+        select(MitigationAction).where(MitigationAction.id.in_(payload.ids))
+    )).scalars().all()
+
+    affected = 0
+    conflicts: list[str] = []
+    now = datetime.now(timezone.utc)
+    for r in rows:
+        if r.status not in allowed_from:
+            conflicts.append(f"{r.id}:{r.status}")
+            continue
+        r.status = next_status
+        r.status_reason = payload.reason
+        if next_status == "queued":
+            r.approved_at = now
+            r.approved_by = user_uuid
+        affected += 1
+    skipped = len(payload.ids) - len(rows)
+    await db.flush()
+    return _BulkMitigationResult(
+        affected=affected, skipped=skipped + len(conflicts),
+        conflicts=conflicts,
+    )
